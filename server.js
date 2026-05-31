@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // index.html shu joyda
+app.use(express.static(path.join(__dirname))); // index.html shu joyda
 
 // === /start command ===
 bot.onText(/\/start/, (msg) => {
