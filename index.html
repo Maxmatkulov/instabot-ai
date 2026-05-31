@@ -962,6 +962,55 @@ input[type=range] {
   </div>
 </div>
 
+<!-- ===== PAGE: MENU ===== -->
+<div class="page" id="pg-menu">
+  <div style="padding:16px 16px 8px; display:flex; align-items:center; justify-content:space-between;">
+    <div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:2px;">📚 Menyu</div>
+      <div style="font-size:13px;color:var(--sub);">Video, havola va matnlar</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openSheet('menuSheet')">+ Qo'shish</button>
+  </div>
+  <div id="menuList" style="padding:8px 16px;"></div>
+</div>
+
+<!-- Add Menu Sheet -->
+<div class="sheet-overlay" id="menuSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📚 Yangi Element</div>
+
+    <div class="field">
+      <label class="field-label">Emoji</label>
+      <input type="text" id="mEmoji" placeholder="📚" maxlength="4" value="📌" />
+    </div>
+    <div class="field">
+      <label class="field-label">Sarlavha</label>
+      <input type="text" id="mTitle" placeholder="Darslik #1" />
+    </div>
+    <div class="field">
+      <label class="field-label">Turi</label>
+      <select id="mType" onchange="onMenuTypeChange()">
+        <option value="text">📝 Matn</option>
+        <option value="link">🔗 Havola</option>
+        <option value="video">🎬 Video havola</option>
+      </select>
+    </div>
+    <div class="field" id="mContentField">
+      <label class="field-label">Matn</label>
+      <textarea id="mContent" placeholder="Bu yerda matn..."></textarea>
+    </div>
+    <div class="field" id="mUrlField" style="display:none">
+      <label class="field-label">Havola (URL)</label>
+      <input type="text" id="mUrl" placeholder="https://..." />
+    </div>
+
+    <button class="btn btn-primary" onclick="saveMenuItem()">✅ Saqlash</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-secondary" onclick="closeSheet('menuSheet')">Bekor</button>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="nav-btn active" onclick="goPage('home',this)">
@@ -971,6 +1020,10 @@ input[type=range] {
   <button class="nav-btn" onclick="goPage('rules',this)">
     <span class="nav-ico">⚡</span>
     Qoidalar
+  </button>
+  <button class="nav-btn" onclick="goPage('menu',this)">
+    <span class="nav-ico">📚</span>
+    Menyu
   </button>
   <button class="nav-btn" onclick="goPage('ai',this)">
     <span class="nav-ico">🧠</span>
@@ -1011,19 +1064,8 @@ let S = {
 try { const d = localStorage.getItem(KEY); if(d) S = {...S, ...JSON.parse(d)}; } catch(e){}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
-// === NAV ===
-function goPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('pg-' + name).classList.add('active');
-  if (el) el.classList.add('active');
-  if (name === 'rules') renderRules();
-  if (name === 'ai') {
-    document.getElementById('sysPrompt').value = S.sysPrompt;
-    document.getElementById('tempR').value = S.temp * 10;
-    document.getElementById('tempV').textContent = S.temp.toFixed(1);
-  }
-}
+// === NAV (handled below) ===
+function _navInit() {}
 
 // === SHEETS ===
 function openSheet(id) { document.getElementById(id).classList.add('open'); }
@@ -1218,6 +1260,108 @@ function renderRules() {
   `).join('');
 }
 
+// === MENU TYPE CHANGE ===
+function onMenuTypeChange() {
+  const type = document.getElementById('mType').value;
+  document.getElementById('mContentField').style.display = type === 'text' ? '' : 'none';
+  document.getElementById('mUrlField').style.display = (type === 'link' || type === 'video') ? '' : 'none';
+  document.getElementById('mContent').placeholder = 'Bu yerda matn...';
+  document.getElementById('mUrl').placeholder = type === 'video' ? 'https://youtube.com/...' : 'https://...';
+}
+
+// === MENU API ===
+const API = window.location.origin;
+
+async function loadMenuItems() {
+  try {
+    const r = await fetch(`${API}/api/menu`);
+    const items = await r.json();
+    renderMenuItems(items);
+  } catch(e) {
+    document.getElementById('menuList').innerHTML = `<div class="empty"><div class="ico">⚠️</div><p>Menyu yuklanmadi</p></div>`;
+  }
+}
+
+function renderMenuItems(items) {
+  const list = document.getElementById('menuList');
+  if (!items.length) {
+    list.innerHTML = `<div class="empty"><div class="ico">📚</div><p>Menyu bo'sh.<br>+ Qo'shish tugmasi bilan qo'shing</p></div>`;
+    return;
+  }
+  list.innerHTML = items.map(item => `
+    <div class="rule-item">
+      <div class="rule-head">
+        <div class="rule-name">${esc(item.emoji)} ${esc(item.title)}</div>
+        <div class="rule-del" onclick="deleteMenuItem(${item.id})">🗑</div>
+      </div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">
+        ${item.type === 'text' ? '📝 Matn' : item.type === 'video' ? '🎬 Video' : '🔗 Havola'}
+      </div>
+      ${item.type === 'text'
+        ? `<div class="rule-resp">${esc(item.content)}</div>`
+        : `<div class="rule-resp" style="color:var(--blue);">${esc(item.url)}</div>`
+      }
+    </div>
+  `).join('');
+}
+
+async function saveMenuItem() {
+  const emoji = document.getElementById('mEmoji').value.trim() || '📌';
+  const title = document.getElementById('mTitle').value.trim();
+  const type = document.getElementById('mType').value;
+  const content = document.getElementById('mContent').value.trim();
+  const url = document.getElementById('mUrl').value.trim();
+
+  if (!title) { toast('⚠️','Sarlavha kiriting!'); return; }
+  if (type === 'text' && !content) { toast('⚠️','Matn kiriting!'); return; }
+  if ((type === 'link' || type === 'video') && !url) { toast('⚠️','Havola kiriting!'); return; }
+
+  try {
+    const r = await fetch(`${API}/api/menu`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ emoji, title, type, content, url })
+    });
+    if (!r.ok) throw new Error('Server xato');
+    toast('✅','Qo\'shildi!');
+    closeSheet('menuSheet');
+    document.getElementById('mTitle').value = '';
+    document.getElementById('mContent').value = '';
+    document.getElementById('mUrl').value = '';
+    document.getElementById('mEmoji').value = '📌';
+    loadMenuItems();
+  } catch(e) {
+    toast('❌','Saqlashda xato!');
+  }
+}
+
+async function deleteMenuItem(id) {
+  if (!confirm('O\'chirishni tasdiqlaysizmi?')) return;
+  try {
+    await fetch(`${API}/api/menu/${id}`, { method: 'DELETE' });
+    toast('🗑️','O\'chirildi!');
+    loadMenuItems();
+  } catch(e) {
+    toast('❌','Xato!');
+  }
+}
+
+// === MENU PAGE LOAD ===
+const _goPage = goPage;
+function goPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'rules') renderRules();
+  if (name === 'menu') loadMenuItems();
+  if (name === 'ai') {
+    document.getElementById('sysPrompt').value = S.sysPrompt;
+    document.getElementById('tempR').value = S.temp * 10;
+    document.getElementById('tempV').textContent = S.temp.toFixed(1);
+  }
+}
+
 // === AI SAVE ===
 function saveAI() {
   S.sysPrompt = document.getElementById('sysPrompt').value;
@@ -1284,19 +1428,21 @@ function clearChat() {
 }
 
 async function callClaude(history) {
-  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+  const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${window.GROQ_KEY || ''}`
+    },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: S.sysPrompt,
-      messages: history.slice(-12)
+      model: "llama-3.3-70b-versatile",
+      max_tokens: 800,
+      messages: [{ role: 'system', content: S.sysPrompt }, ...history.slice(-12)]
     })
   });
   const data = await resp.json();
   if (data.error) throw new Error(data.error.message);
-  return data.content.map(b => b.text || '').join('');
+  return data.choices?.[0]?.message?.content || 'Javob olishda xato';
 }
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
