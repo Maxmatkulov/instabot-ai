@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 const OWNER_USERNAME = 'mmn0300';
 const FREE_QUESTIONS = 3;
 
+
 // Webhook mode — polling: false
 const bot = new TelegramBot(BOT_TOKEN, { polling: false });
 const app = express();
