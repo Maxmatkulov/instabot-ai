@@ -12,12 +12,10 @@ const PORT = process.env.PORT || 3000;
 const OWNER_USERNAME = 'mmn0300';
 const FREE_QUESTIONS = 3;
 
-
 // Webhook mode — polling: false
 const bot = new TelegramBot(BOT_TOKEN, { polling: false });
 const app = express();
 app.use(express.json());
-app.use(express.static(__dirname));
 
 // Storage
 const users = new Map();
@@ -331,6 +329,9 @@ app.post('/api/menu', (req, res) => {
 app.delete('/api/menu/:id', (req, res) => { menuItems=menuItems.filter(i=>i.id!=req.params.id); res.json({ok:true}); });
 app.get('/api/stats', (req, res) => res.json({ users:users.size, menuItems:menuItems.length, igConnected:!!process.env.IG_ACCESS_TOKEN, aiConnected:!!ANTHROPIC_API_KEY }));
 app.get('/health', (req, res) => res.json({ ok:true, version:'7.0' }));
+
+// Static fayllar — eng oxirida
+app.use(express.static(__dirname));
 
 app.listen(PORT, async () => {
   console.log(`✅ Server port ${PORT}`);
