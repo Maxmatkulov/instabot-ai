@@ -1,7 +1,17 @@
 // ============================================
-//  InstaBot AI — v6.0 FULL SYSTEM
+//  InstaBot AI — v6.1 FULL SYSTEM
 //  Admin panel + AI Chat + Menu + Obuna tekshirish
 // ============================================
+
+// Log limitini kamaytirish
+const _log = console.log;
+console.log = (...args) => {
+  // Faqat muhim loglar
+  const msg = args.join(' ');
+  if (msg.includes('✅') || msg.includes('❌') || msg.includes('port') || msg.includes('xato') || msg.includes('error')) {
+    _log(...args);
+  }
+};
 
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
