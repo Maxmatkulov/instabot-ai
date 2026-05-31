@@ -47,21 +47,23 @@ async function checkSub(userId) {
 }
 
 async function askClaude(history, lang) {
-  if (!ANTHROPIC_API_KEY) return 'AI ulanmagan.';
-  console.log('🤖 AI request boshlandi, key:', ANTHROPIC_API_KEY.slice(0,10) + '...');
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  if (!GROQ_API_KEY) return 'AI ulanmagan.';
   const sys = { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: "Отвечай кратко на русском.", en: "Reply briefly in English." }[lang] || "Reply briefly.";
   try {
     const fetch = (await import('node-fetch')).default;
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01' },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:sys, messages:history.slice(-8) })
+      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 800,
+        messages: [{ role:'system', content: sys }, ...history.slice(-8)]
+      })
     });
     const d = await r.json();
-    console.log('🤖 AI response:', JSON.stringify(d).slice(0, 200));
-    return d.content?.[0]?.text || 'Javob olishda xato.';
+    return d.choices?.[0]?.message?.content || 'Javob olishda xato.';
   } catch(e) {
-    console.log('❌ AI xato:', e.message);
     return 'AI xato: ' + e.message;
   }
 }
