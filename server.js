@@ -2,7 +2,6 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const fs = require('fs');
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const MINI_APP_URL = process.env.MINI_APP_URL || '';
@@ -20,23 +19,10 @@ app.use(express.json());
 
 // Storage
 const users = new Map();
-const MENU_FILE = './menu.json';
-
-function loadMenu() {
-  try {
-    if (fs.existsSync(MENU_FILE)) return JSON.parse(fs.readFileSync(MENU_FILE, 'utf8'));
-  } catch(e) {}
-  return [
-    { id: 1, title: 'Darslik #1', type: 'text', content: 'Bu yerda darslik matni...', emoji: '📚' },
-    { id: 2, title: 'Kanal', type: 'link', url: `https://t.me/${TG_CHANNEL.replace('@','')}`, emoji: '📢' }
-  ];
-}
-
-function saveMenu(items) {
-  try { fs.writeFileSync(MENU_FILE, JSON.stringify(items, null, 2)); } catch(e) {}
-}
-
-let menuItems = loadMenu();
+let menuItems = [
+  { id: 1, title: 'Darslik #1', type: 'text', content: 'Bu yerda darslik matni...', emoji: '📚' },
+  { id: 2, title: 'Kanal', type: 'link', url: `https://t.me/${TG_CHANNEL.replace('@','')}`, emoji: '📢' }
+];
 let igRules = [{
   id: 1, name: 'Havola',
   keywords: ['1', 'link', 'havola', '+'],
@@ -238,9 +224,13 @@ bot.on('message', async (msg) => {
     user.subscribed = isSub;
 
     if (!isSub && user.questions >= FREE_QUESTIONS) {
-      user.aiMode = false;
-      return bot.sendMessage(chatId, `🔒 Limit tugadi! Obuna bo'ling:`, {
-        reply_markup:{ inline_keyboard:[[{ text:'📢 Obuna bo\'lish', url:`https://t.me/${TG_CHANNEL.replace('@','')}` }]]}
+      // aiMode o'chirilmaydi — obuna bo'lgandan keyin davom etadi
+      return bot.sendMessage(chatId, `🔒 *Bepul limit tugadi!*\n\nDavom etish uchun kanalga obuna bo'ling 👇`, {
+        parse_mode: 'Markdown',
+        reply_markup:{ inline_keyboard:[
+          [{ text:'📢 Obuna bo\'lish', url:`https://t.me/${TG_CHANNEL.replace('@','')}` }],
+          [{ text:'✅ Obunani tekshirish', callback_data:'check_sub_ai' }]
+        ]}
       });
     }
 
@@ -277,11 +267,6 @@ bot.on('callback_query', async (query) => {
     if (!item) return;
     if (item.type === 'text') {
       await bot.sendMessage(chatId, `${item.emoji} *${item.title}*\n\n${item.content}`, { parse_mode:'Markdown' });
-    } else if (item.type === 'video') {
-      await bot.sendMessage(chatId, `${item.emoji} *${item.title}*\n\n🎬 Video:`, {
-        parse_mode:'Markdown',
-        reply_markup:{ inline_keyboard:[[{ text:`▶️ Videoni ko'rish`, url: item.url }]]}
-      });
     } else {
       await bot.sendMessage(chatId, `${item.emoji} *${item.title}*`, {
         parse_mode:'Markdown',
@@ -303,6 +288,18 @@ bot.on('callback_query', async (query) => {
       user.subscribed = true;
       await bot.answerCallbackQuery(query.id, { text:'✅ Tasdiqlandi!' });
       await bot.sendMessage(chatId, `✅ Tasdiqlandi!\nHavola: ${igRules[0].tgLink}`);
+    } else {
+      await bot.answerCallbackQuery(query.id, { text:'❌ Hali obuna bo\'lmagansiz!', show_alert:true });
+    }
+    return;
+  }
+
+  if (data === 'check_sub_ai') {
+    const isSub = await checkSub(userId);
+    if (isSub) {
+      user.subscribed = true;
+      await bot.answerCallbackQuery(query.id, { text:'✅ Tasdiqlandi! Davom eting!' });
+      await bot.sendMessage(chatId, `✅ *Obuna tasdiqlandi!*\n\nEndi cheksiz savollar bera olasiz 🎉\nSavolingizni yozing 👇`, { parse_mode:'Markdown' });
     } else {
       await bot.answerCallbackQuery(query.id, { text:'❌ Hali obuna bo\'lmagansiz!', show_alert:true });
     }
@@ -343,14 +340,9 @@ app.post('/api/menu', (req, res) => {
   if (!title||!type) return res.status(400).json({ error:'title va type kerak' });
   const item = { id:Date.now(), title, type, content:content||'', url:url||'', emoji:emoji||'📌' };
   menuItems.push(item);
-  saveMenu(menuItems);
   res.json(item);
 });
-app.delete('/api/menu/:id', (req, res) => {
-  menuItems = menuItems.filter(i => i.id != req.params.id);
-  saveMenu(menuItems);
-  res.json({ok:true});
-});
+app.delete('/api/menu/:id', (req, res) => { menuItems=menuItems.filter(i=>i.id!=req.params.id); res.json({ok:true}); });
 app.get('/api/stats', (req, res) => res.json({ users:users.size, menuItems:menuItems.length, igConnected:!!process.env.IG_ACCESS_TOKEN, aiConnected:!!ANTHROPIC_API_KEY }));
 app.get('/health', (req, res) => res.json({ ok:true, version:'7.0' }));
 
