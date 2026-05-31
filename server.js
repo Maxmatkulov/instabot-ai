@@ -1,6 +1,6 @@
 // ============================================
-//  InstaBot AI — v4.0
-//  Instagram Comment → DM → Telegram obuna tekshirish → Havola
+//  InstaBot AI — v5.0
+//  Instagram Comment → DM → Telegram Bot → Obuna tekshirish → Havola
 // ============================================
 
 const TelegramBot = require('node-telegram-bot-api');
@@ -11,6 +11,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN';
 const MINI_APP_URL = process.env.MINI_APP_URL || 'https://your-server.com';
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'instabot_verify_123';
 const TG_CHANNEL = process.env.TG_CHANNEL || '@mashrabbekmaxmatkulov';
+const TG_BOT_USERNAME = process.env.TG_BOT_USERNAME || 'mmnchat_bot';
 const PORT = process.env.PORT || 3000;
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
@@ -18,8 +19,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// Pending users: instagram_user_id → { tgUsername, rule, tries }
-const pendingUsers = new Map();
+// pending: instagram_user_id → { rule, igUsername }
+const pendingIG = new Map();
+
+// Telegram user_id → instagram_user_id (bog'lash)
+const tgToIG = new Map();
 
 // Qoidalar
 let rules = [
@@ -29,11 +33,124 @@ let rules = [
     keywords: ['1', 'link', 'havola', 'info', '+'],
     tgChannel: TG_CHANNEL,
     tgLink: 'https://t.me/mashrabbekmaxmatkulov',
-    dmFirst: `Assalomu alaykum! 👋\n\nHavolani olish uchun avval Telegram kanalimizga obuna bo'ling:\n👉 https://t.me/mashrabbekmaxmatkulov\n\nObuna bo'lgach pastdagi tugmani bosing 👇`,
-    dmSuccess: `✅ Rahmat! Obunangiz tasdiqlandi!\n\nMana havola:\n👉 https://t.me/mashrabbekmaxmatkulov\n\nSavolingiz bo'lsa yozing! 😊`,
-    dmFail: `❌ Siz hali kanalga obuna bo'lmagansiz.\n\nAvval obuna bo'ling:\n👉 https://t.me/mashrabbekmaxmatkulov\n\nKeyin "✅ Obuna bo'ldim" tugmasini bosing!`
+    dmFirst: `Assalomu alaykum! 👋\n\nHavolani olish uchun:\n\n1️⃣ Telegram kanalimizga obuna bo'ling:\n👉 https://t.me/mashrabbekmaxmatkulov\n\n2️⃣ Keyin botimizga boring va /start bosing:\n👉 https://t.me/${TG_BOT_USERNAME}?start=check\n\nBot avtomatik tekshiradi va havolani yuboradi! ✅`,
+    dmSuccess: `✅ Obunangiz tasdiqlandi!\n\nMana havola:\n👉 https://t.me/mashrabbekmaxmatkulov\n\nSavolingiz bo'lsa yozing! 😊`,
+    dmFail: `❌ Siz hali kanalga obuna bo'lmagansiz.\n\nAvval obuna bo'ling:\n👉 https://t.me/mashrabbekmaxmatkulov\n\nKeyin botga /start yuboring:\n👉 https://t.me/${TG_BOT_USERNAME}?start=check`
   }
 ];
+
+// ===================================================
+// TELEGRAM BOT — Asosiy tekshirish
+// ===================================================
+
+bot.onText(/\/start(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const name = msg.from.first_name || 'Do\'stim';
+  const param = (match[1] || '').trim().replace('_', '');
+
+  // /start check — Instagram dan kelgan foydalanuvchi
+  if (param === 'check' || param.startsWith('check')) {
+    // Kanal obunasini tekshirish
+    const isSubscribed = await checkSub(userId, TG_CHANNEL);
+
+    if (isSubscribed) {
+      await bot.sendMessage(chatId,
+        `✅ *Rahmat, ${name}!*\n\nObunangiz tasdiqlandi!\n\nInstagram DM ingizga havola yuborildi 📩`,
+        { parse_mode: 'Markdown' }
+      );
+
+      // Instagram ga DM yuborish
+      const igUserId = tgToIG.get(userId.toString());
+      if (igUserId) {
+        const pending = pendingIG.get(igUserId);
+        const rule = pending?.rule || rules[0];
+        await sendInstaDM(igUserId, rule.dmSuccess);
+        pendingIG.delete(igUserId);
+        tgToIG.delete(userId.toString());
+      } else {
+        // Instagram ID yo'q — havola shu yerda berish
+        await bot.sendMessage(chatId,
+          `🎁 *Mana havola:*\n\n👉 ${rules[0].tgLink}\n\nSavolingiz bo'lsa yozing!`,
+          { parse_mode: 'Markdown' }
+        );
+      }
+    } else {
+      await bot.sendMessage(chatId,
+        `❌ *Siz hali obuna bo'lmagansiz!*\n\nAvval kanalga obuna bo'ling:\n👉 ${TG_CHANNEL}\n\nKeyin /start yuboring!`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '📢 Kanalga obuna bo\'lish', url: `https://t.me/${TG_CHANNEL.replace('@', '')}` }
+            ], [
+              { text: '✅ Obuna bo\'ldim, tekshir', callback_data: 'recheck' }
+            ]]
+          }
+        }
+      );
+    }
+  } else {
+    // Oddiy /start
+    await bot.sendMessage(chatId,
+      `👋 Salom, *${name}*!\n\n🤖 *InstaBot AI*\n\nInstagram postlaridagi kommentlarga avtomatik javob berish tizimi.\n\nIlovani oching 👇`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '🚀 InstaBot AI ochish', web_app: { url: MINI_APP_URL } }
+          ]]
+        }
+      }
+    );
+  }
+});
+
+// "Obuna bo'ldim, tekshir" tugmasi
+bot.on('callback_query', async (query) => {
+  const chatId = query.message.chat.id;
+  const userId = query.from.id;
+
+  if (query.data === 'recheck') {
+    await bot.answerCallbackQuery(query.id, { text: 'Tekshirilmoqda...' });
+    const isSubscribed = await checkSub(userId, TG_CHANNEL);
+
+    if (isSubscribed) {
+      await bot.sendMessage(chatId,
+        `✅ *Tasdiqlandi!*\n\nMana havola:\n👉 ${rules[0].tgLink}`,
+        { parse_mode: 'Markdown' }
+      );
+
+      // Instagram DM
+      const igUserId = tgToIG.get(userId.toString());
+      if (igUserId) {
+        const pending = pendingIG.get(igUserId);
+        const rule = pending?.rule || rules[0];
+        await sendInstaDM(igUserId, rule.dmSuccess);
+        pendingIG.delete(igUserId);
+        tgToIG.delete(userId.toString());
+      }
+    } else {
+      await bot.answerCallbackQuery(query.id, {
+        text: '❌ Hali obuna bo\'lmagansiz!',
+        show_alert: true
+      });
+    }
+  }
+});
+
+// Kanal obunasini tekshirish (user ID bilan — ishonchli)
+async function checkSub(userId, channel) {
+  try {
+    const member = await bot.getChatMember(channel, userId);
+    const status = member.status;
+    console.log(`📊 User ${userId} status: ${status}`);
+    return ['member', 'administrator', 'creator'].includes(status);
+  } catch (err) {
+    console.log(`⚠️ checkSub xato: ${err.message}`);
+    return false;
+  }
+}
 
 // ===================================================
 // INSTAGRAM WEBHOOK
@@ -60,7 +177,7 @@ app.post('/webhook/instagram', async (req, res) => {
     if (!entry.changes) continue;
     for (const change of entry.changes) {
 
-      // === KOMMENT ===
+      // KOMMENT
       if (change.field === 'comments') {
         const commentText = (change.value?.text || '').toLowerCase().trim();
         const senderId = change.value?.from?.id;
@@ -69,82 +186,27 @@ app.post('/webhook/instagram', async (req, res) => {
 
         const rule = findRule(commentText);
         if (rule && senderId) {
-          pendingUsers.set(senderId, { rule, username: senderName, tgUsername: null });
-          await sendInstaDM(senderId, rule.dmFirst, [
-            { title: '✅ Obuna bo\'ldim', payload: `SUBSCRIBED_${rule.id}` }
-          ]);
+          pendingIG.set(senderId, { rule, username: senderName });
+          await sendInstaDM(senderId, rule.dmFirst);
         }
       }
 
-      // === DM ===
+      // DM
       if (change.field === 'messages') {
         const senderId = change.value?.sender?.id;
         const senderName = change.value?.sender?.username || '';
-        const payload = change.value?.message?.quick_reply?.payload || '';
         const msgText = (change.value?.message?.text || '').toLowerCase().trim();
+        console.log(`📩 DM: "${msgText}" @${senderName}`);
 
-        // "Obuna bo'ldim" tugmasi
-        if (payload.startsWith('SUBSCRIBED_')) {
-          const ruleId = parseInt(payload.split('_')[1]);
-          const rule = rules.find(r => r.id === ruleId)
-            || pendingUsers.get(senderId)?.rule
-            || rules[0];
-
-          console.log(`🔍 Obuna tekshirish: @${senderName}`);
-
-          // Telegram username so'rash
-          await sendInstaDM(senderId,
-            `📱 Telegram usernamingizni yuboring\n(masalan: @username)\n\nBu orqali obunangizni tekshiramiz.`,
-            []
-          );
-          pendingUsers.set(senderId, {
-            ...pendingUsers.get(senderId),
-            rule,
-            waitingTg: true
-          });
-        }
-
-        // Telegram username keldi
-        else if (msgText && pendingUsers.get(senderId)?.waitingTg) {
-          const pending = pendingUsers.get(senderId);
-          const rule = pending.rule || rules[0];
-
-          let tgUsername = msgText.replace('@', '').trim();
-          console.log(`📱 Telegram username: @${tgUsername}`);
-
-          // Telegram obunani tekshirish
-          const isSubscribed = await checkTelegramSub(tgUsername, rule.tgChannel);
-
-          if (isSubscribed) {
-            await sendInstaDM(senderId, rule.dmSuccess, []);
-            pendingUsers.delete(senderId);
-            console.log(`✅ @${senderName} obuna tasdiqlandi`);
-          } else {
-            await sendInstaDM(senderId, rule.dmFail, [
-              { title: '✅ Obuna bo\'ldim', payload: `SUBSCRIBED_${rule.id}` }
-            ]);
-            console.log(`❌ @${senderName} obuna yo'q`);
-          }
-        }
-
-        // Oddiy kalit so'z
-        else if (msgText && !pendingUsers.get(senderId)?.waitingTg) {
-          const rule = findRule(msgText);
-          if (rule) {
-            pendingUsers.set(senderId, { rule, username: senderName, waitingTg: false });
-            await sendInstaDM(senderId, rule.dmFirst, [
-              { title: '✅ Obuna bo\'ldim', payload: `SUBSCRIBED_${rule.id}` }
-            ]);
-          }
+        const rule = findRule(msgText);
+        if (rule && senderId) {
+          pendingIG.set(senderId, { rule, username: senderName });
+          await sendInstaDM(senderId, rule.dmFirst);
         }
       }
     }
   }
 });
-
-// ===================================================
-// HELPERS
-// ===================================================
 
 function findRule(text) {
   return rules.find(r =>
@@ -152,43 +214,13 @@ function findRule(text) {
   ) || null;
 }
 
-// Telegram kanal obunasini tekshirish
-async function checkTelegramSub(tgUsername, channel) {
-  try {
-    const member = await bot.getChatMember(channel, '@' + tgUsername);
-    const status = member.status;
-    console.log(`📊 @${tgUsername} status: ${status}`);
-    return ['member', 'administrator', 'creator'].includes(status);
-  } catch (err) {
-    console.log(`⚠️ Telegram tekshirish xato: ${err.message}`);
-    // Username topilmasa yoki xato bo'lsa
-    return false;
-  }
-}
-
-// Instagram DM yuborish
-async function sendInstaDM(userId, message, quickReplies = []) {
+async function sendInstaDM(userId, message) {
   const token = process.env.IG_ACCESS_TOKEN;
   const igUserId = process.env.IG_USER_ID;
   if (!token || !igUserId) {
-    console.log('⚠️ IG token yo\'q — demo mode');
+    console.log('⚠️ IG token yo\'q');
     return;
   }
-
-  const body = {
-    recipient: { id: userId },
-    message: { text: message },
-    access_token: token
-  };
-
-  if (quickReplies.length > 0) {
-    body.message.quick_replies = quickReplies.map(q => ({
-      content_type: 'text',
-      title: q.title,
-      payload: q.payload
-    }));
-  }
-
   try {
     const fetch = (await import('node-fetch')).default;
     const res = await fetch(
@@ -196,7 +228,11 @@ async function sendInstaDM(userId, message, quickReplies = []) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+          recipient: { id: userId },
+          message: { text: message },
+          access_token: token
+        })
       }
     );
     const data = await res.json();
@@ -208,34 +244,27 @@ async function sendInstaDM(userId, message, quickReplies = []) {
 }
 
 // ===================================================
-// TEST ENDPOINT — O'zimiz sinab ko'rish uchun
+// TEST ENDPOINTS
 // ===================================================
 
-// Telegram obunani test qilish
-app.get('/test/sub/:username', async (req, res) => {
-  const username = req.params.username;
+// Telegram obuna test (user ID bilan)
+app.get('/test/sub/:userId', async (req, res) => {
+  const userId = req.params.userId;
   const channel = req.query.channel || TG_CHANNEL;
-  const result = await checkTelegramSub(username, channel);
+  const result = await checkSub(userId, channel);
   res.json({
-    username,
-    channel,
+    userId, channel,
     subscribed: result,
     message: result ? '✅ Obuna bor' : '❌ Obuna yo\'q'
   });
 });
 
-// Fake komment — test uchun
-app.post('/test/comment', async (req, res) => {
-  const { text, userId, username } = req.body;
-  const rule = findRule((text || '1').toLowerCase());
-  if (!rule) return res.json({ ok: false, message: 'Qoida topilmadi' });
-
-  pendingUsers.set(userId || 'test123', { rule, username: username || 'test_user', waitingTg: false });
+// Botga /start bosish simulation
+app.get('/test/tg-link', (req, res) => {
   res.json({
-    ok: true,
-    message: 'Komment qabul qilindi',
-    dmWillSend: rule.dmFirst,
-    rule: rule.name
+    botLink: `https://t.me/${TG_BOT_USERNAME}?start=check`,
+    channel: TG_CHANNEL,
+    message: 'Foydalanuvchi shu linkni bosadi → bot tekshiradi'
   });
 });
 
@@ -248,14 +277,13 @@ app.get('/api/rules', (req, res) => res.json(rules));
 app.post('/api/rules', (req, res) => {
   const { name, keywords, tgChannel, tgLink, dmFirst, dmSuccess, dmFail } = req.body;
   if (!name || !keywords) return res.status(400).json({ error: 'name va keywords kerak' });
-
   const rule = {
     id: Date.now(), name, keywords,
     tgChannel: tgChannel || TG_CHANNEL,
-    tgLink: tgLink || 'https://t.me/mashrabbekmaxmatkulov',
-    dmFirst: dmFirst || `Kanalga obuna bo'ling: ${tgLink || 'https://t.me/mashrabbekmaxmatkulov'}`,
-    dmSuccess: dmSuccess || `✅ Tasdiqlandi! Havola: ${tgLink || 'https://t.me/mashrabbekmaxmatkulov'}`,
-    dmFail: dmFail || `❌ Obuna topilmadi. Avval obuna bo'ling.`
+    tgLink: tgLink || rules[0].tgLink,
+    dmFirst: dmFirst || rules[0].dmFirst,
+    dmSuccess: dmSuccess || rules[0].dmSuccess,
+    dmFail: dmFail || rules[0].dmFail
   };
   rules.push(rule);
   res.json(rule);
@@ -266,65 +294,20 @@ app.delete('/api/rules/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/instagram/connect', (req, res) => {
-  const { accessToken, userId, username } = req.body;
-  process.env.IG_ACCESS_TOKEN = accessToken;
-  process.env.IG_USER_ID = userId;
-  console.log(`📸 Instagram ulandi: @${username}`);
-  res.json({ ok: true });
-});
-
 app.get('/api/stats', (req, res) => {
   res.json({
     rules: rules.length,
-    pending: pendingUsers.size,
+    pendingIG: pendingIG.size,
     igConnected: !!process.env.IG_ACCESS_TOKEN,
-    tgChannel: TG_CHANNEL
+    tgChannel: TG_CHANNEL,
+    botUsername: TG_BOT_USERNAME
   });
 });
 
-// ===================================================
-// TELEGRAM BOT
-// ===================================================
-
-bot.onText(/\/start/, (msg) => {
-  const name = msg.from.first_name || 'Do\'stim';
-  bot.sendMessage(msg.chat.id,
-    `👋 Salom, *${name}*!\n\n🤖 *InstaBot AI v4.0*\n\n` +
-    `📌 *Tizim:*\n` +
-    `1️⃣ Postga "1 yozing" daysiz\n` +
-    `2️⃣ Kimdir "1" yozsa → DM boradi\n` +
-    `3️⃣ Telegram username so'raldi\n` +
-    `4️⃣ Bot kanal obunasini tekshiradi ✅\n` +
-    `5️⃣ Obuna bo'lsa → Havola beradi 🎯`,
-    {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [[
-          { text: '🚀 InstaBot AI ochish', web_app: { url: MINI_APP_URL } }
-        ]]
-      }
-    }
-  );
-});
-
-bot.onText(/\/status/, (msg) => {
-  bot.sendMessage(msg.chat.id,
-    `📊 *Holat*\n\n` +
-    `✅ Server: Ishlayapti\n` +
-    `📸 Instagram: ${process.env.IG_ACCESS_TOKEN ? '✅ Ulangan' : '❌ Ulanmagan'}\n` +
-    `📢 Kanal: ${TG_CHANNEL}\n` +
-    `⚡ Qoidalar: ${rules.length} ta\n` +
-    `⏳ Kutayotganlar: ${pendingUsers.size} ta`,
-    { parse_mode: 'Markdown' }
-  );
-});
-
-// ===================================================
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 app.listen(PORT, () => {
   console.log(`✅ Server port ${PORT}`);
   console.log(`📢 Kanal: ${TG_CHANNEL}`);
-  console.log(`📡 Webhook: ${MINI_APP_URL}/webhook/instagram`);
+  console.log(`🤖 Bot: @${TG_BOT_USERNAME}`);
 });
