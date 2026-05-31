@@ -48,6 +48,7 @@ async function checkSub(userId) {
 
 async function askClaude(history, lang) {
   if (!ANTHROPIC_API_KEY) return 'AI ulanmagan.';
+  console.log('🤖 AI request boshlandi, key:', ANTHROPIC_API_KEY.slice(0,10) + '...');
   const sys = { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: "Отвечай кратко на русском.", en: "Reply briefly in English." }[lang] || "Reply briefly.";
   try {
     const fetch = (await import('node-fetch')).default;
@@ -57,8 +58,12 @@ async function askClaude(history, lang) {
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:sys, messages:history.slice(-8) })
     });
     const d = await r.json();
+    console.log('🤖 AI response:', JSON.stringify(d).slice(0, 200));
     return d.content?.[0]?.text || 'Javob olishda xato.';
-  } catch(e) { return 'AI xato: ' + e.message; }
+  } catch(e) {
+    console.log('❌ AI xato:', e.message);
+    return 'AI xato: ' + e.message;
+  }
 }
 
 async function sendInstaDM(userId, message) {
