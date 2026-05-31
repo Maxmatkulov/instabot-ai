@@ -15,7 +15,6 @@ const FREE_QUESTIONS = 3;
 // Webhook mode — polling: false
 const bot = new TelegramBot(BOT_TOKEN, { polling: false });
 const app = express();
-app.use(express.json());
 
 // Storage
 const users = new Map();
@@ -75,8 +74,8 @@ async function sendInstaDM(userId, message) {
   } catch(e) {}
 }
 
-// Telegram webhook endpoint
-app.post(`/webhook/${BOT_TOKEN}`, (req, res) => {
+// ✅ FIX 1: Telegram webhook — express.json() alohida, global emas
+app.post(`/webhook/${BOT_TOKEN}`, express.json(), (req, res) => {
   bot.processUpdate(req.body);
   res.sendStatus(200);
 });
@@ -155,7 +154,6 @@ bot.on('message', async (msg) => {
   const text = msg.text;
   const user = getUser(userId);
 
-  // OWNER
   if (isOwner(username)) {
     if (text === '📊 Statistika') {
       return bot.sendMessage(chatId, `📊 *Statistika*\n👥 Users: ${users.size}\n📚 Menyu: ${menuItems.length}\n🤖 AI: ${ANTHROPIC_API_KEY?'✅':'❌'}\n📸 IG: ${process.env.IG_ACCESS_TOKEN?'✅':'❌'}`, { parse_mode:'Markdown' });
@@ -178,7 +176,6 @@ bot.on('message', async (msg) => {
     return;
   }
 
-  // USER
   if (text === '🌐 Til') {
     return bot.sendMessage(chatId, 'Tilni tanlang:', { reply_markup: { inline_keyboard: [[
       { text:'🇺🇿 O\'zbek', callback_data:'lang_uz' },
@@ -218,7 +215,6 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, `🤖 *AI Chat* ${isSub?'✅':'⚠️'}\n${isSub?'Cheksiz':'Qolgan: '+left+' ta'} savol\n\nSavolingizni yozing!`, { parse_mode:'Markdown' });
   }
 
-  // AI MODE
   if (user.aiMode) {
     const isSub = user.subscribed || await checkSub(userId);
     user.subscribed = isSub;
@@ -293,14 +289,14 @@ bot.on('callback_query', async (query) => {
   await bot.answerCallbackQuery(query.id);
 });
 
-// Instagram Webhook
+// ✅ FIX 2: Instagram webhook — express.json() alohida
 app.get('/webhook/instagram', (req, res) => {
   const { 'hub.mode':mode, 'hub.verify_token':token, 'hub.challenge':challenge } = req.query;
   if (mode === 'subscribe' && token === (process.env.VERIFY_TOKEN||'instabot_verify_123')) res.send(challenge);
   else res.sendStatus(403);
 });
 
-app.post('/webhook/instagram', async (req, res) => {
+app.post('/webhook/instagram', express.json(), async (req, res) => {
   res.sendStatus(200);
   const body = req.body;
   if (!body.entry) return;
@@ -317,7 +313,8 @@ app.post('/webhook/instagram', async (req, res) => {
   }
 });
 
-// API
+// API endpoints
+app.use(express.json()); // API uchun global json parser
 app.get('/api/menu', (req, res) => res.json(menuItems));
 app.post('/api/menu', (req, res) => {
   const { title, type, content, url, emoji } = req.body;
@@ -330,10 +327,11 @@ app.delete('/api/menu/:id', (req, res) => { menuItems=menuItems.filter(i=>i.id!=
 app.get('/api/stats', (req, res) => res.json({ users:users.size, menuItems:menuItems.length, igConnected:!!process.env.IG_ACCESS_TOKEN, aiConnected:!!ANTHROPIC_API_KEY }));
 app.get('/health', (req, res) => res.json({ ok:true, version:'7.0' }));
 
-// Static fayllar — eng oxirida
+// ✅ Static — eng oxirida
 app.use(express.static(__dirname));
 
-app.listen(PORT, async () => {
+// ✅ FIX 3: '0.0.0.0' qo'shildi — Railway uchun majburiy
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`✅ Server port ${PORT}`);
   await setWebhook();
 });
