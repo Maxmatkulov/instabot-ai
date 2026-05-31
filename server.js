@@ -2,6 +2,7 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
+const fs = require('fs');
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
 const MINI_APP_URL = process.env.MINI_APP_URL || '';
@@ -15,13 +16,27 @@ const FREE_QUESTIONS = 3;
 // Webhook mode — polling: false
 const bot = new TelegramBot(BOT_TOKEN, { polling: false });
 const app = express();
+app.use(express.json());
 
 // Storage
 const users = new Map();
-let menuItems = [
-  { id: 1, title: 'Darslik #1', type: 'text', content: 'Bu yerda darslik matni...', emoji: '📚' },
-  { id: 2, title: 'Kanal', type: 'link', url: `https://t.me/${TG_CHANNEL.replace('@','')}`, emoji: '📢' }
-];
+const MENU_FILE = './menu.json';
+
+function loadMenu() {
+  try {
+    if (fs.existsSync(MENU_FILE)) return JSON.parse(fs.readFileSync(MENU_FILE, 'utf8'));
+  } catch(e) {}
+  return [
+    { id: 1, title: 'Darslik #1', type: 'text', content: 'Bu yerda darslik matni...', emoji: '📚' },
+    { id: 2, title: 'Kanal', type: 'link', url: `https://t.me/${TG_CHANNEL.replace('@','')}`, emoji: '📢' }
+  ];
+}
+
+function saveMenu(items) {
+  try { fs.writeFileSync(MENU_FILE, JSON.stringify(items, null, 2)); } catch(e) {}
+}
+
+let menuItems = loadMenu();
 let igRules = [{
   id: 1, name: 'Havola',
   keywords: ['1', 'link', 'havola', '+'],
@@ -47,25 +62,18 @@ async function checkSub(userId) {
 }
 
 async function askClaude(history, lang) {
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
-  if (!GROQ_API_KEY) return 'AI ulanmagan.';
+  if (!ANTHROPIC_API_KEY) return 'AI ulanmagan.';
   const sys = { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: "Отвечай кратко на русском.", en: "Reply briefly in English." }[lang] || "Reply briefly.";
   try {
     const fetch = (await import('node-fetch')).default;
-    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 800,
-        messages: [{ role:'system', content: sys }, ...history.slice(-8)]
-      })
+      headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:sys, messages:history.slice(-8) })
     });
     const d = await r.json();
-    return d.choices?.[0]?.message?.content || 'Javob olishda xato.';
-  } catch(e) {
-    return 'AI xato: ' + e.message;
-  }
+    return d.content?.[0]?.text || 'Javob olishda xato.';
+  } catch(e) { return 'AI xato: ' + e.message; }
 }
 
 async function sendInstaDM(userId, message) {
@@ -81,8 +89,8 @@ async function sendInstaDM(userId, message) {
   } catch(e) {}
 }
 
-// ✅ FIX 1: Telegram webhook — express.json() alohida, global emas
-app.post(`/webhook/${BOT_TOKEN}`, express.json(), (req, res) => {
+// Telegram webhook endpoint
+app.post(`/webhook/${BOT_TOKEN}`, (req, res) => {
   bot.processUpdate(req.body);
   res.sendStatus(200);
 });
@@ -161,6 +169,7 @@ bot.on('message', async (msg) => {
   const text = msg.text;
   const user = getUser(userId);
 
+  // OWNER
   if (isOwner(username)) {
     if (text === '📊 Statistika') {
       return bot.sendMessage(chatId, `📊 *Statistika*\n👥 Users: ${users.size}\n📚 Menyu: ${menuItems.length}\n🤖 AI: ${ANTHROPIC_API_KEY?'✅':'❌'}\n📸 IG: ${process.env.IG_ACCESS_TOKEN?'✅':'❌'}`, { parse_mode:'Markdown' });
@@ -183,6 +192,7 @@ bot.on('message', async (msg) => {
     return;
   }
 
+  // USER
   if (text === '🌐 Til') {
     return bot.sendMessage(chatId, 'Tilni tanlang:', { reply_markup: { inline_keyboard: [[
       { text:'🇺🇿 O\'zbek', callback_data:'lang_uz' },
@@ -222,6 +232,7 @@ bot.on('message', async (msg) => {
     return bot.sendMessage(chatId, `🤖 *AI Chat* ${isSub?'✅':'⚠️'}\n${isSub?'Cheksiz':'Qolgan: '+left+' ta'} savol\n\nSavolingizni yozing!`, { parse_mode:'Markdown' });
   }
 
+  // AI MODE
   if (user.aiMode) {
     const isSub = user.subscribed || await checkSub(userId);
     user.subscribed = isSub;
@@ -266,6 +277,11 @@ bot.on('callback_query', async (query) => {
     if (!item) return;
     if (item.type === 'text') {
       await bot.sendMessage(chatId, `${item.emoji} *${item.title}*\n\n${item.content}`, { parse_mode:'Markdown' });
+    } else if (item.type === 'video') {
+      await bot.sendMessage(chatId, `${item.emoji} *${item.title}*\n\n🎬 Video:`, {
+        parse_mode:'Markdown',
+        reply_markup:{ inline_keyboard:[[{ text:`▶️ Videoni ko'rish`, url: item.url }]]}
+      });
     } else {
       await bot.sendMessage(chatId, `${item.emoji} *${item.title}*`, {
         parse_mode:'Markdown',
@@ -296,14 +312,14 @@ bot.on('callback_query', async (query) => {
   await bot.answerCallbackQuery(query.id);
 });
 
-// ✅ FIX 2: Instagram webhook — express.json() alohida
+// Instagram Webhook
 app.get('/webhook/instagram', (req, res) => {
   const { 'hub.mode':mode, 'hub.verify_token':token, 'hub.challenge':challenge } = req.query;
   if (mode === 'subscribe' && token === (process.env.VERIFY_TOKEN||'instabot_verify_123')) res.send(challenge);
   else res.sendStatus(403);
 });
 
-app.post('/webhook/instagram', express.json(), async (req, res) => {
+app.post('/webhook/instagram', async (req, res) => {
   res.sendStatus(200);
   const body = req.body;
   if (!body.entry) return;
@@ -320,25 +336,28 @@ app.post('/webhook/instagram', express.json(), async (req, res) => {
   }
 });
 
-// API endpoints
-app.use(express.json()); // API uchun global json parser
+// API
 app.get('/api/menu', (req, res) => res.json(menuItems));
 app.post('/api/menu', (req, res) => {
   const { title, type, content, url, emoji } = req.body;
   if (!title||!type) return res.status(400).json({ error:'title va type kerak' });
   const item = { id:Date.now(), title, type, content:content||'', url:url||'', emoji:emoji||'📌' };
   menuItems.push(item);
+  saveMenu(menuItems);
   res.json(item);
 });
-app.delete('/api/menu/:id', (req, res) => { menuItems=menuItems.filter(i=>i.id!=req.params.id); res.json({ok:true}); });
+app.delete('/api/menu/:id', (req, res) => {
+  menuItems = menuItems.filter(i => i.id != req.params.id);
+  saveMenu(menuItems);
+  res.json({ok:true});
+});
 app.get('/api/stats', (req, res) => res.json({ users:users.size, menuItems:menuItems.length, igConnected:!!process.env.IG_ACCESS_TOKEN, aiConnected:!!ANTHROPIC_API_KEY }));
 app.get('/health', (req, res) => res.json({ ok:true, version:'7.0' }));
 
-// ✅ Static — eng oxirida
+// Static fayllar — eng oxirida
 app.use(express.static(__dirname));
 
-// ✅ FIX 3: '0.0.0.0' qo'shildi — Railway uchun majburiy
-app.listen(PORT, '0.0.0.0', async () => {
+app.listen(PORT, async () => {
   console.log(`✅ Server port ${PORT}`);
   await setWebhook();
 });
