@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>InstaBot AI</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0e14;
+  --card: #17171f;
+  --card2: #1e1e28;
+  --border: #2c2c3e;
+  --accent: #ff6b35;
+  --accent2: #ff3c78;
+  --blue: #4f8ef7;
+  --green: #22d17a;
+  --text: #f2f2f8;
+  --sub: #8888aa;
+  --grad: linear-gradient(135deg, #ff6b35, #ff3c78);
+  --grad2: linear-gradient(135deg, #4f8ef7, #a855f7);
+  --r: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+
+/* Gradient top bar */
+.topbar {
+  background: linear-gradient(135deg, #1a0a24, #0e1a2e);
+  padding: 16px 18px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+}
+.top-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-ring {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(255,107,53,0.4);
+}
+.logo-name {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.logo-name span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.top-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--sub);
+  transition: background 0.3s;
+}
+.dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* Bottom nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(14,14,20,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--sub);
+  font-size: 11px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  transition: color 0.2s;
+  position: relative;
+}
+.nav-btn .nav-ico { font-size: 20px; transition: transform 0.2s; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active .nav-ico { transform: scale(1.1); }
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--grad);
+  border-radius: 0 0 4px 4px;
+}
+
+/* Pages */
+.page { display: none; padding: 0; animation: up 0.25s ease; }
+.page.active { display: block; }
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* Section padding */
+.section { padding: 16px; }
+.section + .section { padding-top: 0; }
+
+/* Hero card — Account */
+.hero-card {
+  margin: 16px;
+  border-radius: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a0a24 0%, #0e1a2e 100%);
+  border: 1px solid rgba(255,107,53,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -20px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(255,60,120,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.ig-ava {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  border: 2px solid rgba(255,107,53,0.4);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.account-text { flex: 1; position: relative; z-index: 1; }
+.account-text h2 { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+.account-text p { font-size: 13px; color: var(--sub); }
+.connected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(34,209,122,0.1);
+  border: 1px solid rgba(34,209,122,0.3);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 4px;
+}
+
+/* Buttons */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.btn-primary {
+  background: var(--grad);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(255,107,53,0.35);
+}
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.btn-secondary:active { transform: scale(0.97); }
+.btn-danger {
+  background: rgba(255,23,68,0.1);
+  border: 1px solid rgba(255,23,68,0.25);
+  color: #ff1744;
+}
+.btn-sm {
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  width: auto;
+}
+
+/* Bot toggle */
+.toggle-card {
+  margin: 0 16px 16px;
+  padding: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.toggle-card-icon {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  background: var(--card2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.toggle-text { flex: 1; }
+.toggle-text h3 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.toggle-text p { font-size: 12px; color: var(--sub); }
+
+.switch {
+  width: 50px; height: 28px;
+  background: var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.switch.on {
+  background: var(--accent);
+  box-shadow: 0 0 16px rgba(255,107,53,0.4);
+}
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 22px; height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.switch.on::after { transform: translateX(22px); }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+.stat-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.stat-box .ico { font-size: 20px; margin-bottom: 8px; }
+.stat-box .val {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-box .lbl { font-size: 11px; color: var(--sub); margin-top: 2px; font-weight: 600; }
+
+/* Section header */
+.sec-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 16px 12px;
+}
+.sec-head h3 { font-size: 15px; font-weight: 700; }
+.sec-head a { font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; }
+
+/* Chat list items */
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  background: var(--card);
+}
+.chat-item:first-child { border-radius: 14px 14px 0 0; }
+.chat-item:last-child { border-radius: 0 0 14px 14px; border-bottom: none; }
+.chat-item:only-child { border-radius: 14px; }
+.chat-item:active { background: var(--card2); }
+.chat-ava {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--card2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.chat-body { flex: 1; min-width: 0; }
+.chat-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.chat-prev { font-size: 12px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-right { text-align: right; flex-shrink: 0; }
+.chat-time { font-size: 11px; color: var(--sub); margin-bottom: 5px; }
+.badge-ai {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,60,120,0.15));
+  border: 1px solid rgba(255,107,53,0.25);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+.badge-new {
+  display: inline-block;
+  background: var(--accent2);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--sub);
+}
+.empty .ico { font-size: 48px; margin-bottom: 12px; }
+.empty p { font-size: 14px; line-height: 1.6; }
+
+/* Rules */
+.rule-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 0 16px 10px;
+  transition: border-color 0.2s;
+}
+.rule-item:active { border-color: rgba(255,107,53,0.3); }
+.rule-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.rule-name { font-size: 14px; font-weight: 700; }
+.rule-del {
+  width: 30px; height: 30px;
+  border: 1px solid rgba(255,23,68,0.25);
+  background: rgba(255,23,68,0.08);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.rule-del:active { background: rgba(255,23,68,0.2); }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.chip {
+  background: rgba(79,142,247,0.12);
+  border: 1px solid rgba(79,142,247,0.25);
+  color: #7eb3ff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.rule-resp {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.5;
+}
+
+/* Forms */
+.form-section { padding: 16px; }
+.field { margin-bottom: 14px; }
+.field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sub);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+  display: block;
+}
+input[type=text], input[type=password], textarea, select {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s;
+  -webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+input::placeholder, textarea::placeholder { color: var(--sub); }
+textarea { resize: none; min-height: 90px; line-height: 1.5; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238888aa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+.chips-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 48px;
+  cursor: text;
+  transition: border 0.2s;
+}
+.chips-input.focus { border-color: var(--accent); }
+.chip-in {
+  flex: 1;
+  min-width: 80px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+}
+.chip.rm::after { content: ' ×'; opacity: 0.6; cursor: pointer; }
+
+/* AI settings */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-left h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.setting-left p { font-size: 12px; color: var(--sub); }
+.setting-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin: 0 16px 14px;
+  overflow: hidden;
+}
+
+/* Range */
+.range-wrap { display: flex; align-items: center; gap: 10px; }
+input[type=range] {
+  flex: 1;
+  accent-color: var(--accent);
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.range-val { font-size: 14px; font-weight: 700; color: var(--accent); min-width: 28px; text-align: right; }
+
+/* Simulate chat */
+.sim-wrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 145px);
+}
+.sim-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.msg-bubble {
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: up 0.25s ease;
+}
+.msg-user {
+  align-self: flex-end;
+  background: var(--grad);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.msg-bot {
+  align-self: flex-start;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.typing-dots { display: flex; gap: 4px; align-items: center; padding: 2px 0; }
+.typing-dots span {
+  width: 7px; height: 7px;
+  background: var(--sub);
+  border-radius: 50%;
+  animation: bounce 1s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+.sim-input-row {
+  padding: 10px 14px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.sim-input-row input {
+  flex: 1;
+  border-radius: 24px;
+  padding: 11px 16px;
+  font-size: 14px;
+}
+.send-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--grad);
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(255,107,53,0.35);
+  transition: transform 0.15s;
+}
+.send-btn:active { transform: scale(0.92); }
+
+/* Modal sheet */
+.sheet-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  align-items: flex-end;
+}
+.sheet-overlay.open { display: flex; }
+.sheet {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px 24px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: sheetUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+.sheet-title { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+
+/* Toast */
+.toast-bar {
+  position: fixed;
+  bottom: 90px; left: 16px; right: 16px;
+  background: var(--card2);
+  border: 1px solid rgba(255,107,53,0.3);
+  border-radius: 14px;
+  padding: 13px 18px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  z-index: 999;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.toast-bar.show { transform: translateY(0); opacity: 1; }
+
+/* Connect method selector */
+.method-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.method-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--card2);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.method-card.selected { border-color: var(--accent); background: rgba(255,107,53,0.08); }
+.method-card:active { transform: scale(0.98); }
+.method-ico {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.method-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.method-text p { font-size: 12px; color: var(--sub); }
+.method-check {
+  margin-left: auto;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  color: transparent;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.method-card.selected .method-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 16px;
+}
+
+/* Warning */
+.warn-box {
+  display: flex;
+  gap: 10px;
+  background: rgba(255,193,7,0.07);
+  border: 1px solid rgba(255,193,7,0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #ffc107;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast-bar" id="toast">
+  <span id="toastIco">✅</span>
+  <span id="toastMsg">Saqlandi</span>
+</div>
+
+<!-- Connect Sheet -->
+<div class="sheet-overlay" id="connectSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📸 Instagram Ulash</div>
+
+    <div class="method-cards">
+      <div class="method-card selected" id="m-token" onclick="selectMethod('token')">
+        <div class="method-ico" style="background:rgba(79,142,247,0.12)">🔑</div>
+        <div class="method-text">
+          <h4>Access Token</h4>
+          <p>Token qo'lda kiritish (tez)</p>
+        </div>
+        <div class="method-check">✓</div>
+      </div>
+      <div class="method-card" id="m-oauth" onclick="selectMethod('oauth')">
+        <div class="method-ico" style="background:rgba(255,107,53,0.12)">🔐</div>
+        <div class="method-text">
+          <h4>Instagram OAuth</h4>
+          <p>Rasmiy login orqali (xavfsiz)</p>
+        </div>
+        <div class="method-check">✓</div>
+      </div>
+    </div>
+
+    <!-- Token form -->
+    <div id="tokenForm">
+      <div class="field">
+        <label class="field-label">Instagram foydalanuvchi nomi</label>
+        <input type="text" id="igUser" placeholder="@username" />
+      </div>
+      <div class="field">
+        <label class="field-label">Access Token</label>
+        <input type="password" id="igToken" placeholder="EAAxxxxxxxx..." />
+      </div>
+      <div class="warn-box">
+        ⚠️ Ma'lumotlar qurilmangizda saqlanadi. Hech qayerga yuborilmaydi.
+      </div>
+    </div>
+
+    <!-- OAuth form -->
+    <div id="oauthForm" style="display:none">
+      <div class="warn-box">
+        ℹ️ OAuth ulash uchun Meta Developer akkaunt va App ID kerak. Sozlamalarda App ID kiriting.
+      </div>
+      <div class="field">
+        <label class="field-label">Meta App ID</label>
+        <input type="text" id="metaAppId" placeholder="123456789012345" />
+      </div>
+      <div class="field">
+        <label class="field-label">Redirect URI (serveringiz)</label>
+        <input type="text" id="redirectUri" placeholder="https://sizning-server.com/callback" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="doConnect()">🔗 Ulash</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-secondary" onclick="closeSheet('connectSheet')">Bekor</button>
+  </div>
+</div>
+
+<!-- Add Rule Sheet -->
+<div class="sheet-overlay" id="ruleSheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⚡ Yangi Qoida</div>
+    <div class="field">
+      <label class="field-label">Qoida nomi</label>
+      <input type="text" id="rName" placeholder="Narx so'rash" />
+    </div>
+    <div class="field">
+      <label class="field-label">Kalit so'zlar (Enter bosing)</label>
+      <div class="chips-input" id="chipsWrap" onclick="document.getElementById('chipIn').focus()">
+        <input class="chip-in" id="chipIn" placeholder="narx, price..." />
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">Javob matni</label>
+      <textarea id="rResp" placeholder="Assalomu alaykum! Narx haqida..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveRule()">✅ Saqlash</button>
+    <div style="height:10px;"></div>
+    <button class="btn btn-secondary" onclick="closeSheet('ruleSheet')">Bekor</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="top-logo">
+    <div class="logo-ring">🤖</div>
+    <div class="logo-name">Insta<span>Bot</span></div>
+  </div>
+  <div class="top-status">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusLabel">Offline</span>
+  </div>
+</div>
+
+<!-- ===== PAGE: HOME ===== -->
+<div class="page active" id="pg-home">
+
+  <!-- Account hero -->
+  <div class="hero-card" id="heroCard">
+    <div class="account-row">
+      <div class="ig-ava" id="igAva">?</div>
+      <div class="account-text">
+        <h2 id="igName">Instagram ulanmagan</h2>
+        <p id="igSub">Hisob ulash uchun pastdagi tugmani bosing</p>
+        <div class="connected-badge" id="connBadge" style="display:none">● Ulangan</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="connectBtn" onclick="openSheet('connectSheet')">📸 Instagram Ulash</button>
+    <div style="height:8px;" id="disconnectGap" style="display:none"></div>
+    <button class="btn btn-danger" id="disconnectBtn" style="display:none" onclick="doDisconnect()">🔌 Uzib qo'yish</button>
+  </div>
+
+  <!-- Bot toggle -->
+  <div class="toggle-card">
+    <div class="toggle-card-icon">🤖</div>
+    <div class="toggle-text">
+      <h3>Avtomatik Javob</h3>
+      <p id="toggleSub">Bot o'chirilgan</p>
+    </div>
+    <div class="switch" id="botSwitch" onclick="toggleBot()"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="ico">💬</div>
+      <div class="val" id="sTot">0</div>
+      <div class="lbl">Xabarlar</div>
+    </div>
+    <div class="stat-box">
+      <div class="ico">🤖</div>
+      <div class="val" id="sAuto">0</div>
+      <div class="lbl">AI Javob</div>
+    </div>
+    <div class="stat-box">
+      <div class="ico">⚡</div>
+      <div class="val" id="sRules">0</div>
+      <div class="lbl">Qoidalar</div>
+    </div>
+  </div>
+
+  <!-- Recent chats -->
+  <div class="sec-head">
+    <h3>Son xabarlar</h3>
+  </div>
+  <div style="margin: 0 16px 16px;" id="chatListWrap">
+    <div class="empty">
+      <div class="ico">📩</div>
+      <p>Instagram ulab, botni yoqing<br>— xabarlar bu yerda ko'rinadi</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: RULES ===== -->
+<div class="page" id="pg-rules">
+  <div style="padding:16px 16px 8px; display:flex; align-items:center; justify-content:space-between;">
+    <div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:2px;">⚡ Qoidalar</div>
+      <div style="font-size:13px;color:var(--sub);">Kalit so'zga qarab avtomatik javob</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openSheet('ruleSheet')">+ Yangi</button>
+  </div>
+  <div id="rulesList" style="padding-top:8px;"></div>
+</div>
+
+<!-- ===== PAGE: AI ===== -->
+<div class="page" id="pg-ai">
+  <div style="padding:16px 16px 8px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:2px;">🧠 AI Sozlamalar</div>
+    <div style="font-size:13px;color:var(--sub);">Botingiz xulq-atvorini moslang</div>
+  </div>
+
+  <div class="form-section" style="padding-top:12px;">
+    <div class="field">
+      <label class="field-label">Bot shaxsiyati (System prompt)</label>
+      <textarea id="sysPrompt" rows="5" placeholder="Siz onlayn do'kon yordamchisizsiz...">Siz Instagram do'kon yordamchisizsiz. Har doim o'zbek tilida, xushmuomala va qisqa javob bering. Narx so'rasalar aniqlab ayting, mahsulot haqida so'rasalar tasvirlang.</textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveAI()" style="margin-bottom:14px;">💾 Saqlash</button>
+  </div>
+
+  <div class="setting-card">
+    <div class="setting-row">
+      <div class="setting-left">
+        <h4>🌡 Harorat (Temperature)</h4>
+        <p>Past = aniq, yuqori = ijodiy</p>
+      </div>
+      <div class="range-wrap" style="min-width:100px;">
+        <input type="range" min="0" max="10" value="5" id="tempR" oninput="document.getElementById('tempV').textContent=(this.value/10).toFixed(1)">
+        <span class="range-val" id="tempV">0.5</span>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-left">
+        <h4>🌐 Til</h4>
+        <p>Javob tili</p>
+      </div>
+      <select id="langSel" style="width:auto;padding:8px 30px 8px 12px;font-size:13px;">
+        <option value="uz">🇺🇿 O'zbek</option>
+        <option value="ru">🇷🇺 Rus</option>
+        <option value="en">🇬🇧 Ingliz</option>
+        <option value="auto">🌐 Auto</option>
+      </select>
+    </div>
+    <div class="setting-row">
+      <div class="setting-left">
+        <h4>⚙️ Javob usuli</h4>
+        <p>Qoida yoki AI</p>
+      </div>
+      <select id="modeSel" style="width:auto;padding:8px 30px 8px 12px;font-size:13px;">
+        <option>Qoida → AI</option>
+        <option>Faqat AI</option>
+        <option>Faqat Qoidalar</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 16px;">
+    <button class="btn btn-secondary" onclick="saveAIAll()">💾 Hammasini saqlash</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: CHAT TEST ===== -->
+<div class="page" id="pg-chat">
+  <div style="padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+    <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f09433,#dc2743,#bc1888);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;" id="simAvaTxt">B</div>
+    <div>
+      <div style="font-size:15px;font-weight:700;" id="simBotNm">@bot</div>
+      <div style="font-size:12px;color:var(--green);">● Online</div>
+    </div>
+    <div style="margin-left:auto;">
+      <button class="btn btn-secondary btn-sm" onclick="clearChat()">🗑 Tozala</button>
+    </div>
+  </div>
+
+  <div class="sim-wrap">
+    <div class="sim-msgs" id="simMsgs">
+      <div class="msg-bubble msg-bot">Salom! Men InstaBot AI yordamchisiman. Savol bering 👋</div>
+    </div>
+    <div class="sim-input-row">
+      <input type="text" id="simIn" placeholder="Xabar yozing..." onkeydown="if(event.key==='Enter')sendSim()" />
+      <button class="send-btn" onclick="sendSim()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" onclick="goPage('home',this)">
+    <span class="nav-ico">🏠</span>
+    Bosh
+  </button>
+  <button class="nav-btn" onclick="goPage('rules',this)">
+    <span class="nav-ico">⚡</span>
+    Qoidalar
+  </button>
+  <button class="nav-btn" onclick="goPage('ai',this)">
+    <span class="nav-ico">🧠</span>
+    AI
+  </button>
+  <button class="nav-btn" onclick="goPage('chat',this)">
+    <span class="nav-ico">💬</span>
+    Test
+  </button>
+</div>
+
+<script>
+// === Telegram WebApp init ===
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.expand();
+  tg.setHeaderColor('#0e0e14');
+  tg.setBackgroundColor('#0e0e14');
+}
+
+// === STATE ===
+const KEY = 'ibstate_v2';
+let S = {
+  account: null,
+  botActive: false,
+  rules: [
+    { id: 1, name: "Narx so'rash", keywords: ["narx","price","qancha","nechchi"], response: "Assalomu alaykum! Narxlar 50,000 — 200,000 so'm. Mahsulot nomini yuboring 🛍" },
+    { id: 2, name: "Yetkazib berish", keywords: ["yetkazib","dostavka","delivery","qachon"], response: "Toshkent: 1-2 kun, Viloyat: 3-5 kun. Bepul yetkazish! 🚚" }
+  ],
+  stats: { total: 0, auto: 0 },
+  sysPrompt: "Siz Instagram do'kon yordamchisizsiz. Har doim o'zbek tilida, xushmuomala va qisqa javob bering.",
+  temp: 0.5,
+  lang: 'uz',
+  mode: 'Qoida → AI',
+  simHistory: []
+};
+
+try { const d = localStorage.getItem(KEY); if(d) S = {...S, ...JSON.parse(d)}; } catch(e){}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+// === NAV ===
+function goPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'rules') renderRules();
+  if (name === 'ai') {
+    document.getElementById('sysPrompt').value = S.sysPrompt;
+    document.getElementById('tempR').value = S.temp * 10;
+    document.getElementById('tempV').textContent = S.temp.toFixed(1);
+  }
+}
+
+// === SHEETS ===
+function openSheet(id) { document.getElementById(id).classList.add('open'); }
+function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.sheet-overlay').forEach(el => {
+  el.addEventListener('click', e => { if(e.target === el) el.classList.remove('open'); });
+});
+
+// === TOAST ===
+function toast(ico, msg, ms=2200) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIco').textContent = ico;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// === CONNECT METHOD ===
+let curMethod = 'token';
+function selectMethod(m) {
+  curMethod = m;
+  document.getElementById('m-token').classList.toggle('selected', m === 'token');
+  document.getElementById('m-oauth').classList.toggle('selected', m === 'oauth');
+  document.getElementById('tokenForm').style.display = m === 'token' ? '' : 'none';
+  document.getElementById('oauthForm').style.display = m === 'oauth' ? '' : 'none';
+}
+
+function doConnect() {
+  if (curMethod === 'token') {
+    const user = document.getElementById('igUser').value.trim();
+    const token = document.getElementById('igToken').value.trim();
+    if (!user) { toast('⚠️','Username kiriting!'); return; }
+    const username = user.startsWith('@') ? user : '@' + user;
+    S.account = { username, method: 'token', token: token || 'demo' };
+  } else {
+    const appId = document.getElementById('metaAppId').value.trim();
+    const redirect = document.getElementById('redirectUri').value.trim();
+    if (!appId) { toast('⚠️','App ID kiriting!'); return; }
+    // Real OAuth: window.open(oauthUrl)
+    const oauthUrl = `https://api.instagram.com/oauth/authorize?client_id=${appId}&redirect_uri=${encodeURIComponent(redirect)}&scope=user_profile,user_media&response_type=code`;
+    S.account = { username: '@oauth_user', method: 'oauth', appId, redirect };
+    toast('ℹ️','OAuth sahifasi ochilmoqda...', 3000);
+    window.open(oauthUrl, '_blank');
+  }
+  save();
+  updateUI();
+  closeSheet('connectSheet');
+  toast('✅', S.account.username + ' ulandi!');
+}
+
+function doDisconnect() {
+  if (!confirm('Akkauntni uzasizmi?')) return;
+  S.account = null; S.botActive = false;
+  save(); updateUI();
+  toast('ℹ️','Akkaunt uzildi');
+}
+
+// === BOT TOGGLE ===
+function toggleBot() {
+  if (!S.account) { toast('⚠️','Avval Instagram ulang!'); return; }
+  S.botActive = !S.botActive;
+  save(); updateUI();
+  toast(S.botActive ? '🟢' : '🔴', S.botActive ? 'Bot yoqildi!' : 'Bot o\'chirildi');
+}
+
+// === UI UPDATE ===
+function updateUI() {
+  // Account
+  const has = !!S.account;
+  document.getElementById('igAva').textContent = has ? (S.account.username[1]?.toUpperCase() || 'U') : '?';
+  document.getElementById('igName').textContent = has ? S.account.username : 'Instagram ulanmagan';
+  document.getElementById('igSub').textContent = has ? (S.account.method === 'oauth' ? '🔐 OAuth orqali ulangan' : '🔑 Token orqali ulangan') : 'Hisob ulash uchun pastdagi tugmani bosing';
+  document.getElementById('connBadge').style.display = has ? 'inline-flex' : 'none';
+  document.getElementById('connectBtn').textContent = has ? '🔄 Almashtirish' : '📸 Instagram Ulash';
+  document.getElementById('disconnectBtn').style.display = has ? '' : 'none';
+  document.getElementById('disconnectGap').style.display = has ? '' : 'none';
+
+  // Bot switch
+  const sw = document.getElementById('botSwitch');
+  S.botActive ? sw.classList.add('on') : sw.classList.remove('on');
+  document.getElementById('toggleSub').textContent = S.botActive ? '✅ Faol — javob bermoqda' : 'Bot o\'chirilgan';
+
+  // Status dot
+  const dot = document.getElementById('statusDot');
+  const lbl = document.getElementById('statusLabel');
+  if (S.botActive) { dot.classList.add('on'); lbl.textContent = 'Faol'; }
+  else { dot.classList.remove('on'); lbl.textContent = has ? 'Ulangan' : 'Offline'; }
+
+  // Stats
+  document.getElementById('sTot').textContent = S.stats.total;
+  document.getElementById('sAuto').textContent = S.stats.auto;
+  document.getElementById('sRules').textContent = S.rules.length;
+
+  // Sim bot name
+  if (S.account) {
+    document.getElementById('simBotNm').textContent = S.account.username;
+    document.getElementById('simAvaTxt').textContent = S.account.username[1]?.toUpperCase() || 'B';
+  }
+
+  // Chat list
+  renderChatList();
+}
+
+// === DEMO CHATS ===
+const demoChats = [
+  { ava:'👤', name:'aziz_97', prev:'Narx qancha?', time:'2 daq', ai:true, unread:true },
+  { ava:'👩', name:'malika_shop', prev:'Dostavka bormi?', time:'8 daq', ai:true, unread:false },
+  { ava:'🧑', name:'sherzod2024', prev:'Salom, mahsulot bormi?', time:'15 daq', ai:false, unread:false },
+];
+
+function renderChatList() {
+  const wrap = document.getElementById('chatListWrap');
+  if (!S.account) {
+    wrap.innerHTML = `<div class="empty"><div class="ico">📩</div><p>Instagram ulab, botni yoqing<br>— xabarlar bu yerda ko'rinadi</p></div>`;
+    return;
+  }
+  wrap.innerHTML = '<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;">' +
+    demoChats.map(c => `
+    <div class="chat-item">
+      <div class="chat-ava">${c.ava}</div>
+      <div class="chat-body">
+        <div class="chat-name">${c.name}</div>
+        <div class="chat-prev">${c.prev}</div>
+      </div>
+      <div class="chat-right">
+        <div class="chat-time">${c.time} oldin</div>
+        ${c.ai ? '<div class="badge-ai">AI ✓</div>' : ''}
+        ${c.unread ? '<div class="badge-new">Yangi</div>' : ''}
+      </div>
+    </div>`).join('') + '</div>';
+  if (!S.stats.total) { S.stats = { total: 3, auto: 2 }; save(); }
+}
+
+// === RULES ===
+let chips = [];
+document.getElementById('chipIn').addEventListener('keydown', function(e) {
+  if ((e.key === 'Enter' || e.key === ',') && this.value.trim()) {
+    e.preventDefault();
+    const v = this.value.trim().replace(',','');
+    if (v && !chips.includes(v)) { chips.push(v); renderChips(); }
+    this.value = '';
+  }
+  if (e.key === 'Backspace' && !this.value && chips.length) { chips.pop(); renderChips(); }
+});
+
+function renderChips() {
+  const wrap = document.getElementById('chipsWrap');
+  wrap.querySelectorAll('.chip').forEach(c => c.remove());
+  chips.forEach((kw, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip rm';
+    chip.textContent = kw;
+    chip.onclick = () => { chips.splice(i,1); renderChips(); };
+    wrap.insertBefore(chip, document.getElementById('chipIn'));
+  });
+}
+
+function saveRule() {
+  const name = document.getElementById('rName').value.trim();
+  const resp = document.getElementById('rResp').value.trim();
+  if (!name || !resp) { toast('⚠️','Ism va javob kiriting!'); return; }
+  S.rules.push({ id: Date.now(), name, keywords: [...chips], response: resp });
+  save(); chips = []; renderChips();
+  document.getElementById('rName').value = '';
+  document.getElementById('rResp').value = '';
+  closeSheet('ruleSheet');
+  renderRules(); updateUI();
+  toast('✅','Qoida qo\'shildi!');
+}
+
+function deleteRule(id) {
+  S.rules = S.rules.filter(r => r.id !== id);
+  save(); renderRules(); updateUI();
+  toast('🗑️','Qoida o\'chirildi');
+}
+
+function renderRules() {
+  const list = document.getElementById('rulesList');
+  if (!S.rules.length) {
+    list.innerHTML = `<div class="empty"><div class="ico">⚡</div><p>Hech qanday qoida yo'q.<br>+ Yangi tugmasi bilan qo'shing</p></div>`;
+    return;
+  }
+  list.innerHTML = S.rules.map(r => `
+    <div class="rule-item">
+      <div class="rule-head">
+        <div class="rule-name">⚡ ${esc(r.name)}</div>
+        <div class="rule-del" onclick="deleteRule(${r.id})">🗑</div>
+      </div>
+      <div class="chips">${r.keywords.map(k=>`<span class="chip">${esc(k)}</span>`).join('') || '<span style="color:var(--sub);font-size:12px;">Barcha xabarlar</span>'}</div>
+      <div class="rule-resp">${esc(r.response)}</div>
+    </div>
+  `).join('');
+}
+
+// === AI SAVE ===
+function saveAI() {
+  S.sysPrompt = document.getElementById('sysPrompt').value;
+  save(); toast('✅','Prompt saqlandi!');
+}
+function saveAIAll() {
+  S.sysPrompt = document.getElementById('sysPrompt').value;
+  S.temp = parseFloat(document.getElementById('tempR').value) / 10;
+  S.lang = document.getElementById('langSel').value;
+  S.mode = document.getElementById('modeSel').value;
+  save(); toast('✅','Barcha sozlamalar saqlandi!');
+}
+
+// === SIMULATE CHAT ===
+async function sendSim() {
+  const inp = document.getElementById('simIn');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  const msgs = document.getElementById('simMsgs');
+  msgs.innerHTML += `<div class="msg-bubble msg-user">${esc(msg)}</div>`;
+  scrollMsgs();
+
+  const typId = 'tp_' + Date.now();
+  msgs.innerHTML += `<div class="msg-bubble msg-bot" id="${typId}"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  scrollMsgs();
+
+  const rule = S.rules.find(r => r.keywords.length === 0 || r.keywords.some(k => msg.toLowerCase().includes(k.toLowerCase())));
+  let reply;
+
+  if (rule && (S.mode !== 'Faqat AI')) {
+    await delay(500 + Math.random() * 400);
+    reply = rule.response;
+  } else if (S.mode !== 'Faqat Qoidalar') {
+    S.simHistory.push({ role:'user', content: msg });
+    try {
+      reply = await callClaude(S.simHistory);
+      S.simHistory.push({ role:'assistant', content: reply });
+    } catch(e) {
+      reply = '❌ AI xato: ' + e.message;
+    }
+  } else {
+    await delay(400);
+    reply = 'Ushbu xabar uchun qoida topilmadi.';
+  }
+
+  document.getElementById(typId)?.remove();
+  msgs.innerHTML += `<div class="msg-bubble msg-bot">${esc(reply)}</div>`;
+  scrollMsgs();
+
+  S.stats.total++; S.stats.auto++;
+  save(); updateUI();
+}
+
+function scrollMsgs() {
+  const m = document.getElementById('simMsgs');
+  m.scrollTop = m.scrollHeight;
+}
+
+function clearChat() {
+  S.simHistory = [];
+  document.getElementById('simMsgs').innerHTML = '<div class="msg-bubble msg-bot">Salom! Men InstaBot AI yordamchisiman. Savol bering 👋</div>';
+}
+
+async function callClaude(history) {
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      system: S.sysPrompt,
+      messages: history.slice(-12)
+    })
+  });
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content.map(b => b.text || '').join('');
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+// === INIT ===
+updateUI();
+renderRules();
+</script>
+</body>
+</html>
