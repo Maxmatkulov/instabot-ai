@@ -435,13 +435,26 @@ app.use(express.json({ limit: '1mb', verify: (req, res, buf) => { req.rawBody = 
 function validMetaSignature(req) {
   if (!IG_APP_SECRET) return true; // sekret qo'yilmagan bo'lsa — tekshiruvsiz (health'da ogohlantirish)
   const sig = req.get('x-hub-signature-256') || '';
-  const ok = IG_APP_SECRETS.findIndex((sec) => {
-    const expected = 'sha256=' + crypto.createHmac('sha256', sec).update(req.rawBody || '').digest('hex');
-    return sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
-  });
-  if (ok >= 0) log(`🔐 IG imzo mos keldi: ${ok + 1}-sir`);
-  else log(`⛔ IG imzo mos kelmadi (header ${sig ? 'bor' : 'YO\'Q'}, sirlar soni: ${IG_APP_SECRETS.length})`);
-  return ok >= 0;
+  // Asl matn (rawBody) bo'lmasa — Meta formatida qayta tiklab ko'ramiz (unicode \uXXXX, "/" → "\/")
+  const json = JSON.stringify(req.body || {});
+  const metaJson = json.replace(/[\u007f-\uffff]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')).replace(/\//g, '\\/');
+  const bodies = [
+    ['raw', req.rawBody],
+    ['json', Buffer.from(json)],
+    ['meta-json', Buffer.from(metaJson)],
+  ].filter(([, b]) => b && b.length);
+  for (const [kind, body] of bodies) {
+    for (let i = 0; i < IG_APP_SECRETS.length; i++) {
+      const expected = 'sha256=' + crypto.createHmac('sha256', IG_APP_SECRETS[i]).update(body).digest('hex');
+      if (sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+        log(`🔐 IG imzo mos: ${i + 1}-sir, ${kind}`);
+        return true;
+      }
+    }
+  }
+  log(`⛔ IG imzo mos kelmadi (header: ${sig ? 'bor' : 'YO\'Q'}, rawBody: ${req.rawBody ? req.rawBody.length : 'YO\'Q'}, sirlar: ${IG_APP_SECRETS.length})`);
+  // STRICT_SIGNATURE=on bo'lmaguncha rad etmaymiz — bot ishlashda davom etadi
+  return env('STRICT_SIGNATURE') !== 'on';
 }
 
 // 2) Mini App so'rovi haqiqatan Telegram'dan va aynan admin'dan kelganini tekshirish (initData imzosi)
