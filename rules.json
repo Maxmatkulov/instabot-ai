@@ -1,5 +1,5 @@
 {
-  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. postUrl — Telegram kanaldagi post havolasi (t.me/kanal/123). Bo'sh qolsa kanal havolasi yuboriladi. file — public/guides/ ichidagi PDF: bot uni obunadan keyin fayl qilib yuboradi.",
+  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa).",
   "rules": [
     {
       "keyword": "REELS",
@@ -11,7 +11,8 @@
       ],
       "title": "Montajsiz Reels — to'liq jarayon",
       "postUrl": "",
-      "file": "guides/montajsiz-reels.pdf"
+      "file": "guides/montajsiz-reels.pdf",
+      "reels": []
     },
     {
       "keyword": "BOT",
@@ -20,7 +21,8 @@
         "INSTABOT"
       ],
       "title": "Izohga avtomatik javob beruvchi bot",
-      "postUrl": ""
+      "postUrl": "",
+      "reels": []
     },
     {
       "keyword": "CLAUDE",
@@ -30,7 +32,8 @@
         "КЛОД"
       ],
       "title": "Claude Code — boshlash qo'llanmasi",
-      "postUrl": ""
+      "postUrl": "",
+      "reels": []
     },
     {
       "keyword": "SAYT",
@@ -39,7 +42,8 @@
         "САЙТ"
       ],
       "title": "AI bilan sayt — qadamlar",
-      "postUrl": ""
+      "postUrl": "",
+      "reels": []
     },
     {
       "keyword": "DEPLOY",
@@ -48,7 +52,8 @@
         "ДЕПЛОЙ"
       ],
       "title": "Saytni internetga chiqarish",
-      "postUrl": ""
+      "postUrl": "",
+      "reels": []
     },
     {
       "keyword": "AGENT",
@@ -57,7 +62,8 @@
         "АГЕНТ"
       ],
       "title": "AI agentlar jamoasi",
-      "postUrl": ""
+      "postUrl": "",
+      "reels": []
     },
     {
       "keyword": "XAVF",
@@ -67,7 +73,8 @@
         "ХАВФ"
       ],
       "title": "AI xavfsizligi — tekshiruv ro'yxati",
-      "postUrl": ""
+      "postUrl": "",
+      "reels": []
     }
   ]
 }

@@ -64,6 +64,12 @@ process.on('uncaughtException', (e) => log('⚠ uncaughtException:', e?.message 
 
 // ───────────────────────── Qoidalar (kalit so'zlar) ─────────────────────────
 let RULES = [];
+// instagram.com/reel/ABC123/?igsh=... → ABC123
+function shortcode(url) {
+  const m = String(url || '').match(/instagram\.com\/(?:[\w.]+\/)?(?:reel|reels|p|tv)\/([\w-]+)/i);
+  return m ? m[1] : String(url || '').trim() || null;
+}
+
 function loadRules() {
   try {
     const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'rules.json'), 'utf8'));
@@ -71,6 +77,8 @@ function loadRules() {
       ...r,
       keyword: String(r.keyword).toUpperCase(),
       words: [r.keyword, ...(r.aliases || [])].map((w) => String(w).toUpperCase()),
+      // "reels": ["https://www.instagram.com/reel/ABC123/"] — bo'lsa, so'z faqat shu videolarda ishlaydi
+      codes: (r.reels || []).map(shortcode).filter(Boolean),
     }));
     log(`📋 ${RULES.length} ta kalit so'z: ${RULES.map((r) => r.keyword).join(', ')}`);
   } catch (e) {
@@ -80,13 +88,41 @@ function loadRules() {
 loadRules();
 
 // Izohni so'zlarga ajratib, kalit so'z bilan TO'LIQ solishtiradi ("1" yoki "+" hamma izohga mos kelib qolmasin)
-function matchRule(text) {
+function matchRule(text, rules = RULES) {
   const words = String(text || '')
     .toUpperCase()
     .replace(/[’'`ʼ‘]/g, '')
     .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean);
-  return RULES.find((r) => r.words.some((w) => words.includes(w)));
+  return rules.find((r) => r.words.some((w) => words.includes(w)));
+}
+
+// media.id → shortcode (Graph API'dan, keshlanadi)
+const mediaCache = new Map();
+async function mediaShortcode(mediaId) {
+  if (!mediaId) return null;
+  if (mediaCache.has(mediaId)) return mediaCache.get(mediaId);
+  try {
+    const r = await fetch(`${IG_API}/${mediaId}?fields=permalink,shortcode`, { headers: { Authorization: `Bearer ${IG_ACCESS_TOKEN}` } });
+    const d = await r.json();
+    const code = d.shortcode || shortcode(d.permalink);
+    if (!code) log('⚠ media shortcode topilmadi:', mediaId, JSON.stringify(d.error || d).slice(0, 200));
+    mediaCache.set(mediaId, code || null);
+    return code || null;
+  } catch (e) {
+    log('⚠ media shortcode:', e.message);
+    return null;
+  }
+}
+
+// Izoh qaysi Reels ostida ekaniga qarab qoidani tanlash
+async function matchCommentRule(text, mediaId) {
+  const candidates = RULES.filter((r) => matchRule(text, [r]));
+  if (!candidates.length) return null;
+  if (candidates.every((r) => !r.codes.length)) return candidates[0];
+  const code = await mediaShortcode(mediaId);
+  log(`🎬 media ${mediaId} → ${code}`);
+  return candidates.find((r) => r.codes.length && code && r.codes.includes(code)) || candidates.find((r) => !r.codes.length) || null;
 }
 const ruleByKeyword = (kw) => RULES.find((r) => r.keyword === String(kw || '').toUpperCase());
 
@@ -150,7 +186,7 @@ async function handleComment(v) {
   if ((IG_USER_ID && fromId === IG_USER_ID) || (IG_USERNAME && fromName === IG_USERNAME)) return;
   if (v.parent_id) return; // izohga javoblar emas, faqat asosiy izohlar
   stats.comments++;
-  const rule = matchRule(v.text);
+  const rule = await matchCommentRule(v.text, v.media?.id);
   if (!rule) return;
   if (!firstTime(`c:${commentId}`)) return;
   stats.matched++;
