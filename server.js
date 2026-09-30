@@ -459,7 +459,7 @@ function validMetaSignature(req) {
       }
     }
   }
-  log(`⛔ IG imzo mos kelmadi (header: ${sig ? 'bor' : 'YO\'Q'}, rawBody: ${req.rawBody ? req.rawBody.length : 'YO\'Q'}, sirlar: ${IG_APP_SECRETS.length})`);
+  log(`⛔ IG imzo mos kelmadi (header: ${sig ? 'bor' : 'YO\'Q'}, rawBody: ${req.rawBody ? req.rawBody.length : 'YO\'Q'}, sirlar: ${IG_APP_SECRETS.length}, sir uzunliklari: ${IG_APP_SECRETS.map((x) => x.length).join('/')}, hex: ${IG_APP_SECRETS.map((x) => (/^[0-9a-f]+$/.test(x) ? 'ha' : 'YO\'Q')).join('/')})`);
   // STRICT_SIGNATURE=on bo'lmaguncha rad etmaymiz — bot ishlashda davom etadi
   return env('STRICT_SIGNATURE') !== 'on';
 }
