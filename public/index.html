@@ -1319,7 +1319,7 @@ async function saveMenuItem() {
   try {
     const r = await fetch(`${API}/api/menu`, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type':'application/json', 'X-TG-Init': (window.Telegram?.WebApp?.initData || '')},
       body: JSON.stringify({ emoji, title, type, content, url })
     });
     if (!r.ok) throw new Error('Server xato');
@@ -1338,7 +1338,8 @@ async function saveMenuItem() {
 async function deleteMenuItem(id) {
   if (!confirm('O\'chirishni tasdiqlaysizmi?')) return;
   try {
-    await fetch(`${API}/api/menu/${id}`, { method: 'DELETE' });
+    const r = await fetch(`${API}/api/menu/${id}`, { method: 'DELETE', headers: { 'X-TG-Init': (window.Telegram?.WebApp?.initData || '') } });
+    if (!r.ok) throw new Error('Ruxsat yo\'q');
     toast('🗑️','O\'chirildi!');
     loadMenuItems();
   } catch(e) {

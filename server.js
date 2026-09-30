@@ -9,6 +9,7 @@
 // Kalit so'zlar rules.json da. Yangi video = rules.json ga bitta qator.
 
 const fs = require('fs');
+const crypto = require('crypto');
 const path = require('path');
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
@@ -37,6 +38,8 @@ const IG_USER_ID = env('IG_USER_ID');
 const IG_USERNAME = env('IG_USERNAME').toLowerCase();
 const IG_API = env('IG_API_HOST', 'https://graph.instagram.com') + '/' + env('IG_API_VERSION', 'v21.0');
 const VERIFY_TOKEN = env('VERIFY_TOKEN', 'instabot_verify_123');
+// Meta → Instagram API setup sahifasidagi "Секрет приложения Instagram". Bo'lsa, soxta webhooklar rad etiladi.
+const IG_APP_SECRET = env('IG_APP_SECRET');
 const PUBLIC_REPLY = env('PUBLIC_REPLY', 'on') !== 'off';
 
 // AI: GROQ_API_KEY bo'lsa Groq, bo'lmasa ANTHROPIC_API_KEY
@@ -423,7 +426,37 @@ bot.on('callback_query', track(async (q) => {
 
 // ───────────────────────── HTTP ─────────────────────────
 const app = express();
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '1mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
+
+// ── Xavfsizlik ──
+// 1) Instagram webhook haqiqatan Meta'dan kelganini tekshirish (X-Hub-Signature-256)
+function validMetaSignature(req) {
+  if (!IG_APP_SECRET) return true; // sekret qo'yilmagan bo'lsa — tekshiruvsiz (health'da ogohlantirish)
+  const sig = req.get('x-hub-signature-256') || '';
+  const expected = 'sha256=' + crypto.createHmac('sha256', IG_APP_SECRET).update(req.rawBody || '').digest('hex');
+  return sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+}
+
+// 2) Mini App so'rovi haqiqatan Telegram'dan va aynan admin'dan kelganini tekshirish (initData imzosi)
+function telegramAdmin(req) {
+  try {
+    const initData = req.get('x-tg-init') || '';
+    if (!initData || !BOT_TOKEN) return null;
+    const params = new URLSearchParams(initData);
+    const hash = params.get('hash');
+    params.delete('hash');
+    const dataCheck = [...params.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('\n');
+    const secret = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
+    const calc = crypto.createHmac('sha256', secret).update(dataCheck).digest('hex');
+    if (!hash || calc.length !== hash.length || !crypto.timingSafeEqual(Buffer.from(calc), Buffer.from(hash))) return null;
+    if (Date.now() / 1000 - Number(params.get('auth_date') || 0) > 24 * 3600) return null;
+    const user = JSON.parse(params.get('user') || '{}');
+    return isOwner(user.username) ? user : null;
+  } catch {
+    return null;
+  }
+}
+const adminOnly = (req, res, next) => (telegramAdmin(req) ? next() : res.status(403).json({ error: 'Ruxsat yo\'q' }));
 
 // Telegram webhook
 const tgWebhook = async (req, res) => {
@@ -450,6 +483,10 @@ app.get('/webhook/instagram', (req, res) => {
 
 // Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
 app.post('/webhook/instagram', async (req, res) => {
+  if (!validMetaSignature(req)) {
+    log('⛔ IG webhook: imzo noto\'g\'ri — rad etildi');
+    return res.sendStatus(403);
+  }
   const body = req.body || {};
   if (env('DEBUG') === 'on') log('📥 IG:', JSON.stringify(body).slice(0, 1500));
   try {
@@ -467,18 +504,18 @@ app.post('/webhook/instagram', async (req, res) => {
 
 // Mini App API
 app.get('/api/menu', (req, res) => res.json(menuItems));
-app.post('/api/menu', (req, res) => {
+app.post('/api/menu', adminOnly, (req, res) => {
   const { title, type, content, url, emoji } = req.body || {};
   if (!title || !type) return res.status(400).json({ error: 'title va type kerak' });
   const item = { id: Date.now(), title, type, content: content || '', url: url || '', emoji: emoji || '📌' };
   menuItems.push(item);
   res.json(item);
 });
-app.delete('/api/menu/:id', (req, res) => {
+app.delete('/api/menu/:id', adminOnly, (req, res) => {
   menuItems = menuItems.filter((i) => String(i.id) !== req.params.id);
   res.json({ ok: true });
 });
-app.get('/api/stats', (req, res) => res.json({ users: users.size, ...stats }));
+app.get('/api/stats', adminOnly, (req, res) => res.json({ users: users.size, ...stats }));
 
 // Tekshiruv: brauzerda /health ni oching — nima yetishmasligini ko'rsatadi
 app.get('/health', (req, res) =>
@@ -489,9 +526,9 @@ app.get('/health', (req, res) =>
     telegram: BOT_TOKEN ? '✅' : '❌ BOT_TOKEN yo\'q',
     instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
     instagramUserId: IG_USER_ID ? '✅' : '⚠ IG_USER_ID yo\'q (me ishlatiladi)',
+    webhookSignature: IG_APP_SECRET ? '✅ tekshiriladi' : '⚠ IG_APP_SECRET yo\'q — imzo tekshirilmaydi',
     ai: GROQ_API_KEY ? `Groq (${AI_MODEL})` : ANTHROPIC_API_KEY ? `Anthropic (${AI_MODEL})` : '❌',
     keywords: RULES.map((r) => r.keyword),
-    stats,
   })
 );
 // Telegram webhook'ni o'rnatish: brauzerda /setup?key=VERIFY_TOKEN ni bir marta oching (Vercel'da shart)
