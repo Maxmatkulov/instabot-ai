@@ -1,355 +1,484 @@
-// InstaBot AI v7.0 — Webhook mode (polling yo'q)
+// InstaBot AI v8 — Instagram izoh → DM → Telegram bot → kanal posti
+//
+// Voronka:
+//   1. Odam Reels ostiga KALIT so'z yozadi (masalan REELS).
+//   2. Bot izohga "DM'ga yubordim" deb javob beradi va shaxsiy xabar (private reply) yuboradi.
+//   3. DM'da Telegram bot havolasi: t.me/<bot>?start=REELS
+//   4. Telegram bot kanalga obunani tekshiradi → obuna bo'lsa post havolasini beradi.
+//
+// Kalit so'zlar rules.json da. Yangi video = rules.json ga bitta qator.
 
-const TelegramBot = require('node-telegram-bot-api');
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
+const TelegramBot = require('node-telegram-bot-api');
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '';
-const MINI_APP_URL = process.env.MINI_APP_URL || '';
-const TG_CHANNEL = process.env.TG_CHANNEL || '@mashrabbekmaxmatkulov';
-const TG_BOT_USERNAME = process.env.TG_BOT_USERNAME || 'mmnchat_bot';
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
-const PORT = process.env.PORT || 3000;
-const OWNER_USERNAME = 'mmn0300';
-const FREE_QUESTIONS = 3;
+// ───────────────────────── Sozlamalar (Railway → Variables) ─────────────────────────
+const env = (k, d = '') => (process.env[k] ?? d).trim();
 
-// Webhook mode — polling: false
-const bot = new TelegramBot(BOT_TOKEN, { polling: false });
-const app = express();
-app.use(express.json());
+const BOT_TOKEN = env('BOT_TOKEN');
+const PUBLIC_URL = env('PUBLIC_URL') || env('MINI_APP_URL') || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : '');
+const MINI_APP_URL = env('MINI_APP_URL') || PUBLIC_URL;
+const TG_CHANNEL = env('TG_CHANNEL', '@mashrabbekmaxmatkulov');
+const TG_BOT_USERNAME = env('TG_BOT_USERNAME', 'mmnchat_bot');
+const OWNER_USERNAME = env('OWNER_USERNAME', 'mmn0300').toLowerCase();
+const PORT = Number(process.env.PORT) || 3000;
+const FREE_QUESTIONS = Number(env('FREE_QUESTIONS', '3'));
 
-// Storage
-const users = new Map();
-let menuItems = [
-  { id: 1, title: 'Darslik #1', type: 'text', content: 'Bu yerda darslik matni...', emoji: '📚' },
-  { id: 2, title: 'Kanal', type: 'link', url: `https://t.me/${TG_CHANNEL.replace('@','')}`, emoji: '📢' }
-];
-let igRules = [{
-  id: 1, name: 'Havola',
-  keywords: ['1', 'link', 'havola', '+'],
-  tgLink: `https://t.me/${TG_CHANNEL.replace('@','')}`,
-  dmFirst: `Salom! 👋\nHavolani olish uchun:\n1. Kanalga obuna: https://t.me/${TG_CHANNEL.replace('@','')}\n2. Botga /start yuboring: https://t.me/${TG_BOT_USERNAME}?start=check`,
-  dmSuccess: `✅ Tasdiqlandi!\nHavola: https://t.me/${TG_CHANNEL.replace('@','')}`,
-  dmFail: `❌ Obuna topilmadi.\nKanalga obuna bo'ling: https://t.me/${TG_CHANNEL.replace('@','')}`
-}];
-const pendingIG = new Map();
+// Instagram (Instagram Login API: graph.instagram.com; Facebook sahifa orqali bo'lsa: graph.facebook.com)
+const IG_ACCESS_TOKEN = env('IG_ACCESS_TOKEN');
+const IG_USER_ID = env('IG_USER_ID');
+const IG_USERNAME = env('IG_USERNAME').toLowerCase();
+const IG_API = env('IG_API_HOST', 'https://graph.instagram.com') + '/' + env('IG_API_VERSION', 'v21.0');
+const VERIFY_TOKEN = env('VERIFY_TOKEN', 'instabot_verify_123');
+const PUBLIC_REPLY = env('PUBLIC_REPLY', 'on') !== 'off';
 
-function getUser(id) {
-  if (!users.has(id)) users.set(id, { questions: 0, history: [], lang: 'uz', subscribed: false, aiMode: false });
-  return users.get(id);
+// AI: GROQ_API_KEY bo'lsa Groq, bo'lmasa ANTHROPIC_API_KEY
+const GROQ_API_KEY = env('GROQ_API_KEY');
+const ANTHROPIC_API_KEY = env('ANTHROPIC_API_KEY');
+const AI_MODEL = env('AI_MODEL') || (GROQ_API_KEY ? 'llama-3.3-70b-versatile' : 'claude-sonnet-4-5');
+
+const CHANNEL_URL = `https://t.me/${TG_CHANNEL.replace('@', '')}`;
+const botLink = (kw) => `https://t.me/${TG_BOT_USERNAME}?start=${encodeURIComponent(kw)}`;
+
+// ───────────────────────── Yordamchilar ─────────────────────────
+const log = (...a) => console.log(new Date().toISOString(), ...a);
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const HTML = { parse_mode: 'HTML', disable_web_page_preview: false };
+
+// Hech bir xato serverni yiqitmasin (avval shu 502 ga sabab bo'lardi)
+process.on('unhandledRejection', (e) => log('⚠ unhandledRejection:', e?.message || e));
+process.on('uncaughtException', (e) => log('⚠ uncaughtException:', e?.message || e));
+
+// ───────────────────────── Qoidalar (kalit so'zlar) ─────────────────────────
+let RULES = [];
+function loadRules() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'rules.json'), 'utf8'));
+    RULES = (raw.rules || []).map((r) => ({
+      ...r,
+      keyword: String(r.keyword).toUpperCase(),
+      words: [r.keyword, ...(r.aliases || [])].map((w) => String(w).toUpperCase()),
+    }));
+    log(`📋 ${RULES.length} ta kalit so'z: ${RULES.map((r) => r.keyword).join(', ')}`);
+  } catch (e) {
+    log('❌ rules.json o\'qilmadi:', e.message);
+  }
+}
+loadRules();
+
+// Izohni so'zlarga ajratib, kalit so'z bilan TO'LIQ solishtiradi ("1" yoki "+" hamma izohga mos kelib qolmasin)
+function matchRule(text) {
+  const words = String(text || '')
+    .toUpperCase()
+    .replace(/[’'`ʼ‘]/g, '')
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+  return RULES.find((r) => r.words.some((w) => words.includes(w)));
+}
+const ruleByKeyword = (kw) => RULES.find((r) => r.keyword === String(kw || '').toUpperCase());
+
+// ───────────────────────── Instagram API ─────────────────────────
+async function ig(pathname, body) {
+  if (!IG_ACCESS_TOKEN) {
+    log('❌ IG_ACCESS_TOKEN yo\'q — Instagram\'ga yuborib bo\'lmaydi');
+    return null;
+  }
+  try {
+    const r = await fetch(`${IG_API}/${pathname}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${IG_ACCESS_TOKEN}` },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || d.error) {
+      log(`❌ IG ${pathname}:`, r.status, JSON.stringify(d.error || d));
+      return null;
+    }
+    return d;
+  } catch (e) {
+    log(`❌ IG ${pathname}:`, e.message);
+    return null;
+  }
 }
 
-function isOwner(u) { return (u||'').toLowerCase() === OWNER_USERNAME; }
+const dmText = (rule) =>
+  `Salom! 👋 "${rule.title}" tayyor.\n\n` +
+  `Olish uchun Telegram botga o'ting, u darhol yuboradi 👇\n${botLink(rule.keyword)}`;
+
+// Izoh egasiga shaxsiy xabar. Instagram faqat shu usulga ruxsat beradi: recipient.comment_id (7 kun ichida, 1 marta)
+const privateReply = (commentId, rule) =>
+  ig(`${IG_USER_ID || 'me'}/messages`, { recipient: { comment_id: commentId }, message: { text: dmText(rule) } });
+
+// Oddiy DM (odam o'zi yozgan bo'lsa, 24 soat ichida)
+const sendDM = (igsid, text) => ig(`${IG_USER_ID || 'me'}/messages`, { recipient: { id: igsid }, message: { text } });
+
+const PUBLIC_REPLIES = ['DM\'ga yubordim 📩', 'Yubordim, DM\'ni tekshiring ✅', 'Direct\'da kutyapti 📩', 'Yuborildi 🚀'];
+const publicReply = (commentId) =>
+  ig(`${commentId}/replies`, { message: PUBLIC_REPLIES[Math.floor(Math.random() * PUBLIC_REPLIES.length)] });
+
+// Meta bir hodisani qayta yuborishi mumkin — bir izohga bir marta javob
+const seen = new Map();
+function firstTime(id) {
+  const now = Date.now();
+  for (const [k, t] of seen) if (now - t > 24 * 3600e3) seen.delete(k);
+  if (seen.has(id)) return false;
+  seen.set(id, now);
+  return true;
+}
+
+const stats = { comments: 0, matched: 0, dmSent: 0, dmFailed: 0, tgStarts: 0, delivered: 0 };
+
+async function handleComment(v) {
+  const commentId = v.id;
+  const fromId = v.from?.id;
+  const fromName = (v.from?.username || '').toLowerCase();
+  if (!commentId || !fromId) return;
+  // O'zimizning izohlarimiz (bot javoblari) — e'tiborsiz
+  if ((IG_USER_ID && fromId === IG_USER_ID) || (IG_USERNAME && fromName === IG_USERNAME)) return;
+  if (v.parent_id) return; // izohga javoblar emas, faqat asosiy izohlar
+  stats.comments++;
+  const rule = matchRule(v.text);
+  if (!rule) return;
+  if (!firstTime(`c:${commentId}`)) return;
+  stats.matched++;
+  log(`💬 @${fromName}: "${v.text}" → ${rule.keyword}`);
+  const ok = await privateReply(commentId, rule);
+  if (ok) stats.dmSent++;
+  else stats.dmFailed++;
+  if (ok && PUBLIC_REPLY) await publicReply(commentId);
+}
+
+async function handleMessage(m) {
+  if (m.message?.is_echo || !m.message?.text) return;
+  const igsid = m.sender?.id;
+  if (!igsid || igsid === IG_USER_ID) return;
+  const rule = matchRule(m.message.text);
+  if (!rule || !firstTime(`m:${m.message.mid}`)) return;
+  stats.matched++;
+  log(`📩 DM "${m.message.text}" → ${rule.keyword}`);
+  (await sendDM(igsid, dmText(rule))) ? stats.dmSent++ : stats.dmFailed++;
+}
+
+// ───────────────────────── Telegram bot ─────────────────────────
+const bot = new TelegramBot(BOT_TOKEN || 'no-token', { polling: false });
+const users = new Map();
+const getUser = (id) => {
+  if (!users.has(id)) users.set(id, { questions: 0, history: [], lang: 'uz', aiMode: false });
+  return users.get(id);
+};
+const isOwner = (u) => (u || '').toLowerCase() === OWNER_USERNAME;
+
+// Xato bo'lsa ham yiqilmaydigan yuborish
+const send = (chatId, text, opts = {}) =>
+  bot.sendMessage(chatId, text, { ...HTML, ...opts }).catch((e) => log('❌ TG send:', e.message));
 
 async function checkSub(userId) {
   try {
     const m = await bot.getChatMember(TG_CHANNEL, userId);
-    return ['member','administrator','creator'].includes(m.status);
-  } catch(e) { return false; }
+    return ['member', 'administrator', 'creator'].includes(m.status);
+  } catch (e) {
+    log('⚠ getChatMember:', e.message, '— bot kanalda admin ekanini tekshiring');
+    return false;
+  }
 }
 
-async function askClaude(history, lang) {
-  if (!ANTHROPIC_API_KEY) return 'AI ulanmagan.';
-  const sys = { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: "Отвечай кратко на русском.", en: "Reply briefly in English." }[lang] || "Reply briefly.";
-  try {
-    const fetch = (await import('node-fetch')).default;
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01' },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, system:sys, messages:history.slice(-8) })
-    });
-    const d = await r.json();
-    return d.content?.[0]?.text || 'Javob olishda xato.';
-  } catch(e) { return 'AI xato: ' + e.message; }
-}
-
-async function sendInstaDM(userId, message) {
-  const token = process.env.IG_ACCESS_TOKEN;
-  const igId = process.env.IG_USER_ID;
-  if (!token || !igId) return;
-  try {
-    const fetch = (await import('node-fetch')).default;
-    await fetch(`https://graph.instagram.com/v21.0/${igId}/messages`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ recipient:{id:userId}, message:{text:message}, access_token:token })
-    });
-  } catch(e) {}
-}
-
-// Telegram webhook endpoint
-app.post(`/webhook/${BOT_TOKEN}`, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
+const subscribeKb = (kw) => ({
+  reply_markup: {
+    inline_keyboard: [
+      [{ text: '📢 Kanalga obuna bo\'lish', url: CHANNEL_URL }],
+      [{ text: '✅ Obuna bo\'ldim', callback_data: `get:${kw}` }],
+    ],
+  },
 });
 
-// Set webhook
-async function setWebhook() {
-  const url = `${MINI_APP_URL}/webhook/${BOT_TOKEN}`;
-  try {
-    await bot.setWebHook(url);
-    console.log('✅ Webhook set:', url);
-  } catch(e) {
-    console.log('❌ Webhook xato:', e.message);
+async function deliver(chatId, userId, rule) {
+  if (!(await checkSub(userId))) {
+    return send(
+      chatId,
+      `🎁 <b>${esc(rule.title)}</b>\n\nOlish uchun kanalga obuna bo'ling, keyin "✅ Obuna bo'ldim" ni bosing 👇`,
+      subscribeKb(rule.keyword)
+    );
   }
-}
-
-// BOT HANDLERS
-bot.onText(/\/start(.*)/, async (msg, match) => {
-  const chatId = msg.chat.id;
-  const userId = msg.from.id;
-  const username = msg.from.username || '';
-  const name = msg.from.first_name || 'Do\'stim';
-  const param = (match[1]||'').trim();
-  const user = getUser(userId);
-
-  if (isOwner(username)) {
-    return bot.sendMessage(chatId, `👑 Salom, *${name}!*\n🔐 Admin panel`, {
-      parse_mode: 'Markdown',
-      reply_markup: { keyboard: [
-        [{ text: '🚀 Mini App', web_app: { url: MINI_APP_URL } }],
-        [{ text: '📊 Statistika' }, { text: '📚 Menyu' }],
-        [{ text: '⚙️ Sozlamalar' }]
-      ], resize_keyboard: true }
-    });
-  }
-
-  if (param === 'check') {
-    const isSub = await checkSub(userId);
-    if (isSub) {
-      user.subscribed = true;
-      await bot.sendMessage(chatId, `✅ *Rahmat, ${name}!*\nObuna tasdiqlandi!\nDM ga havola yuborildi 📩`, { parse_mode: 'Markdown' });
-      const igId = [...pendingIG.entries()].find(([,v]) => v.tgUserId === userId)?.[0];
-      if (igId) {
-        await sendInstaDM(igId, igRules[0].dmSuccess);
-        pendingIG.delete(igId);
-      } else {
-        await bot.sendMessage(chatId, `🎁 Havola:\n👉 ${igRules[0].tgLink}`);
-      }
-    } else {
-      await bot.sendMessage(chatId, `❌ Obuna topilmadi!\n\nKanalga obuna bo'ling:`, {
-        reply_markup: { inline_keyboard: [
-          [{ text: '📢 Obuna bo\'lish', url: `https://t.me/${TG_CHANNEL.replace('@','')}` }],
-          [{ text: '✅ Tekshirish', callback_data: 'recheck' }]
-        ]}
-      });
-    }
-    return;
-  }
-
-  const isSub = await checkSub(userId);
-  user.subscribed = isSub;
-  bot.sendMessage(chatId, `👋 Salom, *${name}!*\n\n🤖 AI yordamchi botga xush kelibsiz!\n${isSub ? '✅ Obuna tasdiqlandi' : ''}`, {
-    parse_mode: 'Markdown',
-    reply_markup: { keyboard: [
-      [{ text: '🤖 AI Chat' }, { text: '📚 Menyu' }],
-      [{ text: '🌐 Til' }, { text: '📊 Holatim' }],
-      [{ text: '📢 Kanal' }]
-    ], resize_keyboard: true }
+  stats.delivered++;
+  const url = rule.postUrl || CHANNEL_URL;
+  return send(chatId, `✅ Rahmat! Mana <b>${esc(rule.title)}</b> 👇`, {
+    reply_markup: { inline_keyboard: [[{ text: '📖 Ochish', url }]] },
   });
+}
+
+const userKb = {
+  reply_markup: {
+    keyboard: [[{ text: '🤖 AI Chat' }, { text: '📚 Menyu' }], [{ text: '🌐 Til' }, { text: '📢 Kanal' }]],
+    resize_keyboard: true,
+  },
+};
+
+bot.onText(/^\/start(?:\s+(.+))?$/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const name = esc(msg.from.first_name || 'do\'stim');
+  const param = (match[1] || '').trim();
+  stats.tgStarts++;
+
+  const rule = ruleByKeyword(param);
+  if (rule) {
+    await send(chatId, `Salom, <b>${name}</b>! 👋`, userKb);
+    return deliver(chatId, msg.from.id, rule);
+  }
+
+  if (isOwner(msg.from.username)) {
+    return send(chatId, `👑 Salom, <b>${name}</b>!\n🔐 Admin panel`, {
+      reply_markup: {
+        keyboard: [
+          ...(MINI_APP_URL ? [[{ text: '🚀 Mini App', web_app: { url: MINI_APP_URL } }]] : []),
+          [{ text: '📊 Statistika' }, { text: '📚 Menyu' }],
+          [{ text: '⚙️ Sozlamalar' }],
+        ],
+        resize_keyboard: true,
+      },
+    });
+  }
+  return send(chatId, `👋 Salom, <b>${name}</b>!\n\n🤖 AI yordamchi botga xush kelibsiz!`, userKb);
 });
+
+// ───────────── Menyu (Mini App orqali boshqariladi) ─────────────
+let menuItems = [
+  { id: 1, title: 'Kanal', type: 'link', url: CHANNEL_URL, emoji: '📢' },
+];
+
+async function askAI(history, lang) {
+  const sys =
+    { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: 'Отвечай кратко на русском.', en: 'Reply briefly in English.' }[lang] ||
+    'Reply briefly.';
+  const msgs = history.slice(-8);
+  try {
+    if (GROQ_API_KEY) {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({ model: AI_MODEL, max_tokens: 800, messages: [{ role: 'system', content: sys }, ...msgs] }),
+      });
+      const d = await r.json();
+      if (d.error) log('❌ Groq:', JSON.stringify(d.error));
+      return d.choices?.[0]?.message?.content || 'Javob olishda xato.';
+    }
+    if (ANTHROPIC_API_KEY) {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: AI_MODEL, max_tokens: 800, system: sys, messages: msgs }),
+      });
+      const d = await r.json();
+      if (d.error) log('❌ Anthropic:', JSON.stringify(d.error));
+      return d.content?.[0]?.text || 'Javob olishda xato.';
+    }
+    return 'AI ulanmagan.';
+  } catch (e) {
+    log('❌ AI:', e.message);
+    return 'AI vaqtincha ishlamayapti, keyinroq urinib ko\'ring.';
+  }
+}
 
 bot.on('message', async (msg) => {
   if (!msg.text || msg.text.startsWith('/')) return;
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  const username = msg.from.username || '';
-  const text = msg.text;
+  const text = msg.text.trim();
   const user = getUser(userId);
 
-  // OWNER
-  if (isOwner(username)) {
+  // Telegram'da ham kalit so'z yozsa — beramiz
+  const rule = matchRule(text);
+  if (rule && text.split(/\s+/).length <= 2) return deliver(chatId, userId, rule);
+
+  if (isOwner(msg.from.username)) {
     if (text === '📊 Statistika') {
-      return bot.sendMessage(chatId, `📊 *Statistika*\n👥 Users: ${users.size}\n📚 Menyu: ${menuItems.length}\n🤖 AI: ${ANTHROPIC_API_KEY?'✅':'❌'}\n📸 IG: ${process.env.IG_ACCESS_TOKEN?'✅':'❌'}`, { parse_mode:'Markdown' });
-    }
-    if (text === '📚 Menyu') {
-      if (!menuItems.length) return bot.sendMessage(chatId, 'Menyu bo\'sh!');
-      for (const item of menuItems) {
-        await bot.sendMessage(chatId, `${item.emoji} *${item.title}* (${item.type})`, {
-          parse_mode:'Markdown',
-          reply_markup: { inline_keyboard: [[{ text:'🗑 O\'chirish', callback_data:`del_${item.id}` }]] }
-        });
-      }
-      return bot.sendMessage(chatId, '➕ Yangi element qo\'shish:', {
-        reply_markup: { inline_keyboard: [[{ text:'➕ Qo\'shish', web_app:{ url: MINI_APP_URL } }]] }
-      });
+      return send(
+        chatId,
+        `📊 <b>Statistika</b> (server qayta ishga tushgandan beri)\n` +
+          `💬 Izohlar: ${stats.comments}\n🎯 Kalit so'z: ${stats.matched}\n📩 DM yuborildi: ${stats.dmSent}\n` +
+          `❌ DM xato: ${stats.dmFailed}\n▶️ /start: ${stats.tgStarts}\n🎁 Berildi: ${stats.delivered}\n👥 Users: ${users.size}`
+      );
     }
     if (text === '⚙️ Sozlamalar') {
-      return bot.sendMessage(chatId, `⚙️ *Sozlamalar*\n📢 Kanal: ${TG_CHANNEL}\n🆓 Bepul: ${FREE_QUESTIONS} savol`, { parse_mode:'Markdown' });
+      return send(
+        chatId,
+        `⚙️ <b>Sozlamalar</b>\n📢 Kanal: ${esc(TG_CHANNEL)}\n🔑 Kalit so'zlar: ${RULES.map((r) => r.keyword).join(', ')}\n` +
+          `📸 IG token: ${IG_ACCESS_TOKEN ? '✅' : '❌'}  IG ID: ${IG_USER_ID ? '✅' : '❌'}\n🤖 AI: ${GROQ_API_KEY ? 'Groq' : ANTHROPIC_API_KEY ? 'Anthropic' : '❌'}`
+      );
     }
-    return;
   }
 
-  // USER
   if (text === '🌐 Til') {
-    return bot.sendMessage(chatId, 'Tilni tanlang:', { reply_markup: { inline_keyboard: [[
-      { text:'🇺🇿 O\'zbek', callback_data:'lang_uz' },
-      { text:'🇷🇺 Русский', callback_data:'lang_ru' },
-      { text:'🇬🇧 English', callback_data:'lang_en' }
-    ]]}});
+    return send(chatId, 'Tilni tanlang:', {
+      reply_markup: {
+        inline_keyboard: [[
+          { text: '🇺🇿 O\'zbek', callback_data: 'lang_uz' },
+          { text: '🇷🇺 Русский', callback_data: 'lang_ru' },
+          { text: '🇬🇧 English', callback_data: 'lang_en' },
+        ]],
+      },
+    });
   }
-
   if (text === '📚 Menyu') {
-    if (!menuItems.length) return bot.sendMessage(chatId, '📚 Menyu hozircha bo\'sh.');
-    const buttons = menuItems.map(i => [{ text:`${i.emoji} ${i.title}`, callback_data:`menu_${i.id}` }]);
-    return bot.sendMessage(chatId, '📚 *Menyu*', { parse_mode:'Markdown', reply_markup:{ inline_keyboard: buttons }});
+    if (!menuItems.length) return send(chatId, '📚 Menyu hozircha bo\'sh.');
+    return send(chatId, '📚 <b>Menyu</b>', {
+      reply_markup: { inline_keyboard: menuItems.map((i) => [{ text: `${i.emoji} ${i.title}`, callback_data: `menu_${i.id}` }]) },
+    });
   }
-
   if (text === '📢 Kanal') {
-    return bot.sendMessage(chatId, `📢 Kanalimiz:`, { reply_markup:{ inline_keyboard:[[
-      { text:'📢 Kanalga o\'tish', url:`https://t.me/${TG_CHANNEL.replace('@','')}` }
-    ]]}});
+    return send(chatId, '📢 Kanalimiz:', { reply_markup: { inline_keyboard: [[{ text: '📢 Kanalga o\'tish', url: CHANNEL_URL }]] } });
   }
-
-  if (text === '📊 Holatim') {
-    const isSub = await checkSub(userId);
-    user.subscribed = isSub;
-    return bot.sendMessage(chatId, `📊 *Holatim*\n📢 Obuna: ${isSub?'✅':'❌'}\n🤖 AI savollar: ${user.questions}/${FREE_QUESTIONS}\n🌐 Til: ${user.lang}`, { parse_mode:'Markdown' });
-  }
-
   if (text === '🤖 AI Chat') {
-    const isSub = await checkSub(userId);
-    user.subscribed = isSub;
-    if (!isSub && user.questions >= FREE_QUESTIONS) {
-      return bot.sendMessage(chatId, `🔒 Bepul savollar tugadi!\n\nDavom etish uchun kanalga obuna bo'ling:`, {
-        reply_markup:{ inline_keyboard:[[{ text:'📢 Obuna bo\'lish', url:`https://t.me/${TG_CHANNEL.replace('@','')}` }]]}
-      });
-    }
     user.aiMode = true;
-    const left = isSub ? '∞' : (FREE_QUESTIONS - user.questions);
-    return bot.sendMessage(chatId, `🤖 *AI Chat* ${isSub?'✅':'⚠️'}\n${isSub?'Cheksiz':'Qolgan: '+left+' ta'} savol\n\nSavolingizni yozing!`, { parse_mode:'Markdown' });
+    const sub = await checkSub(userId);
+    return send(chatId, `🤖 <b>AI Chat</b>\n${sub ? 'Cheksiz savol ✅' : `Bepul: ${Math.max(0, FREE_QUESTIONS - user.questions)} ta savol`}\n\nSavolingizni yozing!`);
   }
 
-  // AI MODE
   if (user.aiMode) {
-    const isSub = user.subscribed || await checkSub(userId);
-    user.subscribed = isSub;
-
-    if (!isSub && user.questions >= FREE_QUESTIONS) {
-      // aiMode o'chirilmaydi — obuna bo'lgandan keyin davom etadi
-      return bot.sendMessage(chatId, `🔒 *Bepul limit tugadi!*\n\nDavom etish uchun kanalga obuna bo'ling 👇`, {
-        parse_mode: 'Markdown',
-        reply_markup:{ inline_keyboard:[
-          [{ text:'📢 Obuna bo\'lish', url:`https://t.me/${TG_CHANNEL.replace('@','')}` }],
-          [{ text:'✅ Obunani tekshirish', callback_data:'check_sub_ai' }]
-        ]}
+    const sub = await checkSub(userId);
+    if (!sub && user.questions >= FREE_QUESTIONS) {
+      return send(chatId, '🔒 <b>Bepul savollar tugadi.</b>\nDavom etish uchun kanalga obuna bo\'ling 👇', {
+        reply_markup: {
+          inline_keyboard: [[{ text: '📢 Obuna bo\'lish', url: CHANNEL_URL }], [{ text: '✅ Tekshirish', callback_data: 'check_sub_ai' }]],
+        },
       });
     }
-
-    if (!isSub && user.questions === FREE_QUESTIONS - 1) {
-      await bot.sendMessage(chatId, `⚠️ Bu oxirgi bepul savolingiz!`);
-    }
-
-    const thinking = await bot.sendMessage(chatId, '🤔 ...');
-    user.history.push({ role:'user', content: text });
-    const reply = await askClaude(user.history, user.lang);
-    await bot.deleteMessage(chatId, thinking.message_id).catch(()=>{});
-    user.history.push({ role:'assistant', content: reply });
+    const thinking = await send(chatId, '🤔 ...');
+    user.history.push({ role: 'user', content: text });
+    const reply = await askAI(user.history, user.lang);
+    if (thinking) bot.deleteMessage(chatId, thinking.message_id).catch(() => {});
+    user.history.push({ role: 'assistant', content: reply });
     user.questions++;
-    return bot.sendMessage(chatId, reply);
+    // AI javobi ichida < > bo'lishi mumkin — oddiy matn sifatida
+    return bot.sendMessage(chatId, reply).catch((e) => log('❌ TG send:', e.message));
   }
 });
 
-bot.on('callback_query', async (query) => {
-  const chatId = query.message.chat.id;
-  const userId = query.from.id;
-  const username = query.from.username || '';
-  const data = query.data;
+bot.on('callback_query', async (q) => {
+  const chatId = q.message?.chat.id;
+  const userId = q.from.id;
+  const data = q.data || '';
   const user = getUser(userId);
+  const answer = (opts) => bot.answerCallbackQuery(q.id, opts).catch(() => {});
 
+  if (data.startsWith('get:')) {
+    const rule = ruleByKeyword(data.slice(4));
+    if (!rule) return answer();
+    if (!(await checkSub(userId))) return answer({ text: '❌ Hali obuna bo\'lmagansiz!', show_alert: true });
+    await answer({ text: '✅ Tasdiqlandi!' });
+    return deliver(chatId, userId, rule);
+  }
   if (data.startsWith('lang_')) {
-    user.lang = data.replace('lang_','');
-    await bot.answerCallbackQuery(query.id, { text:'✅ Til saqlandi!' });
-    return;
+    user.lang = data.slice(5);
+    return answer({ text: '✅ Til saqlandi!' });
   }
-
   if (data.startsWith('menu_')) {
-    const item = menuItems.find(i => i.id === parseInt(data.replace('menu_','')));
-    await bot.answerCallbackQuery(query.id);
+    await answer();
+    const item = menuItems.find((i) => i.id === Number(data.slice(5)));
     if (!item) return;
-    if (item.type === 'text') {
-      await bot.sendMessage(chatId, `${item.emoji} *${item.title}*\n\n${item.content}`, { parse_mode:'Markdown' });
-    } else {
-      await bot.sendMessage(chatId, `${item.emoji} *${item.title}*`, {
-        parse_mode:'Markdown',
-        reply_markup:{ inline_keyboard:[[{ text:`${item.emoji} Ochish`, url: item.url }]]}
-      });
-    }
-    return;
+    if (item.type === 'text') return send(chatId, `${item.emoji} <b>${esc(item.title)}</b>\n\n${esc(item.content)}`);
+    return send(chatId, `${item.emoji} <b>${esc(item.title)}</b>`, {
+      reply_markup: { inline_keyboard: [[{ text: `${item.emoji} Ochish`, url: item.url }]] },
+    });
   }
-
-  if (data.startsWith('del_') && isOwner(username)) {
-    menuItems = menuItems.filter(i => i.id !== parseInt(data.replace('del_','')));
-    await bot.answerCallbackQuery(query.id, { text:'🗑 O\'chirildi!' });
-    return;
-  }
-
-  if (data === 'recheck') {
-    const isSub = await checkSub(userId);
-    if (isSub) {
-      user.subscribed = true;
-      await bot.answerCallbackQuery(query.id, { text:'✅ Tasdiqlandi!' });
-      await bot.sendMessage(chatId, `✅ Tasdiqlandi!\nHavola: ${igRules[0].tgLink}`);
-    } else {
-      await bot.answerCallbackQuery(query.id, { text:'❌ Hali obuna bo\'lmagansiz!', show_alert:true });
-    }
-    return;
-  }
-
   if (data === 'check_sub_ai') {
-    const isSub = await checkSub(userId);
-    if (isSub) {
-      user.subscribed = true;
-      await bot.answerCallbackQuery(query.id, { text:'✅ Tasdiqlandi! Davom eting!' });
-      await bot.sendMessage(chatId, `✅ *Obuna tasdiqlandi!*\n\nEndi cheksiz savollar bera olasiz 🎉\nSavolingizni yozing 👇`, { parse_mode:'Markdown' });
-    } else {
-      await bot.answerCallbackQuery(query.id, { text:'❌ Hali obuna bo\'lmagansiz!', show_alert:true });
-    }
-    return;
+    if (!(await checkSub(userId))) return answer({ text: '❌ Hali obuna bo\'lmagansiz!', show_alert: true });
+    await answer({ text: '✅ Tasdiqlandi!' });
+    return send(chatId, '✅ <b>Obuna tasdiqlandi!</b>\nEndi cheksiz savol bera olasiz. Savolingizni yozing 👇');
   }
-
-  await bot.answerCallbackQuery(query.id);
+  return answer();
 });
 
-// Instagram Webhook
-app.get('/webhook/instagram', (req, res) => {
-  const { 'hub.mode':mode, 'hub.verify_token':token, 'hub.challenge':challenge } = req.query;
-  if (mode === 'subscribe' && token === (process.env.VERIFY_TOKEN||'instabot_verify_123')) res.send(challenge);
-  else res.sendStatus(403);
-});
+// ───────────────────────── HTTP ─────────────────────────
+const app = express();
+app.use(express.json({ limit: '1mb' }));
 
-app.post('/webhook/instagram', async (req, res) => {
+// Telegram webhook
+app.post(`/webhook/tg/${BOT_TOKEN}`, (req, res) => {
   res.sendStatus(200);
-  const body = req.body;
-  if (!body.entry) return;
-  for (const entry of body.entry) {
-    for (const change of (entry.changes||[])) {
-      const text = (change.value?.text || change.value?.message?.text || '').toLowerCase();
-      const senderId = change.value?.from?.id || change.value?.sender?.id;
-      const rule = igRules.find(r => r.keywords.some(k => text.includes(k)));
-      if (rule && senderId) {
-        pendingIG.set(senderId, { rule });
-        await sendInstaDM(senderId, rule.dmFirst);
-      }
-    }
+  try {
+    bot.processUpdate(req.body);
+  } catch (e) {
+    log('❌ processUpdate:', e.message);
+  }
+});
+// Eski manzil ham ishlasin (v7 webhook)
+app.post(`/webhook/${BOT_TOKEN}`, (req, res) => {
+  res.sendStatus(200);
+  try {
+    bot.processUpdate(req.body);
+  } catch (e) {
+    log('❌ processUpdate:', e.message);
   }
 });
 
-// API
+// Instagram webhook — tasdiqlash
+app.get('/webhook/instagram', (req, res) => {
+  const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge } = req.query;
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    log('✅ Instagram webhook tasdiqlandi');
+    return res.send(challenge);
+  }
+  log('❌ Instagram webhook: verify token mos emas');
+  res.sendStatus(403);
+});
+
+// Instagram webhook — hodisalar. Avval 200 qaytaramiz (Meta 20 s kutmaydi), keyin ishlaymiz.
+app.post('/webhook/instagram', (req, res) => {
+  res.sendStatus(200);
+  const body = req.body || {};
+  if (env('DEBUG') === 'on') log('📥 IG:', JSON.stringify(body).slice(0, 1500));
+  (async () => {
+    for (const entry of body.entry || []) {
+      for (const ch of entry.changes || []) {
+        if (ch.field === 'comments' || ch.field === 'live_comments') await handleComment(ch.value || {});
+      }
+      for (const m of entry.messaging || []) await handleMessage(m);
+    }
+  })().catch((e) => log('❌ IG webhook:', e.message));
+});
+
+// Mini App API
 app.get('/api/menu', (req, res) => res.json(menuItems));
 app.post('/api/menu', (req, res) => {
-  const { title, type, content, url, emoji } = req.body;
-  if (!title||!type) return res.status(400).json({ error:'title va type kerak' });
-  const item = { id:Date.now(), title, type, content:content||'', url:url||'', emoji:emoji||'📌' };
+  const { title, type, content, url, emoji } = req.body || {};
+  if (!title || !type) return res.status(400).json({ error: 'title va type kerak' });
+  const item = { id: Date.now(), title, type, content: content || '', url: url || '', emoji: emoji || '📌' };
   menuItems.push(item);
   res.json(item);
 });
-app.delete('/api/menu/:id', (req, res) => { menuItems=menuItems.filter(i=>i.id!=req.params.id); res.json({ok:true}); });
-app.get('/api/stats', (req, res) => res.json({ users:users.size, menuItems:menuItems.length, igConnected:!!process.env.IG_ACCESS_TOKEN, aiConnected:!!ANTHROPIC_API_KEY }));
-app.get('/health', (req, res) => res.json({ ok:true, version:'7.0' }));
+app.delete('/api/menu/:id', (req, res) => {
+  menuItems = menuItems.filter((i) => String(i.id) !== req.params.id);
+  res.json({ ok: true });
+});
+app.get('/api/stats', (req, res) => res.json({ users: users.size, ...stats }));
 
-// Static fayllar — eng oxirida
-app.use(express.static(__dirname));
+// Tekshiruv: brauzerda /health ni oching — nima yetishmasligini ko'rsatadi
+app.get('/health', (req, res) =>
+  res.json({
+    ok: true,
+    version: '8.0',
+    publicUrl: PUBLIC_URL || '❌ PUBLIC_URL yo\'q',
+    telegram: BOT_TOKEN ? '✅' : '❌ BOT_TOKEN yo\'q',
+    instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
+    instagramUserId: IG_USER_ID ? '✅' : '⚠ IG_USER_ID yo\'q (me ishlatiladi)',
+    ai: GROQ_API_KEY ? `Groq (${AI_MODEL})` : ANTHROPIC_API_KEY ? `Anthropic (${AI_MODEL})` : '❌',
+    keywords: RULES.map((r) => r.keyword),
+    stats,
+  })
+);
+app.use(express.static(__dirname, { index: 'index.html' }));
 
-app.listen(PORT, async () => {
-  console.log(`✅ Server port ${PORT}`);
-  await setWebhook();
+// 0.0.0.0 — Railway tashqaridan ulana olishi uchun
+app.listen(PORT, '0.0.0.0', async () => {
+  log(`✅ Server port ${PORT}`);
+  if (!BOT_TOKEN) return log('❌ BOT_TOKEN yo\'q — Telegram ishlamaydi');
+  if (!PUBLIC_URL) return log('❌ PUBLIC_URL yo\'q — Telegram webhook o\'rnatilmadi');
+  const url = `${PUBLIC_URL.replace(/\/$/, '')}/webhook/tg/${BOT_TOKEN}`;
+  try {
+    await bot.setWebHook(url, { drop_pending_updates: true });
+    log('✅ Telegram webhook o\'rnatildi:', `${PUBLIC_URL}/webhook/tg/***`);
+  } catch (e) {
+    log('❌ Telegram webhook:', e.message);
+  }
 });
