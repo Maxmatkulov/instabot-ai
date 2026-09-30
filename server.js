@@ -47,7 +47,8 @@ const PUBLIC_REPLY = env('PUBLIC_REPLY', 'on') !== 'off';
 // AI: GROQ_API_KEY bo'lsa Groq, bo'lmasa ANTHROPIC_API_KEY
 const GROQ_API_KEY = env('GROQ_API_KEY');
 const ANTHROPIC_API_KEY = env('ANTHROPIC_API_KEY');
-const AI_MODEL = env('AI_MODEL') || (GROQ_API_KEY ? 'llama-3.3-70b-versatile' : 'claude-sonnet-4-5');
+const GROQ_MODEL = env('GROQ_MODEL') || env('AI_MODEL') || 'openai/gpt-oss-120b';
+const CLAUDE_MODEL = env('CLAUDE_MODEL') || 'claude-haiku-4-5';
 
 const CHANNEL_URL = `https://t.me/${TG_CHANNEL.replace('@', '')}`;
 const botLink = (kw) => `https://t.me/${TG_BOT_USERNAME}?start=${encodeURIComponent(kw)}`;
@@ -288,32 +289,38 @@ async function askAI(history, lang) {
     { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: 'Отвечай кратко на русском.', en: 'Reply briefly in English.' }[lang] ||
     'Reply briefly.';
   const msgs = history.slice(-8);
-  try {
-    if (GROQ_API_KEY) {
+  // 1) Groq (bepul). Model eskirsa yoki xato bersa — 2) Claude'ga o'tamiz
+  if (GROQ_API_KEY) {
+    try {
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
-        body: JSON.stringify({ model: AI_MODEL, max_tokens: 800, messages: [{ role: 'system', content: sys }, ...msgs] }),
+        body: JSON.stringify({ model: GROQ_MODEL, max_tokens: 800, messages: [{ role: 'system', content: sys }, ...msgs] }),
       });
       const d = await r.json();
-      if (d.error) log('❌ Groq:', JSON.stringify(d.error));
-      return d.choices?.[0]?.message?.content || 'Javob olishda xato.';
+      const text = d.choices?.[0]?.message?.content;
+      if (text) return text;
+      log('❌ Groq:', JSON.stringify(d.error || d).slice(0, 300));
+    } catch (e) {
+      log('❌ Groq:', e.message);
     }
-    if (ANTHROPIC_API_KEY) {
+  }
+  if (ANTHROPIC_API_KEY) {
+    try {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: AI_MODEL, max_tokens: 800, system: sys, messages: msgs }),
+        body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 800, system: sys, messages: msgs }),
       });
       const d = await r.json();
-      if (d.error) log('❌ Anthropic:', JSON.stringify(d.error));
-      return d.content?.[0]?.text || 'Javob olishda xato.';
+      const text = d.content?.[0]?.text;
+      if (text) return text;
+      log('❌ Anthropic:', JSON.stringify(d.error || d).slice(0, 300));
+    } catch (e) {
+      log('❌ Anthropic:', e.message);
     }
-    return 'AI ulanmagan.';
-  } catch (e) {
-    log('❌ AI:', e.message);
-    return 'AI vaqtincha ishlamayapti, keyinroq urinib ko\'ring.';
   }
+  return GROQ_API_KEY || ANTHROPIC_API_KEY ? 'AI vaqtincha ishlamayapti, keyinroq urinib ko\'ring.' : 'AI ulanmagan.';
 }
 
 bot.on('message', track(async (msg) => {
@@ -547,7 +554,7 @@ app.get('/health', (req, res) =>
     instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
     instagramUserId: IG_USER_ID ? '✅' : '⚠ IG_USER_ID yo\'q (me ishlatiladi)',
     webhookSignature: IG_APP_SECRET ? `✅ tekshiriladi (${IG_APP_SECRETS.length} ta sir)` : '⚠ IG_APP_SECRET yo\'q — imzo tekshirilmaydi',
-    ai: GROQ_API_KEY ? `Groq (${AI_MODEL})` : ANTHROPIC_API_KEY ? `Anthropic (${AI_MODEL})` : '❌',
+    ai: [GROQ_API_KEY && `Groq (${GROQ_MODEL})`, ANTHROPIC_API_KEY && `Claude (${CLAUDE_MODEL})`].filter(Boolean).join(' → ') || '❌',
     keywords: RULES.map((r) => r.keyword),
   })
 );
