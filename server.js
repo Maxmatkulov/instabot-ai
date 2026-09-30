@@ -220,8 +220,22 @@ async function deliver(chatId, userId, rule) {
   }
   stats.delivered++;
   const url = rule.postUrl || CHANNEL_URL;
+  const kb = { reply_markup: { inline_keyboard: [[{ text: rule.postUrl ? '📖 Postni ochish' : '📢 Kanal', url }]] } };
+  // PDF bo'lsa — faylni o'zini yuboramiz (Telegram URL'dan o'zi yuklab oladi)
+  if (rule.file && PUBLIC_URL) {
+    try {
+      await bot.sendDocument(chatId, `${PUBLIC_URL}/${rule.file}`, {
+        caption: `✅ Rahmat! Mana <b>${esc(rule.title)}</b> 📘\n\nSaqlab qo'ying — qadamma-qadam qaytib ko'rasiz.`,
+        parse_mode: 'HTML',
+        ...kb,
+      });
+      return;
+    } catch (e) {
+      log('❌ sendDocument:', e.message);
+    }
+  }
   return send(chatId, `✅ Rahmat! Mana <b>${esc(rule.title)}</b> 👇`, {
-    reply_markup: { inline_keyboard: [[{ text: '📖 Ochish', url }]] },
+    reply_markup: { inline_keyboard: [[{ text: '📖 Ochish', url: rule.file && PUBLIC_URL ? `${PUBLIC_URL}/${rule.file}` : url }]] },
   });
 }
 

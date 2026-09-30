@@ -1,45 +1,71 @@
 {
-  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. postUrl — Telegram kanaldagi post havolasi (t.me/kanal/123). Bo'sh qolsa kanal havolasi yuboriladi.",
+  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. postUrl — Telegram kanaldagi post havolasi (t.me/kanal/123). Bo'sh qolsa kanal havolasi yuboriladi. file — public/guides/ ichidagi PDF: bot uni obunadan keyin fayl qilib yuboradi.",
   "rules": [
     {
       "keyword": "REELS",
-      "aliases": ["RELS", "RILS", "РИЛС", "REEL"],
+      "aliases": [
+        "RELS",
+        "RILS",
+        "РИЛС",
+        "REEL"
+      ],
       "title": "Montajsiz Reels — to'liq jarayon",
-      "postUrl": ""
+      "postUrl": "",
+      "file": "guides/montajsiz-reels.pdf"
     },
     {
       "keyword": "BOT",
-      "aliases": ["БОТ", "INSTABOT"],
+      "aliases": [
+        "БОТ",
+        "INSTABOT"
+      ],
       "title": "Izohga avtomatik javob beruvchi bot",
       "postUrl": ""
     },
     {
       "keyword": "CLAUDE",
-      "aliases": ["KLOD", "CLOUDE", "КЛОД"],
+      "aliases": [
+        "KLOD",
+        "CLOUDE",
+        "КЛОД"
+      ],
       "title": "Claude Code — boshlash qo'llanmasi",
       "postUrl": ""
     },
     {
       "keyword": "SAYT",
-      "aliases": ["SITE", "САЙТ"],
+      "aliases": [
+        "SITE",
+        "САЙТ"
+      ],
       "title": "AI bilan sayt — qadamlar",
       "postUrl": ""
     },
     {
       "keyword": "DEPLOY",
-      "aliases": ["DEPLOI", "ДЕПЛОЙ"],
+      "aliases": [
+        "DEPLOI",
+        "ДЕПЛОЙ"
+      ],
       "title": "Saytni internetga chiqarish",
       "postUrl": ""
     },
     {
       "keyword": "AGENT",
-      "aliases": ["AGENTS", "АГЕНТ"],
+      "aliases": [
+        "AGENTS",
+        "АГЕНТ"
+      ],
       "title": "AI agentlar jamoasi",
       "postUrl": ""
     },
     {
       "keyword": "XAVF",
-      "aliases": ["HAVF", "XAVFSIZLIK", "ХАВФ"],
+      "aliases": [
+        "HAVF",
+        "XAVFSIZLIK",
+        "ХАВФ"
+      ],
       "title": "AI xavfsizligi — tekshiruv ro'yxati",
       "postUrl": ""
     }
