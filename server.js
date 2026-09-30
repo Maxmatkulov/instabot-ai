@@ -600,7 +600,15 @@ async function setTelegramWebhook() {
   if (!PUBLIC_URL) return '❌ PUBLIC_URL yo\'q';
   try {
     await bot.setWebHook(`${PUBLIC_URL}/webhook/tg/${BOT_TOKEN}`, { drop_pending_updates: true });
-    return `✅ Telegram webhook: ${PUBLIC_URL}/webhook/tg/***`;
+    // Chat pastidagi "InstaBot AI" tugmasi ham yangi manzilga
+    let menu = '';
+    try {
+      await bot.setChatMenuButton({ menu_button: JSON.stringify({ type: 'web_app', text: 'InstaBot AI', web_app: { url: MINI_APP_URL } }) });
+      menu = `\n✅ Menyu tugmasi: ${MINI_APP_URL}`;
+    } catch (e) {
+      menu = '\n⚠ Menyu tugmasi: ' + e.message;
+    }
+    return `✅ Telegram webhook: ${PUBLIC_URL}/webhook/tg/***${menu}`;
   } catch (e) {
     return '❌ Telegram webhook: ' + e.message;
   }
