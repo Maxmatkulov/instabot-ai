@@ -39,7 +39,9 @@ const IG_USERNAME = env('IG_USERNAME').toLowerCase();
 const IG_API = env('IG_API_HOST', 'https://graph.instagram.com') + '/' + env('IG_API_VERSION', 'v21.0');
 const VERIFY_TOKEN = env('VERIFY_TOKEN', 'instabot_verify_123');
 // Meta → Instagram API setup sahifasidagi "Секрет приложения Instagram". Bo'lsa, soxta webhooklar rad etiladi.
-const IG_APP_SECRET = env('IG_APP_SECRET');
+// Bir nechta sir bo'lsa vergul bilan: IG_APP_SECRET=instagram_sir,facebook_sir
+const IG_APP_SECRETS = env('IG_APP_SECRET').split(',').map((x) => x.trim()).filter(Boolean);
+const IG_APP_SECRET = IG_APP_SECRETS.length > 0;
 const PUBLIC_REPLY = env('PUBLIC_REPLY', 'on') !== 'off';
 
 // AI: GROQ_API_KEY bo'lsa Groq, bo'lmasa ANTHROPIC_API_KEY
@@ -433,8 +435,13 @@ app.use(express.json({ limit: '1mb', verify: (req, res, buf) => { req.rawBody = 
 function validMetaSignature(req) {
   if (!IG_APP_SECRET) return true; // sekret qo'yilmagan bo'lsa — tekshiruvsiz (health'da ogohlantirish)
   const sig = req.get('x-hub-signature-256') || '';
-  const expected = 'sha256=' + crypto.createHmac('sha256', IG_APP_SECRET).update(req.rawBody || '').digest('hex');
-  return sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  const ok = IG_APP_SECRETS.findIndex((sec) => {
+    const expected = 'sha256=' + crypto.createHmac('sha256', sec).update(req.rawBody || '').digest('hex');
+    return sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  });
+  if (ok >= 0) log(`🔐 IG imzo mos keldi: ${ok + 1}-sir`);
+  else log(`⛔ IG imzo mos kelmadi (header ${sig ? 'bor' : 'YO\'Q'}, sirlar soni: ${IG_APP_SECRETS.length})`);
+  return ok >= 0;
 }
 
 // 2) Mini App so'rovi haqiqatan Telegram'dan va aynan admin'dan kelganini tekshirish (initData imzosi)
@@ -526,7 +533,7 @@ app.get('/health', (req, res) =>
     telegram: BOT_TOKEN ? '✅' : '❌ BOT_TOKEN yo\'q',
     instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
     instagramUserId: IG_USER_ID ? '✅' : '⚠ IG_USER_ID yo\'q (me ishlatiladi)',
-    webhookSignature: IG_APP_SECRET ? '✅ tekshiriladi' : '⚠ IG_APP_SECRET yo\'q — imzo tekshirilmaydi',
+    webhookSignature: IG_APP_SECRET ? `✅ tekshiriladi (${IG_APP_SECRETS.length} ta sir)` : '⚠ IG_APP_SECRET yo\'q — imzo tekshirilmaydi',
     ai: GROQ_API_KEY ? `Groq (${AI_MODEL})` : ANTHROPIC_API_KEY ? `Anthropic (${AI_MODEL})` : '❌',
     keywords: RULES.map((r) => r.keyword),
   })
