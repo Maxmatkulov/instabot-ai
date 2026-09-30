@@ -40,7 +40,7 @@ const IG_API = env('IG_API_HOST', 'https://graph.instagram.com') + '/' + env('IG
 const VERIFY_TOKEN = env('VERIFY_TOKEN', 'instabot_verify_123');
 // Meta → Instagram API setup sahifasidagi "Секрет приложения Instagram". Bo'lsa, soxta webhooklar rad etiladi.
 // Bir nechta sir bo'lsa vergul bilan: IG_APP_SECRET=instagram_sir,facebook_sir
-const IG_APP_SECRETS = env('IG_APP_SECRET').split(',').map((x) => x.trim()).filter(Boolean);
+const IG_APP_SECRETS = [env('IG_APP_SECRET'), env('FB_APP_SECRET')].join(',').split(',').map((x) => x.trim()).filter(Boolean);
 const IG_APP_SECRET = IG_APP_SECRETS.length > 0;
 const PUBLIC_REPLY = env('PUBLIC_REPLY', 'on') !== 'off';
 
