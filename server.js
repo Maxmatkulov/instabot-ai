@@ -17,7 +17,13 @@ const TelegramBot = require('node-telegram-bot-api');
 const env = (k, d = '') => (process.env[k] ?? d).trim();
 
 const BOT_TOKEN = env('BOT_TOKEN');
-const PUBLIC_URL = env('PUBLIC_URL') || env('MINI_APP_URL') || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : '');
+const hostUrl = (h) => (h ? `https://${h}` : '');
+const PUBLIC_URL = (
+  env('PUBLIC_URL') ||
+  hostUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
+  hostUrl(process.env.RAILWAY_PUBLIC_DOMAIN) ||
+  env('MINI_APP_URL')
+).replace(/\/$/, '');
 const MINI_APP_URL = env('MINI_APP_URL') || PUBLIC_URL;
 const TG_CHANNEL = env('TG_CHANNEL', '@mashrabbekmaxmatkulov');
 const TG_BOT_USERNAME = env('TG_BOT_USERNAME', 'mmnchat_bot');
@@ -161,13 +167,25 @@ async function handleMessage(m) {
 }
 
 // ───────────────────────── Telegram bot ─────────────────────────
-const bot = new TelegramBot(BOT_TOKEN || 'no-token', { polling: false });
+const bot = new TelegramBot(BOT_TOKEN || 'no-token', { polling: false, ...(env('TG_API_URL') ? { baseApiUrl: env('TG_API_URL') } : {}) });
 const users = new Map();
 const getUser = (id) => {
   if (!users.has(id)) users.set(id, { questions: 0, history: [], lang: 'uz', aiMode: false });
   return users.get(id);
 };
 const isOwner = (u) => (u || '').toLowerCase() === OWNER_USERNAME;
+
+// Serverless (Vercel) uchun: handlerlar tugaguncha javobni kutamiz, aks holda funksiya yarim yo'lda to'xtaydi
+const pending = [];
+const track = (fn) => (...a) => {
+  const p = Promise.resolve().then(() => fn(...a)).catch((e) => log('❌ handler:', e.message));
+  pending.push(p);
+  return p;
+};
+async function handleTelegram(update) {
+  bot.processUpdate(update);
+  await Promise.allSettled(pending.splice(0));
+}
 
 // Xato bo'lsa ham yiqilmaydigan yuborish
 const send = (chatId, text, opts = {}) =>
@@ -214,7 +232,7 @@ const userKb = {
   },
 };
 
-bot.onText(/^\/start(?:\s+(.+))?$/, async (msg, match) => {
+bot.onText(/^\/start(?:\s+(.+))?$/, track(async (msg, match) => {
   const chatId = msg.chat.id;
   const name = esc(msg.from.first_name || 'do\'stim');
   const param = (match[1] || '').trim();
@@ -239,7 +257,7 @@ bot.onText(/^\/start(?:\s+(.+))?$/, async (msg, match) => {
     });
   }
   return send(chatId, `👋 Salom, <b>${name}</b>!\n\n🤖 AI yordamchi botga xush kelibsiz!`, userKb);
-});
+}));
 
 // ───────────── Menyu (Mini App orqali boshqariladi) ─────────────
 let menuItems = [
@@ -279,7 +297,7 @@ async function askAI(history, lang) {
   }
 }
 
-bot.on('message', async (msg) => {
+bot.on('message', track(async (msg) => {
   if (!msg.text || msg.text.startsWith('/')) return;
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -352,9 +370,9 @@ bot.on('message', async (msg) => {
     // AI javobi ichida < > bo'lishi mumkin — oddiy matn sifatida
     return bot.sendMessage(chatId, reply).catch((e) => log('❌ TG send:', e.message));
   }
-});
+}));
 
-bot.on('callback_query', async (q) => {
+bot.on('callback_query', track(async (q) => {
   const chatId = q.message?.chat.id;
   const userId = q.from.id;
   const data = q.data || '';
@@ -387,30 +405,23 @@ bot.on('callback_query', async (q) => {
     return send(chatId, '✅ <b>Obuna tasdiqlandi!</b>\nEndi cheksiz savol bera olasiz. Savolingizni yozing 👇');
   }
   return answer();
-});
+}));
 
 // ───────────────────────── HTTP ─────────────────────────
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 
 // Telegram webhook
-app.post(`/webhook/tg/${BOT_TOKEN}`, (req, res) => {
-  res.sendStatus(200);
+const tgWebhook = async (req, res) => {
   try {
-    bot.processUpdate(req.body);
+    await handleTelegram(req.body);
   } catch (e) {
-    log('❌ processUpdate:', e.message);
+    log('❌ TG update:', e.message);
   }
-});
-// Eski manzil ham ishlasin (v7 webhook)
-app.post(`/webhook/${BOT_TOKEN}`, (req, res) => {
   res.sendStatus(200);
-  try {
-    bot.processUpdate(req.body);
-  } catch (e) {
-    log('❌ processUpdate:', e.message);
-  }
-});
+};
+app.post(`/webhook/tg/${BOT_TOKEN}`, tgWebhook);
+app.post(`/webhook/${BOT_TOKEN}`, tgWebhook); // eski v7 manzil
 
 // Instagram webhook — tasdiqlash
 app.get('/webhook/instagram', (req, res) => {
@@ -423,19 +434,21 @@ app.get('/webhook/instagram', (req, res) => {
   res.sendStatus(403);
 });
 
-// Instagram webhook — hodisalar. Avval 200 qaytaramiz (Meta 20 s kutmaydi), keyin ishlaymiz.
-app.post('/webhook/instagram', (req, res) => {
-  res.sendStatus(200);
+// Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
+app.post('/webhook/instagram', async (req, res) => {
   const body = req.body || {};
   if (env('DEBUG') === 'on') log('📥 IG:', JSON.stringify(body).slice(0, 1500));
-  (async () => {
+  try {
     for (const entry of body.entry || []) {
       for (const ch of entry.changes || []) {
         if (ch.field === 'comments' || ch.field === 'live_comments') await handleComment(ch.value || {});
       }
       for (const m of entry.messaging || []) await handleMessage(m);
     }
-  })().catch((e) => log('❌ IG webhook:', e.message));
+  } catch (e) {
+    log('❌ IG webhook:', e.message);
+  }
+  res.sendStatus(200);
 });
 
 // Mini App API
@@ -467,18 +480,31 @@ app.get('/health', (req, res) =>
     stats,
   })
 );
-app.use(express.static(__dirname, { index: 'index.html' }));
-
-// 0.0.0.0 — Railway tashqaridan ulana olishi uchun
-app.listen(PORT, '0.0.0.0', async () => {
-  log(`✅ Server port ${PORT}`);
-  if (!BOT_TOKEN) return log('❌ BOT_TOKEN yo\'q — Telegram ishlamaydi');
-  if (!PUBLIC_URL) return log('❌ PUBLIC_URL yo\'q — Telegram webhook o\'rnatilmadi');
-  const url = `${PUBLIC_URL.replace(/\/$/, '')}/webhook/tg/${BOT_TOKEN}`;
+// Telegram webhook'ni o'rnatish: brauzerda /setup?key=VERIFY_TOKEN ni bir marta oching (Vercel'da shart)
+async function setTelegramWebhook() {
+  if (!BOT_TOKEN) return '❌ BOT_TOKEN yo\'q';
+  if (!PUBLIC_URL) return '❌ PUBLIC_URL yo\'q';
   try {
-    await bot.setWebHook(url, { drop_pending_updates: true });
-    log('✅ Telegram webhook o\'rnatildi:', `${PUBLIC_URL}/webhook/tg/***`);
+    await bot.setWebHook(`${PUBLIC_URL}/webhook/tg/${BOT_TOKEN}`, { drop_pending_updates: true });
+    return `✅ Telegram webhook: ${PUBLIC_URL}/webhook/tg/***`;
   } catch (e) {
-    log('❌ Telegram webhook:', e.message);
+    return '❌ Telegram webhook: ' + e.message;
   }
+}
+app.get('/setup', async (req, res) => {
+  if (req.query.key !== VERIFY_TOKEN) return res.status(403).send('key noto\'g\'ri');
+  res.send(await setTelegramWebhook());
 });
+
+// Mini App sahifasi (public/index.html). Vercel'da public/ papkani o'zi beradi.
+app.use(express.static(path.join(__dirname, 'public')));
+
+module.exports = app;
+
+// Oddiy serverda (Railway, VPS, kompyuter) — o'zi ishga tushadi va webhookni o'rnatadi
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', async () => {
+    log(`✅ Server port ${PORT}`);
+    log(await setTelegramWebhook());
+  });
+}
