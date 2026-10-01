@@ -20,9 +20,10 @@
         "БОТ",
         "INSTABOT"
       ],
-      "title": "Izohga avtomatik javob beruvchi bot",
+      "title": "Izohga javob beradigan bot — qo'llanma",
       "postUrl": "",
-      "reels": []
+      "reels": [],
+      "file": "guides/bot.pdf"
     },
     {
       "keyword": "CLAUDE",
