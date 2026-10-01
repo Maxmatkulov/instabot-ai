@@ -124,7 +124,9 @@ async function matchCommentRule(text, mediaId) {
   if (candidates.every((r) => !r.codes.length)) return candidates[0];
   const code = await mediaShortcode(mediaId);
   log(`🎬 media ${mediaId} → ${code}`);
-  return candidates.find((r) => r.codes.length && code && r.codes.includes(code)) || candidates.find((r) => !r.codes.length) || null;
+  // Instagram video kodini bermasa — bot jim qolmasin: birinchi mos qoidani ishlatamiz
+  if (!code) return candidates[0];
+  return candidates.find((r) => r.codes.length && r.codes.includes(code)) || candidates.find((r) => !r.codes.length) || null;
 }
 const ruleByKeyword = (kw) => RULES.find((r) => r.keyword === String(kw || '').toUpperCase());
 
