@@ -154,16 +154,88 @@ async function ig(pathname, body) {
   }
 }
 
+const IG_PROFILE = (env('IG_USERNAME') || 'mashrabbek.maxmatkulov').replace('@', '');
+const PROFILE_URL = `https://www.instagram.com/${IG_PROFILE}/`;
+// Obuna tekshiruvi: FOLLOW_CHECK=off — hammaga o'chiq; rules.json'da "follow": false — bitta so'z uchun o'chiq
+const needsFollow = (rule) => env('FOLLOW_CHECK', 'on') !== 'off' && rule.follow !== false;
+
 const dmText = (rule) =>
   `Salom! 👋 "${rule.title}" tayyor.\n\n` +
   `Olish uchun Telegram botga o'ting, u darhol yuboradi 👇\n${botLink(rule.keyword)}`;
 
+// Tugmali xabar (Instagram button template, 3 tagacha tugma, sarlavha ≤ 20 belgi)
+const buttons = (text, btns) => ({ attachment: { type: 'template', payload: { template_type: 'button', text: text.slice(0, 640), buttons: btns } } });
+const followBtns = (rule) => [
+  { type: 'web_url', url: PROFILE_URL, title: '👤 Sahifaga o\'tish' },
+  { type: 'postback', title: '✅ Obuna bo\'ldim', payload: `FOLLOW:${rule.keyword}` },
+];
+const gateText = (rule) =>
+  `Salom! 👋 "${rule.title}" tayyor.\n\n` +
+  `Olish uchun avval sahifamga obuna bo'ling, keyin "✅ Obuna bo'ldim" tugmasini bosing 👇`;
+const notYetText = () =>
+  `Hali obuna ko'rinmayapti 🙂\n\n@${IG_PROFILE} sahifasiga obuna bo'ling, keyin tugmani yana bosing 👇`;
+const linkMessage = (rule) =>
+  buttons(`Rahmat, obuna uchun! 🙌\n\n"${rule.title}" Telegram botda kutyapti — tugmani bosing, darhol yuboradi 👇`, [
+    { type: 'web_url', url: botLink(rule.keyword), title: '📥 Qo\'llanmani olish' },
+  ]);
+
+const igSend = (recipient, message) => ig(`${IG_USER_ID || 'me'}/messages`, { recipient, message });
+
+// Tugmali xabar yuboriladi; Instagram rad etsa — tez javob (quick reply), u ham bo'lmasa — oddiy matn
+async function sendWithButtons(recipient, text, btns, plainFallback) {
+  const r1 = await igSend(recipient, buttons(text, btns));
+  if (r1) return r1;
+  const qr = btns.filter((b) => b.type === 'postback').map((b) => ({ content_type: 'text', title: b.title, payload: b.payload }));
+  const link = btns.find((b) => b.type === 'web_url');
+  if (qr.length) {
+    const r2 = await igSend(recipient, { text: `${text}${link ? `\n\n${link.url}` : ''}`, quick_replies: qr });
+    if (r2) return r2;
+  }
+  return igSend(recipient, { text: plainFallback || text });
+}
+
 // Izoh egasiga shaxsiy xabar. Instagram faqat shu usulga ruxsat beradi: recipient.comment_id (7 kun ichida, 1 marta)
-const privateReply = (commentId, rule) =>
-  ig(`${IG_USER_ID || 'me'}/messages`, { recipient: { comment_id: commentId }, message: { text: dmText(rule) } });
+async function privateReply(commentId, rule) {
+  const to = { comment_id: commentId };
+  if (!needsFollow(rule)) return igSend(to, { text: dmText(rule) });
+  return sendWithButtons(to, gateText(rule), followBtns(rule), dmText(rule));
+}
 
 // Oddiy DM (odam o'zi yozgan bo'lsa, 24 soat ichida)
-const sendDM = (igsid, text) => ig(`${IG_USER_ID || 'me'}/messages`, { recipient: { id: igsid }, message: { text } });
+const sendDM = (igsid, text) => igSend({ id: igsid }, { text });
+
+// Foydalanuvchi sahifaga obuna bo'lganmi? true / false / null (bilib bo'lmadi)
+async function igFollows(igsid) {
+  try {
+    const r = await fetch(`${IG_API}/${igsid}?fields=username,is_user_follow_business`, { headers: { Authorization: `Bearer ${IG_ACCESS_TOKEN}` } });
+    const d = await r.json();
+    if (typeof d.is_user_follow_business === 'boolean') {
+      log(`👤 @${d.username || igsid} obuna: ${d.is_user_follow_business ? 'ha' : 'yo\'q'}`);
+      return d.is_user_follow_business;
+    }
+    log('⚠ obuna tekshiruvi:', JSON.stringify(d.error || d).slice(0, 300));
+  } catch (e) {
+    log('⚠ obuna tekshiruvi:', e.message);
+  }
+  return null;
+}
+
+// "Obuna bo'ldim" bosilganda: obuna bo'lsa — havola, bo'lmasa — yana so'raymiz.
+// Tekshirib bo'lmasa (API xatosi) — odamni qiynamaymiz, havolani beramiz.
+async function checkAndDeliver(igsid, rule) {
+  const follows = await igFollows(igsid);
+  if (follows === false) {
+    stats.notFollowing++;
+    return sendWithButtons({ id: igsid }, notYetText(), followBtns(rule));
+  }
+  stats.followOk++;
+  const ok = (await igSend({ id: igsid }, linkMessage(rule))) || (await sendDM(igsid, dmText(rule)));
+  ok ? stats.dmSent++ : stats.dmFailed++;
+  return ok;
+}
+
+// Kim qaysi so'z uchun obunani kutyapti (odam tugma o'rniga "obuna bo'ldim" deb yozsa)
+const waiting = new Map();
 
 const PUBLIC_REPLIES = ['DM\'ga yubordim 📩', 'Yubordim, DM\'ni tekshiring ✅', 'Direct\'da kutyapti 📩', 'Yuborildi 🚀'];
 const publicReply = (commentId) =>
@@ -179,7 +251,7 @@ function firstTime(id) {
   return true;
 }
 
-const stats = { comments: 0, matched: 0, dmSent: 0, dmFailed: 0, tgStarts: 0, delivered: 0 };
+const stats = { comments: 0, matched: 0, dmSent: 0, dmFailed: 0, followOk: 0, notFollowing: 0, tgStarts: 0, delivered: 0 };
 
 async function handleComment(v) {
   const commentId = v.id;
@@ -196,20 +268,42 @@ async function handleComment(v) {
   stats.matched++;
   log(`💬 @${fromName}: "${v.text}" → ${rule.keyword}`);
   const ok = await privateReply(commentId, rule);
+  if (ok && needsFollow(rule)) waiting.set(fromId, rule.keyword);
   if (ok) stats.dmSent++;
   else stats.dmFailed++;
   if (ok && PUBLIC_REPLY) await publicReply(commentId);
 }
 
+const DONE_RE = /obuna|bo'?ldim|boldim|bo‘ldim|tayyor|подписал|done|followed/i;
+
 async function handleMessage(m) {
-  if (m.message?.is_echo || !m.message?.text) return;
   const igsid = m.sender?.id;
-  if (!igsid || igsid === IG_USER_ID) return;
-  const rule = matchRule(m.message.text);
-  if (!rule || !firstTime(`m:${m.message.mid}`)) return;
-  stats.matched++;
-  log(`📩 DM "${m.message.text}" → ${rule.keyword}`);
-  (await sendDM(igsid, dmText(rule))) ? stats.dmSent++ : stats.dmFailed++;
+  if (!igsid || igsid === IG_USER_ID || m.message?.is_echo) return;
+  // Tugma bosildi: postback yoki quick reply
+  const payload = m.postback?.payload || m.message?.quick_reply?.payload || '';
+  const mid = m.postback?.mid || m.message?.mid || `${igsid}:${m.timestamp}`;
+  if (payload.startsWith('FOLLOW:')) {
+    const rule = ruleByKeyword(payload.slice(7));
+    if (!rule || !firstTime(`p:${mid}`)) return;
+    log(`🔘 "Obuna bo'ldim" → ${rule.keyword}`);
+    waiting.set(igsid, rule.keyword);
+    return checkAndDeliver(igsid, rule);
+  }
+  const text = m.message?.text;
+  if (!text || !firstTime(`m:${mid}`)) return;
+  const rule = matchRule(text);
+  if (rule) {
+    stats.matched++;
+    log(`📩 DM "${text}" → ${rule.keyword}`);
+    if (!needsFollow(rule)) return (await sendDM(igsid, dmText(rule))) ? stats.dmSent++ : stats.dmFailed++;
+    waiting.set(igsid, rule.keyword);
+    return checkAndDeliver(igsid, rule);
+  }
+  // Tugma o'rniga "obuna bo'ldim" deb yozdi
+  if (DONE_RE.test(text) && waiting.has(igsid)) {
+    const r = ruleByKeyword(waiting.get(igsid));
+    if (r) return checkAndDeliver(igsid, r);
+  }
 }
 
 // ───────────────────────── Telegram bot ─────────────────────────
@@ -601,6 +695,8 @@ app.post('/webhook/instagram', async (req, res) => {
         if (ch.field === 'comments' || ch.field === 'live_comments') await handleComment(ch.value || {});
       }
       for (const m of entry.messaging || []) await handleMessage(m);
+      // Ba'zan postback'lar "changes" ichida keladi
+      for (const ch of entry.changes || []) if (ch.field === 'messaging_postbacks' && ch.value) await handleMessage(ch.value);
     }
   } catch (e) {
     log('❌ IG webhook:', e.message);
@@ -627,7 +723,7 @@ app.get('/api/stats', adminOnly, (req, res) => res.json({ users: users.size, ...
 app.get('/health', (req, res) =>
   res.json({
     ok: true,
-    version: '8.0',
+    version: '8.1',
     publicUrl: PUBLIC_URL || '❌ PUBLIC_URL yo\'q',
     telegram: BOT_TOKEN ? '✅' : '❌ BOT_TOKEN yo\'q',
     instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
@@ -635,6 +731,7 @@ app.get('/health', (req, res) =>
     webhookSignature: IG_APP_SECRET ? `✅ tekshiriladi (${IG_APP_SECRETS.length} ta sir)` : '⚠ IG_APP_SECRET yo\'q — imzo tekshirilmaydi',
     ai: [GROQ_API_KEY && `Groq (${GROQ_MODEL})`, ANTHROPIC_API_KEY && `Claude (${CLAUDE_MODEL})`].filter(Boolean).join(' → ') || '❌',
     keywords: RULES.map((r) => r.keyword),
+    followCheck: env('FOLLOW_CHECK', 'on') !== 'off' ? `✅ @${IG_PROFILE}` : 'o\'chiq',
   })
 );
 // Telegram webhook'ni o'rnatish: brauzerda /setup?key=VERIFY_TOKEN ni bir marta oching (Vercel'da shart)
