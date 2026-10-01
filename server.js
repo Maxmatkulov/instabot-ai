@@ -73,7 +73,8 @@ function shortcode(url) {
 function loadRules() {
   try {
     const raw = JSON.parse(fs.readFileSync(path.join(__dirname, 'rules.json'), 'utf8'));
-    RULES = (raw.rules || []).map((r) => ({
+    // "active": false — qoida vaqtincha o'chiq (menyuda yo'q, kalit so'z ishlamaydi)
+    RULES = (raw.rules || []).filter((r) => r.active !== false).map((r) => ({
       ...r,
       keyword: String(r.keyword).toUpperCase(),
       words: [r.keyword, ...(r.aliases || [])].map((w) => String(w).toUpperCase()),

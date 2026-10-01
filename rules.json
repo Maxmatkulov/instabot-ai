@@ -1,5 +1,5 @@
 {
-  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa).",
+  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa). active: false — qoida vaqtincha o'chiq (menyuda ko'rinmaydi, kalit so'z ishlamaydi).",
   "rules": [
     {
       "keyword": "REELS",
@@ -12,7 +12,8 @@
       "title": "Montajsiz Reels — to'liq jarayon",
       "postUrl": "",
       "file": "guides/montajsiz-reels.pdf",
-      "reels": []
+      "reels": [],
+      "active": false
     },
     {
       "keyword": "BOT",
