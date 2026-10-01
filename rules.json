@@ -16,6 +16,19 @@
       "active": false
     },
     {
+      "keyword": "XABARNOMA",
+      "aliases": [
+        "XABARNOMAAI",
+        "HABARNOMA",
+        "ХАБАРНОМА"
+      ],
+      "title": "Xabarnoma AI — sinovchilar ro'yxati",
+      "waitlist": true,
+      "waitlistText": "Xabarnoma AI ochilishi bilan birinchi sinovchilar qatorida sizga shu yerda xabar beramiz.",
+      "postUrl": "",
+      "reels": []
+    },
+    {
       "keyword": "BOT",
       "aliases": [
         "БОТ",

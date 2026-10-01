@@ -159,8 +159,9 @@ const PROFILE_URL = `https://www.instagram.com/${IG_PROFILE}/`;
 // Obuna tekshiruvi: FOLLOW_CHECK=off — hammaga o'chiq; rules.json'da "follow": false — bitta so'z uchun o'chiq
 const needsFollow = (rule) => env('FOLLOW_CHECK', 'on') !== 'off' && rule.follow !== false;
 
+const ready = (rule) => (rule.waitlist ? `"${rule.title}" ochiq.` : `"${rule.title}" tayyor.`);
 const dmText = (rule) =>
-  `Salom! 👋 "${rule.title}" tayyor.\n\n` +
+  `Salom! 👋 ${ready(rule)}\n\n` +
   `Olish uchun Telegram botga o'ting, u darhol yuboradi 👇\n${botLink(rule.keyword)}`;
 
 // Tugmali xabar (Instagram button template, 3 tagacha tugma, sarlavha ≤ 20 belgi)
@@ -170,13 +171,13 @@ const followBtns = (rule) => [
   { type: 'postback', title: '✅ Obuna bo\'ldim', payload: `FOLLOW:${rule.keyword}` },
 ];
 const gateText = (rule) =>
-  `Salom! 👋 "${rule.title}" tayyor.\n\n` +
-  `Olish uchun avval sahifamga obuna bo'ling, keyin "✅ Obuna bo'ldim" tugmasini bosing 👇`;
+  `Salom! 👋 ${ready(rule)}\n\n` +
+  `${rule.waitlist ? 'Yozilish' : 'Olish'} uchun avval sahifamga obuna bo'ling, keyin "✅ Obuna bo'ldim" tugmasini bosing 👇`;
 const notYetText = () =>
   `Hali obuna ko'rinmayapti 🙂\n\n@${IG_PROFILE} sahifasiga obuna bo'ling, keyin tugmani yana bosing 👇`;
 const linkMessage = (rule) =>
-  buttons(`Rahmat, obuna uchun! 🙌\n\n"${rule.title}" Telegram botda kutyapti — tugmani bosing, darhol yuboradi 👇`, [
-    { type: 'web_url', url: botLink(rule.keyword), title: '📥 Qo\'llanmani olish' },
+  buttons(`Rahmat, obuna uchun! 🙌\n\n"${rule.title}" ${rule.waitlist ? 'Telegram botda — tugmani bosing, bir bosishda yozilasiz 👇' : 'Telegram botda kutyapti — tugmani bosing, darhol yuboradi 👇'}`, [
+    { type: 'web_url', url: botLink(rule.keyword), title: rule.waitlist ? '✍️ Ro\'yxatga yozilish' : '📥 Qo\'llanmani olish' },
   ]);
 
 const igSend = (recipient, message) => ig(`${IG_USER_ID || 'me'}/messages`, { recipient, message });
@@ -358,6 +359,24 @@ const subscribeKb = (kw) => ({
   },
 });
 
+// Egasi Telegram'da /id yozib bilib oladi va Vercel'ga OWNER_CHAT_ID qilib qo'yadi
+const OWNER_CHAT_ID = env('OWNER_CHAT_ID');
+const waitlist = new Map();
+async function joinWaitlist(chatId, userId, rule) {
+  const isNew = !waitlist.has(userId);
+  waitlist.set(userId, Date.now());
+  stats.waitlist = waitlist.size;
+  await send(
+    chatId,
+    `✅ <b>Siz ro'yxatdasiz!</b>\n\n${esc(rule.waitlistText || `"${rule.title}" tayyor bo'lishi bilan birinchilardan bo'lib sizga shu yerda xabar beramiz.`)}\n\n` +
+      `Hozircha AI yordamchini sinab ko'ring — pastdagi <b>🤖 AI Chat</b> tugmasi.`
+  );
+  if (isNew && OWNER_CHAT_ID) {
+    const u = await bot.getChat(userId).catch(() => ({}));
+    await send(OWNER_CHAT_ID, `🆕 ${esc(rule.keyword)} ro'yxati: ${u.username ? '@' + esc(u.username) : esc(u.first_name || userId)} (id ${userId})`);
+  }
+}
+
 async function deliver(chatId, userId, rule) {
   if (!(await checkSub(userId))) {
     return send(
@@ -367,6 +386,8 @@ async function deliver(chatId, userId, rule) {
     );
   }
   stats.delivered++;
+  // Kutish ro'yxati (masalan XABARNOMA): fayl yo'q — ro'yxatga yozamiz va egasiga xabar beramiz
+  if (rule.waitlist) return joinWaitlist(chatId, userId, rule);
   const url = rule.postUrl || CHANNEL_URL;
   const kb = { reply_markup: { inline_keyboard: [[{ text: rule.postUrl ? '📖 Postni ochish' : '📢 Kanal', url }]] } };
   // PDF bo'lsa — faylni o'zini yuboramiz (Telegram URL'dan o'zi yuklab oladi)
@@ -393,6 +414,8 @@ const userKb = {
     resize_keyboard: true,
   },
 };
+
+bot.onText(/^\/id$/, track(async (msg) => send(msg.chat.id, `Chat ID: <code>${msg.chat.id}</code>`)));
 
 bot.onText(/^\/start(?:\s+(.+))?$/, track(async (msg, match) => {
   const chatId = msg.chat.id;
