@@ -360,10 +360,13 @@ async function askAI(history, lang) {
 }
 
 bot.on('message', track(async (msg) => {
-  if (!msg.text || msg.text.startsWith('/')) return;
+  if (!msg.text || msg.text.startsWith('/start')) return;
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  const text = msg.text.trim();
+  // /menu va /ai buyruqlari — pastdagi tugmalar bilan bir xil ishlaydi
+  const cmd = { '/menu': '📚 Menyu', '/ai': '🤖 AI Chat' }[msg.text.trim().split(/[\s@]/)[0].toLowerCase()];
+  if (msg.text.startsWith('/') && !cmd) return;
+  const text = cmd ?? msg.text.trim();
   const user = getUser(userId);
 
   // Telegram'da ham kalit so'z yozsa — beramiz
@@ -400,6 +403,12 @@ bot.on('message', track(async (msg) => {
     });
   }
   if (text === '📚 Menyu') {
+    const guides = RULES.filter((r) => r.file);
+    if (guides.length) {
+      return send(chatId, '📚 <b>Qo\'llanmalar</b>\nKeraklisini tanlang 👇', {
+        reply_markup: { inline_keyboard: guides.map((r) => [{ text: `🎁 ${r.title}`, callback_data: `get:${r.keyword}` }]) },
+      });
+    }
     if (!menuItems.length) return send(chatId, '📚 Menyu hozircha bo\'sh.');
     return send(chatId, '📚 <b>Menyu</b>', {
       reply_markup: { inline_keyboard: menuItems.map((i) => [{ text: `${i.emoji} ${i.title}`, callback_data: `menu_${i.id}` }]) },
