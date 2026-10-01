@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const path = require('path');
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
+const files = require('./files');
 
 // ───────────────────────── Sozlamalar (Railway → Variables) ─────────────────────────
 const env = (k, d = '') => (process.env[k] ?? d).trim();
@@ -234,6 +235,14 @@ async function handleTelegram(update) {
 const send = (chatId, text, opts = {}) =>
   bot.sendMessage(chatId, text, { ...HTML, ...opts }).catch((e) => log('❌ TG send:', e.message));
 
+// Telegram xabari 4096 belgigacha — uzun javobni bo'lib yuboramiz (oddiy matn, HTML emas)
+async function sendLong(chatId, text) {
+  const t = String(text || '').trim() || '...';
+  for (let i = 0; i < t.length; i += 3900) {
+    await bot.sendMessage(chatId, t.slice(i, i + 3900)).catch((e) => log('❌ TG send:', e.message));
+  }
+}
+
 async function checkSub(userId) {
   try {
     const m = await bot.getChatMember(TG_CHANNEL, userId);
@@ -321,18 +330,26 @@ let menuItems = [
   { id: 1, title: 'Kanal', type: 'link', url: CHANNEL_URL, emoji: '📢' },
 ];
 
+// Botning "miyasi": ssenariy formulasi, viral qoidalar, fayl protokoli — knowledge.md
+let KNOWLEDGE = '';
+try {
+  KNOWLEDGE = fs.readFileSync(path.join(__dirname, 'knowledge.md'), 'utf8');
+} catch (e) {
+  log('⚠ knowledge.md o\'qilmadi:', e.message);
+}
+
 async function askAI(history, lang) {
-  const sys =
-    { uz: "O'zbek tilida qisqa va foydali javob ber.", ru: 'Отвечай кратко на русском.', en: 'Reply briefly in English.' }[lang] ||
-    'Reply briefly.';
-  const msgs = history.slice(-8);
+  const langLine =
+    { uz: "Javob tili: o'zbek (lotin).", ru: 'Язык ответа: русский.', en: 'Reply language: English.' }[lang] || '';
+  const sys = `${KNOWLEDGE}\n\n${langLine}\nTelegram'da o'qiladi: sarlavha uchun **qalin** ishlat, jadval chizma.`;
+  const msgs = history.slice(-10);
   // 1) Groq (bepul). Model eskirsa yoki xato bersa — 2) Claude'ga o'tamiz
   if (GROQ_API_KEY) {
     try {
       const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
-        body: JSON.stringify({ model: GROQ_MODEL, max_tokens: 800, messages: [{ role: 'system', content: sys }, ...msgs] }),
+        body: JSON.stringify({ model: GROQ_MODEL, max_tokens: 2500, messages: [{ role: 'system', content: sys }, ...msgs] }),
       });
       const d = await r.json();
       const text = d.choices?.[0]?.message?.content;
@@ -347,7 +364,7 @@ async function askAI(history, lang) {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 800, system: sys, messages: msgs }),
+        body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 2500, system: sys, messages: msgs }),
       });
       const d = await r.json();
       const text = d.content?.[0]?.text;
@@ -439,8 +456,22 @@ bot.on('message', track(async (msg) => {
     if (thinking) bot.deleteMessage(chatId, thinking.message_id).catch(() => {});
     user.history.push({ role: 'assistant', content: reply });
     user.questions++;
-    // AI javobi ichida < > bo'lishi mumkin — oddiy matn sifatida
-    return bot.sendMessage(chatId, reply).catch((e) => log('❌ TG send:', e.message));
+
+    // Fayl so'ralganmi? AI "[FAYL:docx]" belgisini qo'ygan yoki foydalanuvchi aniq "Word/PDF" degan
+    const file = files.extractFile(reply, files.wantedFormat(text));
+    if (file) {
+      try {
+        bot.sendChatAction(chatId, 'upload_document').catch(() => {});
+        const f = await files.build(file);
+        await bot.sendDocument(chatId, f.buffer, { caption: `📄 ${file.title}` }, { filename: f.filename, contentType: f.contentType });
+        return;
+      } catch (e) {
+        log('❌ fayl yasash:', e.message);
+        // fayl chiqmasa — matnning o'zini yuboramiz
+        return sendLong(chatId, file.body);
+      }
+    }
+    return sendLong(chatId, reply);
   }
 }));
 
