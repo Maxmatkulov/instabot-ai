@@ -196,9 +196,14 @@ async function sendWithButtons(recipient, text, btns, plainFallback) {
 }
 
 // Izoh egasiga shaxsiy xabar. Instagram faqat shu usulga ruxsat beradi: recipient.comment_id (7 kun ichida, 1 marta)
-async function privateReply(commentId, rule) {
+async function privateReply(commentId, rule, fromId) {
   const to = { comment_id: commentId };
   if (!needsFollow(rule)) return igSend(to, { text: dmText(rule) });
+  // Obuna bo'lganlarga "Obuna bo'ldim" tugmasi chiqmaydi — havola darhol beriladi
+  if (fromId && (await igFollows(fromId)) === true) {
+    stats.followOk++;
+    return (await igSend(to, linkMessage(rule))) || igSend(to, { text: dmText(rule) });
+  }
   return sendWithButtons(to, gateText(rule), followBtns(rule), dmText(rule));
 }
 
@@ -268,7 +273,7 @@ async function handleComment(v) {
   if (!firstTime(`c:${commentId}`)) return;
   stats.matched++;
   log(`💬 @${fromName}: "${v.text}" → ${rule.keyword}`);
-  const ok = await privateReply(commentId, rule);
+  const ok = await privateReply(commentId, rule, fromId);
   if (ok && needsFollow(rule)) waiting.set(fromId, rule.keyword);
   if (ok) stats.dmSent++;
   else stats.dmFailed++;
