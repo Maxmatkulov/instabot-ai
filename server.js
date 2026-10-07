@@ -89,6 +89,25 @@ function loadRules() {
 }
 loadRules();
 
+// Ikki so'z orasidagi tahrir masofasi (Levenshtein): "AHMAQONA" ↔ "AHMOQONA" = 1
+function editDistance(a, b) {
+  if (a === b) return 0;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+// Imloviy xatoga bardoshlik: kalit so'z ≥ 6 harf bo'lsa — 1 ta xato, ≥ 9 harf bo'lsa — 2 ta xato mumkin.
+// Qisqa so'zlar (BOT, SAYT, AGENT...) faqat aynan mos kelganda ishlaydi.
+const fuzzyMatch = (word, key) => {
+  if (word === key) return true;
+  if (key.length < 6 || Math.abs(word.length - key.length) > 2) return false;
+  return editDistance(word, key) <= (key.length >= 9 ? 2 : 1);
+};
+
 // Izohni so'zlarga ajratib, kalit so'z bilan TO'LIQ solishtiradi ("1" yoki "+" hamma izohga mos kelib qolmasin)
 function matchRule(text, rules = RULES) {
   const words = String(text || '')
@@ -96,7 +115,7 @@ function matchRule(text, rules = RULES) {
     .replace(/[’'`ʼ‘]/g, '')
     .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean);
-  return rules.find((r) => r.words.some((w) => words.includes(w)));
+  return rules.find((r) => r.words.some((w) => words.some((x) => fuzzyMatch(x, w))));
 }
 
 // media.id → shortcode (Graph API'dan, keshlanadi)
