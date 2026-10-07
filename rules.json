@@ -93,6 +93,18 @@
       "title": "AI xavfsizligi — tekshiruv ro'yxati",
       "postUrl": "",
       "reels": []
+    },
+    {
+      "keyword": "AHMOQONA",
+      "aliases": [
+        "AXMOQONA",
+        "AHMOQ",
+        "АХМОКОНА"
+      ],
+      "title": "AI uchun 10 ta aniq prompt",
+      "postUrl": "",
+      "file": "guides/ahmoqona-promptlar.pdf",
+      "reels": []
     }
   ]
 }
