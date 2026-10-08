@@ -105,6 +105,41 @@
       "postUrl": "",
       "file": "guides/ahmoqona-promptlar.pdf",
       "reels": []
+    },
+    {
+      "keyword": "EXCEL",
+      "aliases": [
+        "EXEL",
+        "EKSEL",
+        "ЭКСЕЛЬ"
+      ],
+      "title": "Excel uchun 8 ta tayyor prompt",
+      "postUrl": "",
+      "file": "guides/excel-promptlar.pdf",
+      "reels": []
+    },
+    {
+      "keyword": "CV",
+      "aliases": [
+        "SIVI",
+        "РЕЗЮМЕ"
+      ],
+      "title": "CV uchun 7 ta tayyor prompt",
+      "postUrl": "",
+      "file": "guides/cv-promptlar.pdf",
+      "reels": []
+    },
+    {
+      "keyword": "TEKSHIR",
+      "aliases": [
+        "TEKSHIRISH",
+        "TEKSHIRUV",
+        "ТЕКШИР"
+      ],
+      "title": "AI javobini tekshirishning 3 qoidasi",
+      "postUrl": "",
+      "file": "guides/tekshir-qoidalar.pdf",
+      "reels": []
     }
   ]
 }
