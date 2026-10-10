@@ -105,6 +105,21 @@
       "postUrl": "",
       "file": "guides/ahmoqona-promptlar.pdf",
       "reels": []
+    },
+    {
+      "keyword": "PROMPT",
+      "aliases": [
+        "PROMT",
+        "PROMTP",
+        "PROMPTS",
+        "PROMPTI",
+        "ПРОМПТ",
+        "ПРОМТ"
+      ],
+      "title": "AI ga to'g'ri savol — 4 qismli prompt formulasi va tayyor promptlar",
+      "postUrl": "",
+      "file": "guides/prompt-qollanma.pdf",
+      "reels": []
     }
   ]
 }
