@@ -124,6 +124,20 @@
       "postUrl": "",
       "file": "guides/prompt-qollanma.pdf",
       "reels": []
+    },
+    {
+      "keyword": "EXCEL",
+      "aliases": [
+        "EKSEL",
+        "EXEL",
+        "EXCELL",
+        "ЭКСЕЛЬ",
+        "ЭКСЕЛ"
+      ],
+      "title": "Excel uchun tayyor AI promptlar — formula, xatoni tuzatish, tozalash, hisobot",
+      "postUrl": "",
+      "file": "guides/excel-promptlar.pdf",
+      "reels": []
     }
   ]
 }
