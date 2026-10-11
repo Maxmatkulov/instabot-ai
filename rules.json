@@ -88,11 +88,15 @@
       "aliases": [
         "HAVF",
         "XAVFSIZLIK",
+        "XAVFF",
+        "XAFV",
+        "XAVP",
         "ХАВФ"
       ],
-      "title": "AI xavfsizligi — tekshiruv ro'yxati",
+      "title": "AI ga nima yozmaslik kerak — xavfsizlik tekshiruv ro'yxati",
       "postUrl": "",
-      "reels": []
+      "reels": [],
+      "file": "guides/xavf-qollanma.pdf"
     },
     {
       "keyword": "AHMOQONA",
