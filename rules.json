@@ -138,6 +138,21 @@
       "postUrl": "",
       "file": "guides/excel-promptlar.pdf",
       "reels": []
+    },
+    {
+      "keyword": "CV",
+      "aliases": [
+        "SV",
+        "SI-VI",
+        "СВ",
+        "РЕЗЮМЕ",
+        "RESUME",
+        "REZYUME"
+      ],
+      "title": "AI bilan CV yozish — vakansiyaga mos prompt va tekshiruv ro'yxati",
+      "postUrl": "",
+      "file": "guides/cv-promptlar.pdf",
+      "reels": []
     }
   ]
 }
