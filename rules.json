@@ -1,6 +1,38 @@
 {
-  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa). active: false — qoida vaqtincha o'chiq (menyuda ko'rinmaydi, kalit so'z ishlamaydi).",
+  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa). active: false — qoida vaqtincha o'chiq (menyuda ko'rinmaydi, kalit so'z ishlamaydi). remind: true — bot eslatmasida (Telegram va Instagram DM) ko'rsatiladigan hozirgi kalit so'zlar. caption — Telegram'da fayl bilan keladigan qisqa izoh.",
   "rules": [
+    {
+      "keyword": "RUXSAT",
+      "aliases": [
+        "RUXSATT",
+        "RUKSAT",
+        "RUXSAD",
+        "РУХСАТ",
+        "RUXSATI"
+      ],
+      "title": "Claude Code ruxsat ro'yxati — qayta-qayta so'ramasin",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/ruxsat-royxati.pdf",
+      "remind": true,
+      "caption": "Ruxsat ro'yxati tayyor. Claude Code'da /permissions yozing va qoidalarni qo'shing."
+    },
+    {
+      "keyword": "XOTIRA",
+      "aliases": [
+        "XOTIRAA",
+        "HOTIRA",
+        "ХОТИРА",
+        "XOTIRAM",
+        "XOTRA"
+      ],
+      "title": "CLAUDE.md shabloni — Claude Code xotirasi",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/xotira-claude-md.pdf",
+      "remind": true,
+      "caption": "CLAUDE.md shabloni tayyor. Loyiha papkasida /init yozing, so'ng shablon bo'yicha moslang."
+    },
     {
       "keyword": "REELS",
       "aliases": [

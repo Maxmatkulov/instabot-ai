@@ -149,6 +149,15 @@ async function matchCommentRule(text, mediaId) {
 }
 const ruleByKeyword = (kw) => RULES.find((r) => r.keyword === String(kw || '').toUpperCase());
 
+// Eslatma: odam qaysi kalit so'zni izohga yozishini bilsin. rules.json'da "remind": true bo'lganlar ko'rsatiladi
+// (hech biri belgilanmagan bo'lsa — oxirgi 3 ta qo'llanma). Telegram bot ham, Instagram DM ham shuni ishlatadi.
+const guideRules = () => RULES.filter((r) => r.file && !r.waitlist);
+const featured = () => {
+  const g = guideRules();
+  const f = g.filter((r) => r.remind);
+  return f.length ? f : g.slice(0, 3);
+};
+
 // ───────────────────────── Instagram API ─────────────────────────
 async function ig(pathname, body) {
   if (!IG_ACCESS_TOKEN) {
@@ -329,6 +338,12 @@ async function handleMessage(m) {
     const r = ruleByKeyword(waiting.get(igsid));
     if (r) return checkAndDeliver(igsid, r);
   }
+  // Kalit so'z emas: 24 soatda bir marta qaysi so'zni yozish kerakligini eslatamiz (o'chirish: DM_REMINDER=off)
+  if (env('DM_REMINDER', 'on') !== 'off' && firstTime(`rem:${igsid}`)) {
+    const list = featured();
+    if (!list.length) return;
+    await sendDM(igsid, `Salom! 👋 Hujjat olish uchun Reels ostiga kalit so'zni izohga yozing:\n\n${list.map((r) => `• ${r.keyword} — ${r.title}`).join('\n')}\n\nYozishingiz bilan DM'ga yuboraman 📩`);
+  }
 }
 
 // ───────────────────────── Telegram bot ─────────────────────────
@@ -418,7 +433,7 @@ async function deliver(chatId, userId, rule) {
   if (rule.file && PUBLIC_URL) {
     try {
       await bot.sendDocument(chatId, `${PUBLIC_URL}/${rule.file}`, {
-        caption: `✅ Rahmat! Mana <b>${esc(rule.title)}</b> 📘\n\nSaqlab qo'ying — qadamma-qadam qaytib ko'rasiz.`,
+        caption: `✅ Rahmat! Mana <b>${esc(rule.title)}</b> 📘\n\n${rule.caption ? esc(rule.caption) : "Saqlab qo'ying — qadamma-qadam qaytib ko'rasiz."}`,
         parse_mode: 'HTML',
         ...kb,
       });
@@ -431,6 +446,21 @@ async function deliver(chatId, userId, rule) {
     reply_markup: { inline_keyboard: [[{ text: '📖 Ochish', url: rule.file && PUBLIC_URL ? `${PUBLIC_URL}/${rule.file}` : url }]] },
   });
 }
+
+// Telegram: "qaysi kalit so'zni yozdingiz?" eslatmasi (tugmalar bilan — bosish yetarli)
+const reminderText = () =>
+  `🔑 <b>Hujjat olish uchun</b> Reels ostiga kalit so'zni <b>izohga yozing</b>.\n\n` +
+  `${featured().map((r) => `• <b>${esc(r.keyword)}</b> — ${esc(r.title)}`).join('\n')}\n\n` +
+  `Qaysi so'zni yozgandingiz? Shu yerga yozing yoki pastdan tanlang 👇`;
+const reminderKb = () => ({
+  reply_markup: {
+    inline_keyboard: [
+      ...featured().map((r) => [{ text: `🎁 ${r.keyword}`, callback_data: `get:${r.keyword}` }]),
+      [{ text: '📚 Barcha qo\'llanmalar', callback_data: 'guides' }],
+    ],
+  },
+});
+const guidesKb = () => ({ reply_markup: { inline_keyboard: guideRules().map((r) => [{ text: `🎁 ${r.title}`, callback_data: `get:${r.keyword}` }]) } });
 
 const userKb = {
   reply_markup: {
@@ -465,7 +495,8 @@ bot.onText(/^\/start(?:\s+(.+))?$/, track(async (msg, match) => {
       },
     });
   }
-  return send(chatId, `👋 Salom, <b>${name}</b>!\n\n🤖 AI yordamchi botga xush kelibsiz!`, userKb);
+  await send(chatId, `👋 Salom, <b>${name}</b>!\n\n🤖 AI yordamchi botga xush kelibsiz!`, userKb);
+  return send(chatId, reminderText(), reminderKb());
 }));
 
 // ───────────── Menyu (Mini App orqali boshqariladi) ─────────────
@@ -564,10 +595,9 @@ bot.on('message', track(async (msg) => {
     });
   }
   if (text === '📚 Menyu') {
-    const guides = RULES.filter((r) => r.file);
-    if (guides.length) {
+    if (RULES.some((r) => r.file)) {
       return send(chatId, '📚 <b>Qo\'llanmalar</b>\nKeraklisini tanlang 👇', {
-        reply_markup: { inline_keyboard: guides.map((r) => [{ text: `🎁 ${r.title}`, callback_data: `get:${r.keyword}` }]) },
+        reply_markup: { inline_keyboard: RULES.filter((r) => r.file).map((r) => [{ text: `🎁 ${r.title}`, callback_data: `get:${r.keyword}` }]) },
       });
     }
     if (!menuItems.length) return send(chatId, '📚 Menyu hozircha bo\'sh.');
@@ -583,6 +613,9 @@ bot.on('message', track(async (msg) => {
     const sub = await checkSub(userId);
     return send(chatId, `🤖 <b>AI Chat</b>\n${sub ? 'Cheksiz savol ✅' : `Bepul: ${Math.max(0, FREE_QUESTIONS - user.questions)} ta savol`}\n\nSavolingizni yozing!`);
   }
+
+  // Kalit so'z ham, AI rejimi ham emas — qaysi so'zni yozishini eslatamiz
+  if (!user.aiMode) return send(chatId, reminderText(), reminderKb());
 
   if (user.aiMode) {
     const sub = await checkSub(userId);
@@ -631,6 +664,10 @@ bot.on('callback_query', track(async (q) => {
     if (!(await checkSub(userId))) return answer({ text: '❌ Hali obuna bo\'lmagansiz!', show_alert: true });
     await answer({ text: '✅ Tasdiqlandi!' });
     return deliver(chatId, userId, rule);
+  }
+  if (data === 'guides') {
+    await answer();
+    return send(chatId, '📚 <b>Qo\'llanmalar</b>\nKeraklisini tanlang 👇', guidesKb());
   }
   if (data.startsWith('lang_')) {
     user.lang = data.slice(5);
@@ -778,6 +815,7 @@ app.get('/health', (req, res) =>
     webhookSignature: IG_APP_SECRET ? `✅ tekshiriladi (${IG_APP_SECRETS.length} ta sir)` : '⚠ IG_APP_SECRET yo\'q — imzo tekshirilmaydi',
     ai: [GROQ_API_KEY && `Groq (${GROQ_MODEL})`, ANTHROPIC_API_KEY && `Claude (${CLAUDE_MODEL})`].filter(Boolean).join(' → ') || '❌',
     keywords: RULES.map((r) => r.keyword),
+    reminder: featured().map((r) => r.keyword),
     followCheck: env('FOLLOW_CHECK', 'on') !== 'off' ? `✅ @${IG_PROFILE}` : 'o\'chiq',
   })
 );
