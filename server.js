@@ -268,6 +268,18 @@ async function checkAndDeliver(igsid, rule) {
   return ok;
 }
 
+// DM'ga kalit so'z yozildi: obuna ANIQ tasdiqlansa — havola; aks holda (yo'q yoki noma'lum) — avval obuna bo'ling + tugma
+async function gateOrDeliver(igsid, rule) {
+  if ((await igFollows(igsid)) === true) {
+    stats.followOk++;
+    const ok = (await igSend({ id: igsid }, linkMessage(rule))) || (await sendDM(igsid, dmText(rule)));
+    ok ? stats.dmSent++ : stats.dmFailed++;
+    return ok;
+  }
+  stats.notFollowing++;
+  return sendWithButtons({ id: igsid }, gateText(rule), followBtns(rule), dmText(rule));
+}
+
 // Kim qaysi so'z uchun obunani kutyapti (odam tugma o'rniga "obuna bo'ldim" deb yozsa)
 const waiting = new Map();
 
@@ -331,15 +343,15 @@ async function handleMessage(m) {
     log(`📩 DM "${text}" → ${rule.keyword}`);
     if (!needsFollow(rule)) return (await sendDM(igsid, dmText(rule))) ? stats.dmSent++ : stats.dmFailed++;
     waiting.set(igsid, rule.keyword);
-    return checkAndDeliver(igsid, rule);
+    return gateOrDeliver(igsid, rule);
   }
   // Tugma o'rniga "obuna bo'ldim" deb yozdi
   if (DONE_RE.test(text) && waiting.has(igsid)) {
     const r = ruleByKeyword(waiting.get(igsid));
     if (r) return checkAndDeliver(igsid, r);
   }
-  // Kalit so'z emas: 24 soatda bir marta qaysi so'zni yozish kerakligini eslatamiz (o'chirish: DM_REMINDER=off)
-  if (env('DM_REMINDER', 'on') !== 'off' && firstTime(`rem:${igsid}`)) {
+  // Kalit so'z emas: odamga hech narsa bermaymiz (faqat tartib: kalit so'z → obuna tekshiruvi → havola). Eslatma kerak bo'lsa: DM_REMINDER=on
+  if (env('DM_REMINDER', 'off') === 'on' && firstTime(`rem:${igsid}`)) {
     const list = featured();
     if (!list.length) return;
     await sendDM(igsid, `Salom! 👋 Hujjat olish uchun Reels ostiga kalit so'zni izohga yozing:\n\n${list.map((r) => `• ${r.keyword} — ${r.title}`).join('\n')}\n\nYozishingiz bilan DM'ga yuboraman 📩`);
@@ -807,7 +819,7 @@ app.get('/api/stats', adminOnly, (req, res) => res.json({ users: users.size, ...
 app.get('/health', (req, res) =>
   res.json({
     ok: true,
-    version: '8.1',
+    version: '8.2',
     publicUrl: PUBLIC_URL || '❌ PUBLIC_URL yo\'q',
     telegram: BOT_TOKEN ? '✅' : '❌ BOT_TOKEN yo\'q',
     instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
