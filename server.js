@@ -781,7 +781,7 @@ app.get('/webhook/instagram', (req, res) => {
 // Ishlatish: /admin/backfill?key=VERIFY_TOKEN  → ko'rish (hech narsa yubormaydi)
 //            /admin/backfill?key=VERIFY_TOKEN&send=1 → yuboradi. Bir izohga Instagram faqat 1 marta ruxsat beradi.
 app.get('/admin/backfill', async (req, res) => {
-  if (req.query.key !== VERIFY_TOKEN) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
   const send = req.query.send === '1';
   const t0 = Date.now();
   const out = { send, found: [], sent: 0, failed: 0, note: '' };
