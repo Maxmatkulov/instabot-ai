@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/daily?date=2026-10-17&name=skill60", "schedule": "0 15 17 10 *" }
+  ]
+}

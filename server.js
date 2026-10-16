@@ -850,6 +850,95 @@ app.get('/admin/channel', async (req, res) => {
   res.json({ send, channel: TG_CHANNEL, out });
 });
 
+// ───────────────────────── Reels avto-post ─────────────────────────
+const REELS = {
+  skill60: {
+    video: 'reels/skill60.mp4',
+    cover: 'reels/skill60.jpg',
+    channelKw: 'SKILL',
+    caption:
+      "Skill haqida ko'p eshitdingmi? Endi o'zing yozib ko'r — atigi 60 soniya ⏱\n\n" +
+      "1️⃣ .claude/skills/ ichida yangi papka och\n" +
+      "2️⃣ SKILL.md fayl yoz: nom, tavsif, yo'riqnoma\n" +
+      "3️⃣ Claude Code'da /salomlash deb yoz — tayyor!\n\n" +
+      "Tayyor skill shabloni kerakmi? Izohga SKILL deb yozing, DM'ga yuboraman 📩\n\n" +
+      '#claudecode #skills #ai #dasturlash #aitools',
+  },
+};
+const igGet = async (p) => {
+  const r = await fetch(`${IG_API}/${p}`, { headers: { Authorization: `Bearer ${IG_ACCESS_TOKEN}` } });
+  const d = await r.json().catch(() => ({}));
+  if (d.error) throw new Error(JSON.stringify(d.error).slice(0, 300));
+  return d;
+};
+// Reel konteyneri yaratiladi, tayyor bo'lishi kutiladi; publish=true bo'lsa e'lon qilinadi
+async function runReel(name, publish) {
+  const cfg = REELS[name];
+  if (!cfg) return { error: 'reel topilmadi' };
+  const res = { name, publish };
+  try {
+    // Takror post bo'lmasin: oxirgi 24 soatda shu izoh bilan post bor bo'lsa — o'tkazib yuboramiz
+    if (publish) {
+      const recent = (await igGet(`${IG_USER_ID || 'me'}/media?fields=caption,timestamp&limit=5`)).data || [];
+      if (recent.some((m) => (m.caption || '').slice(0, 30) === cfg.caption.slice(0, 30) && Date.now() - new Date(m.timestamp).getTime() < 24 * 3600e3)) {
+        return { ...res, skipped: 'allaqachon e\'lon qilingan' };
+      }
+    }
+    const c = await ig(`${IG_USER_ID || 'me'}/media`, {
+      media_type: 'REELS', video_url: `${PUBLIC_URL}/${cfg.video}`, cover_url: `${PUBLIC_URL}/${cfg.cover}`, caption: cfg.caption, share_to_feed: true,
+    });
+    if (!c?.id) return { ...res, error: 'konteyner yaratilmadi (Logs\'da "❌ IG" qatoriga qarang)' };
+    res.container = c.id;
+    let st = '';
+    for (let i = 0; i < 40; i++) {
+      await new Promise((r) => setTimeout(r, 3000));
+      const s = await igGet(`${c.id}?fields=status_code,status`);
+      st = s.status_code;
+      res.status = s.status_code + (s.status ? ` (${s.status})` : '');
+      if (st === 'FINISHED' || st === 'ERROR' || st === 'EXPIRED') break;
+    }
+    if (st !== 'FINISHED') return { ...res, error: 'video tayyor bo\'lmadi' };
+    if (!publish) return { ...res, ok: true, note: 'tayyor, e\'lon qilinmadi (check)' };
+    const p = await ig(`${IG_USER_ID || 'me'}/media_publish`, { creation_id: c.id });
+    return p?.id ? { ...res, ok: true, published: p.id } : { ...res, error: 'e\'lon qilinmadi' };
+  } catch (e) {
+    return { ...res, error: e.message };
+  }
+}
+async function postChannelPdf(kw) {
+  const rule = ruleByKeyword(kw);
+  if (!rule?.file) return { error: 'fayl yo\'q' };
+  const caption =
+    `📘 <b>${esc(rule.title)}</b>\n\n` + (rule.caption ? `${esc(rule.caption)}\n\n` : '') +
+    `💾 Saqlab qo'ying — kerak bo'lganda qaytib ko'rasiz.\n\n📩 Yana shunaqa qo'llanmalar: @${TG_BOT_USERNAME}\n` +
+    `📸 Instagram: Reels izohiga <code>${esc(rule.keyword)}</code> deb yozing, DM'ga yuboriladi.`;
+  try {
+    const m = await bot.sendDocument(TG_CHANNEL, `${PUBLIC_URL}/${rule.file}`, { caption: caption.slice(0, 1024), parse_mode: 'HTML' });
+    return { sent: true, message_id: m.message_id };
+  } catch (e) {
+    return { sent: false, error: e.message };
+  }
+}
+// Qo'lda: /admin/ig-reel?key=KEY&name=skill60&mode=check (e'lon qilmaydi) | mode=publish (e'lon + kanalga PDF)
+app.get('/admin/ig-reel', async (req, res) => {
+  if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  const publish = req.query.mode === 'publish';
+  const out = await runReel(String(req.query.name || 'skill60'), publish);
+  if (publish && out.published && req.query.channel !== '0') out.channel = await postChannelPdf(REELS[out.name].channelKw);
+  res.json(out);
+});
+// Vercel Cron: faqat ?date=YYYY-MM-DD (Toshkent sanasi) mos kelganda ishlaydi
+app.get('/api/cron/daily', async (req, res) => {
+  const ua = String(req.headers['user-agent'] || '');
+  if (!ua.includes('vercel-cron') && req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'ruxsat yo\'q' });
+  const today = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+  if (req.query.date !== today) return res.json({ skipped: `bugun ${today}, reja ${req.query.date}` });
+  const out = await runReel(String(req.query.name || 'skill60'), true);
+  if (out.published) out.channel = await postChannelPdf(REELS[out.name].channelKw);
+  log('🕗 cron:', JSON.stringify(out));
+  res.json(out);
+});
+
 // Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
 app.post('/webhook/instagram', async (req, res) => {
   if (!validMetaSignature(req)) {
