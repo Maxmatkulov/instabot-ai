@@ -853,6 +853,7 @@ app.get('/admin/channel', async (req, res) => {
 
 // Kanalga video + izoh. /admin/channel-video?key=KEY&name=sayt (ko'rish) ... &send=1 (video), &pdf=1 (PDF ham)
 const CHAN_VIDEOS = {
+  plagin: { video: 'reels/plagin.mp4', kw: 'PLAGIN', text: "🔌 <b>Claude'ga reels qildirishdan oldin shu 3 plaginni o'rnating</b>\n\n1️⃣ Virality skill: hookni tekshiradi\n2️⃣ Content Skills: 54 ta bepul skill\n3️⃣ Remotion skills: kod yozib video qiladi\n\n📘 Havolalar va o'rnatish buyruqlari PDF'da, pastda." },
   sayt: { video: 'reels/sayt.mp4', kw: 'DEPLOY', text: "🌐 <b>AI bilan sayt yozdirib, internetga chiqarish</b>\n\n90 soniyada hammasi: Claude Code'da sayt yozdirasan, Vercel'ga chiqarasan, keyin o'zgartirasan. Havola o'sha-o'sha qoladi.\n\n📘 Qadamlar va tayyor promptlar PDF'da, pastda." },
 };
 app.get('/admin/channel-video', async (req, res) => {
