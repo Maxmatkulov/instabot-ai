@@ -61,11 +61,11 @@
         "HYPERFRAMES",
         "ПЛАГИН"
       ],
-      "title": "5 ta bepul Claude Code plagini — o'rnatish buyruqlari va havolalar",
+      "title": "Bepul Claude Code plagin va skill'lari — o'rnatish buyruqlari va havolalar",
       "postUrl": "",
       "reels": [],
       "file": "guides/pluginlar.pdf",
-      "caption": "5 ta bepul plagin: har birining o'rnatish buyrug'i va rasmiy havolasi shu yerda."
+      "caption": "Plaginlar va skill'lar: har birining o'rnatish buyrug'i va rasmiy havolasi ichida. Virality, Content Skills va Remotion ham bor."
     },
     {
       "keyword": "SKILL",
@@ -143,7 +143,9 @@
       ],
       "title": "AI bilan sayt — qadamlar",
       "postUrl": "",
-      "reels": []
+      "reels": [],
+      "file": "guides/sayt-deploy.pdf",
+      "caption": "Sayt qo'llanmasi tayyor: 3 qadam (yozdir, internetga chiqar, o'zgartir), tayyor promptlar va Vercel haqida eslatma."
     },
     {
       "keyword": "DEPLOY",
@@ -153,7 +155,9 @@
       ],
       "title": "Saytni internetga chiqarish",
       "postUrl": "",
-      "reels": []
+      "reels": [],
+      "file": "guides/sayt-deploy.pdf",
+      "caption": "Sayt qo'llanmasi tayyor: 3 qadam (yozdir, internetga chiqar, o'zgartir), tayyor promptlar va Vercel haqida eslatma."
     },
     {
       "keyword": "AGENT",
