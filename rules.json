@@ -34,6 +34,23 @@
       "caption": "CLAUDE.md shabloni tayyor. Loyiha papkasida /init yozing, so'ng shablon bo'yicha moslang."
     },
     {
+      "keyword": "PLAGIN",
+      "aliases": [
+        "PLUGIN",
+        "PLAGINLAR",
+        "PLUGINLAR",
+        "PLAGINI",
+        "PLUGINS",
+        "HYPERFRAMES",
+        "ПЛАГИН"
+      ],
+      "title": "5 ta bepul Claude Code plagini — o'rnatish buyruqlari va havolalar",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/pluginlar.pdf",
+      "caption": "5 ta bepul plagin: har birining o'rnatish buyrug'i va rasmiy havolasi shu yerda."
+    },
+    {
       "keyword": "REELS",
       "aliases": [
         "RELS",
