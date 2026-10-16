@@ -51,6 +51,22 @@
       "caption": "5 ta bepul plagin: har birining o'rnatish buyrug'i va rasmiy havolasi shu yerda."
     },
     {
+      "keyword": "SKILL",
+      "aliases": [
+        "SKILLS",
+        "SKILLAR",
+        "SKIL",
+        "SKILLNI",
+        "СКИЛЛ"
+      ],
+      "title": "Claude Code skill: nima va qanday ishlatiladi",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/skill-qollanma.pdf",
+      "remind": true,
+      "caption": "Skill qo'llanmasi tayyor. Eng oddiy skill shabloni ichida, 3 daqiqada o'zingnikini yozasan."
+    },
+    {
       "keyword": "REELS",
       "aliases": [
         "RELS",
