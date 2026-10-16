@@ -850,6 +850,26 @@ app.get('/admin/channel', async (req, res) => {
   res.json({ send, channel: TG_CHANNEL, out });
 });
 
+
+// Kanalga video + izoh. /admin/channel-video?key=KEY&name=sayt (ko'rish) ... &send=1 (video), &pdf=1 (PDF ham)
+const CHAN_VIDEOS = {
+  sayt: { video: 'reels/sayt.mp4', kw: 'DEPLOY', text: "🌐 <b>AI bilan sayt yozdirib, internetga chiqarish</b>\n\n90 soniyada hammasi: Claude Code'da sayt yozdirasan, Vercel'ga chiqarasan, keyin o'zgartirasan. Havola o'sha-o'sha qoladi.\n\n📘 Qadamlar va tayyor promptlar PDF'da, pastda." },
+};
+app.get('/admin/channel-video', async (req, res) => {
+  if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  const v = CHAN_VIDEOS[String(req.query.name || '')];
+  if (!v) return res.json({ error: 'video nomi yo\'q', have: Object.keys(CHAN_VIDEOS) });
+  const row = { name: req.query.name, video: `${PUBLIC_URL}/${v.video}`, send: req.query.send === '1' };
+  if (row.send) {
+    try {
+      const m = await bot.sendVideo(TG_CHANNEL, row.video, { caption: v.text.slice(0, 1024), parse_mode: 'HTML', supports_streaming: true });
+      row.sent = true; row.message_id = m.message_id;
+      if (req.query.pdf === '1') row.pdf = await postChannelPdf(v.kw);
+    } catch (e) { row.sent = false; row.error = e.message; }
+  }
+  res.json(row);
+});
+
 // ───────────────────────── Reels avto-post ─────────────────────────
 const REELS = {
   skill60: {
