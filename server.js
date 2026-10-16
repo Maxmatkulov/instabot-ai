@@ -807,7 +807,7 @@ app.get('/admin/backfill', async (req, res) => {
         if (req.query.only && rule.keyword !== String(req.query.only).toUpperCase()) continue;
         if (String(req.query.skip || '').toLowerCase().split(',').includes(uname)) continue;
         const row = { user: uname, text: c.text, keyword: rule.keyword };
-        if (send && firstTime(`c:${c.id}`)) {
+        if (send && (firstTime(`c:${c.id}`) || req.query.force === '1')) {
           const fromId = c.from?.id;
           const ok = await privateReply(c.id, rule, fromId);
           row.sent = !!ok;
