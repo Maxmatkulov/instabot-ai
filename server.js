@@ -823,6 +823,33 @@ app.get('/admin/backfill', async (req, res) => {
   res.json(out);
 });
 
+// Kanalga qo'llanma PDF + chiroyli izoh. /admin/channel?key=KEY&kw=XOTIRA,SKILL  (ko'rish) ... &send=1 (yuboradi)
+app.get('/admin/channel', async (req, res) => {
+  if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  const kws = String(req.query.kw || '').toUpperCase().split(',').map((x) => x.trim()).filter(Boolean);
+  const send = req.query.send === '1';
+  const out = [];
+  for (const kw of kws) {
+    const rule = ruleByKeyword(kw);
+    if (!rule || !rule.file) { out.push({ kw, error: 'qoida yoki fayl yo\'q' }); continue; }
+    const caption =
+      `📘 <b>${esc(rule.title)}</b>\n\n` +
+      (rule.caption ? `${esc(rule.caption)}\n\n` : '') +
+      `💾 Saqlab qo'ying — kerak bo'lganda qaytib ko'rasiz.\n\n` +
+      `📩 Yana shunaqa qo'llanmalar: @${TG_BOT_USERNAME}\n` +
+      `📸 Instagram: Reels izohiga <code>${esc(rule.keyword)}</code> deb yozing, DM'ga yuboriladi.`;
+    const row = { kw, file: rule.file, caption };
+    if (send) {
+      try {
+        const m = await bot.sendDocument(TG_CHANNEL, `${PUBLIC_URL}/${rule.file}`, { caption: caption.slice(0, 1024), parse_mode: 'HTML' });
+        row.sent = true; row.message_id = m.message_id;
+      } catch (e) { row.sent = false; row.error = e.message; }
+    }
+    out.push(row);
+  }
+  res.json({ send, channel: TG_CHANNEL, out });
+});
+
 // Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
 app.post('/webhook/instagram', async (req, res) => {
   if (!validMetaSignature(req)) {
