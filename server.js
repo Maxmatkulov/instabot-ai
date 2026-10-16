@@ -804,6 +804,8 @@ app.get('/admin/backfill', async (req, res) => {
         if (uname && uname === IG_USERNAME) continue;
         const rule = await matchCommentRule(c.text, m.id);
         if (!rule) continue;
+        if (req.query.only && rule.keyword !== String(req.query.only).toUpperCase()) continue;
+        if (String(req.query.skip || '').toLowerCase().split(',').includes(uname)) continue;
         const row = { user: uname, text: c.text, keyword: rule.keyword };
         if (send && firstTime(`c:${c.id}`)) {
           const fromId = c.from?.id;
