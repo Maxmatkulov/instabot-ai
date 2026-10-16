@@ -777,6 +777,50 @@ app.get('/webhook/instagram', (req, res) => {
   res.sendStatus(403);
 });
 
+// Eski izohlarga DM: oxirgi 7 kun ichidagi izohlarni o'qib, kalit so'zi borlarga javob yuboradi.
+// Ishlatish: /admin/backfill?key=VERIFY_TOKEN  → ko'rish (hech narsa yubormaydi)
+//            /admin/backfill?key=VERIFY_TOKEN&send=1 → yuboradi. Bir izohga Instagram faqat 1 marta ruxsat beradi.
+app.get('/admin/backfill', async (req, res) => {
+  if (req.query.key !== VERIFY_TOKEN) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  const send = req.query.send === '1';
+  const t0 = Date.now();
+  const out = { send, found: [], sent: 0, failed: 0, note: '' };
+  const get = async (p) => {
+    const r = await fetch(`${IG_API}/${p}`, { headers: { Authorization: `Bearer ${IG_ACCESS_TOKEN}` } });
+    const d = await r.json().catch(() => ({}));
+    if (d.error) throw new Error(JSON.stringify(d.error).slice(0, 300));
+    return d;
+  };
+  try {
+    const media = (await get(`${IG_USER_ID || 'me'}/media?fields=id,timestamp&limit=8`)).data || [];
+    const since = Date.now() - 7 * 24 * 3600e3;
+    for (const m of media) {
+      if (new Date(m.timestamp).getTime() < since - 24 * 3600e3 * 7) continue;
+      const cs = (await get(`${m.id}/comments?fields=id,text,timestamp,username,from&limit=50`)).data || [];
+      for (const c of cs) {
+        if (Date.now() - t0 > 7500) { out.note = 'vaqt tugadi — yana bir marta oching'; break; }
+        if (new Date(c.timestamp).getTime() < since) continue;
+        const uname = (c.username || c.from?.username || '').toLowerCase();
+        if (uname && uname === IG_USERNAME) continue;
+        const rule = await matchCommentRule(c.text, m.id);
+        if (!rule) continue;
+        const row = { user: uname, text: c.text, keyword: rule.keyword };
+        if (send && firstTime(`c:${c.id}`)) {
+          const fromId = c.from?.id;
+          const ok = await privateReply(c.id, rule, fromId);
+          row.sent = !!ok;
+          if (ok) { out.sent++; if (fromId && needsFollow(rule)) waiting.set(fromId, rule.keyword); } else out.failed++;
+          if (ok && PUBLIC_REPLY) await publicReply(c.id);
+        }
+        out.found.push(row);
+      }
+    }
+  } catch (e) {
+    out.error = e.message;
+  }
+  res.json(out);
+});
+
 // Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
 app.post('/webhook/instagram', async (req, res) => {
   if (!validMetaSignature(req)) {
