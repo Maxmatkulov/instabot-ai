@@ -1,5 +1,5 @@
 {
-  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa). active: false — qoida vaqtincha o'chiq (menyuda ko'rinmaydi, kalit so'z ishlamaydi). remind: true — bot eslatmasida (Telegram va Instagram DM) ko'rsatiladigan hozirgi kalit so'zlar. caption — Telegram'da fayl bilan keladigan qisqa izoh.",
+  "_izoh": "Har bir Reels uchun bitta qoida. keyword — izohga yoziladigan so'z (katta harf). aliases — xato yozilgan variantlar. reels — Reels havolalari: bo'lsa, so'z faqat shu videolar ostida ishlaydi; bo'sh bo'lsa hamma joyda. file — public/guides/ ichidagi PDF. postUrl — Telegram post havolasi (file bo'lmasa). active: false — qoida vaqtincha o'chiq (menyuda ko'rinmaydi, kalit so'z ishlamaydi). remind: true — bot eslatmasida (Telegram va Instagram DM) ko'rsatiladigan hozirgi kalit so'zlar. caption — Telegram'da fayl bilan keladigan qisqa izoh. extra — asosiy fayldan keyin yuboriladigan qo'shimcha fayllar. upsell — keyin taklif qilinadigan pullik qoida. pay: true — pullik qoida: narx, karta (PAY_CARD/PAY_NAME/PRO_PRICE env), chek adminga, tasdiqdan keyin paidFile yuboriladi.",
   "rules": [
     {
       "keyword": "RUXSAT",
@@ -81,7 +81,14 @@
       "reels": [],
       "file": "guides/skill-qollanma.pdf",
       "remind": true,
-      "caption": "Skill qo'llanmasi tayyor. Eng oddiy skill shabloni ichida, 3 daqiqada o'zingnikini yozasan."
+      "caption": "Skill qo'llanmasi tayyor. Eng oddiy skill shabloni ichida, 3 daqiqada o'zingnikini yozasan.",
+      "extra": [
+        {
+          "file": "guides/reels-rejissyor-lite.zip",
+          "caption": "🎬 Bonus: Reels Rejissyor Lite — bepul skill. Zip ichidagi README.md da o'rnatish tartibi bor."
+        }
+      ],
+      "upsell": "PRO"
     },
     {
       "keyword": "REELS",
@@ -238,6 +245,37 @@
       "title": "AI bilan CV yozish — vakansiyaga mos prompt va tekshiruv ro'yxati",
       "postUrl": "",
       "file": "guides/cv-promptlar.pdf",
+      "reels": []
+    },
+    {
+      "keyword": "PRO",
+      "aliases": [
+        "PULLIK",
+        "TOLIQ",
+        "SKILLPRO",
+        "REJISSYOR",
+        "ПРО"
+      ],
+      "title": "Reels Rejissyor PRO — to'liq paket",
+      "pay": true,
+      "follow": false,
+      "payDesc": "Tayyor Remotion loyihasi, do'ppili Claude personaji (ovozga og'iz harakati), so'zma-so'z subtitr, SFX va musiqa miksi, tez render skriptlari va to'liq rejissyor skill.",
+      "paidFile": "p/9987536685696bbb0d142f89/reels-rejissyor-pro.zip",
+      "reels": [],
+      "caption": "README.md ni oching: o'rnatish 3 qadam. Savol bo'lsa @mmn0300 ga yozing."
+    },
+    {
+      "keyword": "DARS",
+      "aliases": [
+        "DARSLAR",
+        "DARSI",
+        "DARSNI",
+        "ДАРС",
+        "TUTORIAL"
+      ],
+      "title": "2-qism: Reels Rejissyor qanday ishlatiladi (video dars)",
+      "waitlist": true,
+      "waitlistText": "2-qism chiqishi bilan birinchilardan bo'lib shu yerda xabar beramiz. Hozircha bepul Lite skillni olish uchun SKILL deb yozing.",
       "reels": []
     }
   ]

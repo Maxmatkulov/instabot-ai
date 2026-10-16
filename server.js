@@ -412,6 +412,56 @@ const subscribeKb = (kw) => ({
 
 // Egasi Telegram'da /id yozib bilib oladi va Vercel'ga OWNER_CHAT_ID qilib qo'yadi
 const OWNER_CHAT_ID = env('OWNER_CHAT_ID');
+// ───── Pullik paket: to'lov → chek → admin tasdig'i → fayl ─────
+// Vercel → Environment Variables: PAY_CARD (karta raqami), PAY_NAME (karta egasi), PRO_PRICE (masalan "49 000")
+const PAY_CARD = env('PAY_CARD');
+const PAY_NAME = env('PAY_NAME');
+const PRO_PRICE = env('PRO_PRICE', '49 000');
+const payRules = () => RULES.filter((r) => r.pay);
+const payText = (rule) =>
+  `💎 <b>${esc(rule.title)}</b>\n\n${rule.payDesc ? esc(rule.payDesc) + '\n\n' : ''}` +
+  `💰 Narxi: <b>${esc(rule.price || PRO_PRICE)} so'm</b>\n\n` +
+  (PAY_CARD
+    ? `1️⃣ Shu kartaga to'lang:\n<code>${esc(PAY_CARD)}</code>${PAY_NAME ? `\n👤 ${esc(PAY_NAME)}` : ''}\n\n` +
+      `2️⃣ To'lov chekini (skrinshot) <b>shu yerga rasm qilib yuboring</b>.\n\n` +
+      `3️⃣ Admin tasdiqlagach, paket shu chatga keladi ✅`
+    : `To'lov ma'lumotlari tez orada shu yerda bo'ladi. Savol bo'lsa: @${esc(OWNER_USERNAME)}`);
+async function payOffer(chatId, userId, rule) {
+  await send(chatId, payText(rule));
+  if (OWNER_CHAT_ID) {
+    const u = await bot.getChat(userId).catch(() => ({}));
+    await send(OWNER_CHAT_ID, `👀 ${esc(rule.keyword)} so'radi: ${u.username ? '@' + esc(u.username) : esc(u.first_name || userId)} (id ${userId})${PAY_CARD ? '' : '\n⚠ PAY_CARD qo\'yilmagan!'}`);
+  }
+}
+// Chek keldi: egasiga yuboramiz, tugmalar bilan
+async function handleReceipt(msg) {
+  const chatId = msg.chat.id, userId = msg.from.id;
+  const rule = payRules()[0];
+  if (!rule) return;
+  if (!OWNER_CHAT_ID) {
+    log('❌ OWNER_CHAT_ID yo\'q — chekni adminga yuborib bo\'lmadi');
+    return send(chatId, `Chek qabul qilindi ✅ Admin tez orada ko'rib chiqadi. Savol bo'lsa: @${esc(OWNER_USERNAME)}`);
+  }
+  await bot.forwardMessage(OWNER_CHAT_ID, chatId, msg.message_id).catch((e) => log('❌ forward:', e.message));
+  const who = msg.from.username ? '@' + esc(msg.from.username) : esc(msg.from.first_name || userId);
+  await send(OWNER_CHAT_ID, `🧾 <b>Chek</b>: ${who} (id ${userId})\nPaket: ${esc(rule.title)} — ${esc(rule.price || PRO_PRICE)} so'm`, {
+    reply_markup: { inline_keyboard: [[{ text: '✅ Tasdiqlash', callback_data: `pok:${userId}:${rule.keyword}` }, { text: '❌ Rad etish', callback_data: `pno:${userId}:${rule.keyword}` }]] },
+  });
+  return send(chatId, `🧾 Chek qabul qilindi! Admin tekshirib tasdiqlashi bilan paket shu yerga keladi ⏳`);
+}
+async function sendPaid(userId, rule) {
+  if (!rule.paidFile || !PUBLIC_URL) return false;
+  try {
+    await bot.sendDocument(userId, `${PUBLIC_URL}/${rule.paidFile}`, {
+      caption: `🎉 To'lov tasdiqlandi! Mana <b>${esc(rule.title)}</b>\n\n${rule.caption ? esc(rule.caption) : 'Ichidagi README.md da o\'rnatish tartibi bor.'}`,
+      parse_mode: 'HTML',
+    });
+    return true;
+  } catch (e) {
+    log('❌ pullik fayl:', e.message);
+    return false;
+  }
+}
 const waitlist = new Map();
 async function joinWaitlist(chatId, userId, rule) {
   const isNew = !waitlist.has(userId);
@@ -429,6 +479,7 @@ async function joinWaitlist(chatId, userId, rule) {
 }
 
 async function deliver(chatId, userId, rule) {
+  if (rule.pay) return payOffer(chatId, userId, rule);
   if (!(await checkSub(userId))) {
     return send(
       chatId,
@@ -449,6 +500,7 @@ async function deliver(chatId, userId, rule) {
         parse_mode: 'HTML',
         ...kb,
       });
+      await sendExtras(chatId, rule);
       return;
     } catch (e) {
       log('❌ sendDocument:', e.message);
@@ -457,6 +509,21 @@ async function deliver(chatId, userId, rule) {
   return send(chatId, `✅ Rahmat! Mana <b>${esc(rule.title)}</b> 👇`, {
     reply_markup: { inline_keyboard: [[{ text: '📖 Ochish', url: rule.file && PUBLIC_URL ? `${PUBLIC_URL}/${rule.file}` : url }]] },
   });
+}
+
+// Qo'shimcha fayllar (rule.extra) va pullik taklif (rule.upsell)
+async function sendExtras(chatId, rule) {
+  for (const x of rule.extra || []) {
+    const f = typeof x === 'string' ? { file: x } : x;
+    await bot.sendDocument(chatId, `${PUBLIC_URL}/${f.file}`, { caption: f.caption ? esc(f.caption) : undefined, parse_mode: 'HTML' }).catch((e) => log('❌ extra:', e.message));
+  }
+  const up = rule.upsell && ruleByKeyword(rule.upsell);
+  if (up) {
+    await send(chatId, `💎 <b>To'liq versiya ham bor:</b> ${esc(up.title)}
+${up.payDesc ? esc(up.payDesc) : ''}`, {
+      reply_markup: { inline_keyboard: [[{ text: `💎 ${up.keyword} — batafsil`, callback_data: `get:${up.keyword}` }]] },
+    });
+  }
 }
 
 // Telegram: "qaysi kalit so'zni yozdingiz?" eslatmasi (tugmalar bilan — bosish yetarli)
@@ -564,6 +631,7 @@ async function askAI(history, lang) {
 }
 
 bot.on('message', track(async (msg) => {
+  if ((msg.photo || msg.document) && msg.chat.type === 'private' && !isOwner(msg.from.username)) return handleReceipt(msg);
   if (!msg.text || msg.text.startsWith('/start')) return;
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -670,9 +738,28 @@ bot.on('callback_query', track(async (q) => {
   const user = getUser(userId);
   const answer = (opts) => bot.answerCallbackQuery(q.id, opts).catch(() => {});
 
+  if (data.startsWith('pok:') || data.startsWith('pno:')) {
+    if (!isOwner(q.from.username)) return answer({ text: 'Faqat admin uchun', show_alert: true });
+    const [, uid, kw] = data.split(':');
+    const rule = ruleByKeyword(kw);
+    if (data.startsWith('pok:')) {
+      const ok = rule && (await sendPaid(Number(uid), rule));
+      await answer({ text: ok ? '✅ Paket yuborildi' : '❌ Fayl yuborilmadi', show_alert: !ok });
+      if (ok) stats.sold = (stats.sold || 0) + 1;
+      return bot.editMessageText(`${q.message.text}
+
+${ok ? '✅ TASDIQLANDI, paket yuborildi' : '❌ Fayl yuborilmadi, logni tekshiring'}`, { chat_id: chatId, message_id: q.message.message_id }).catch(() => {});
+    }
+    await send(Number(uid), `❌ Chek tasdiqlanmadi. To'lovni tekshirib, qayta yuboring yoki @${esc(OWNER_USERNAME)} ga yozing.`);
+    await answer({ text: 'Rad etildi' });
+    return bot.editMessageText(`${q.message.text}
+
+❌ RAD ETILDI`, { chat_id: chatId, message_id: q.message.message_id }).catch(() => {});
+  }
   if (data.startsWith('get:')) {
     const rule = ruleByKeyword(data.slice(4));
     if (!rule) return answer();
+    if (rule.pay) { await answer(); return payOffer(chatId, userId, rule); }
     if (!(await checkSub(userId))) return answer({ text: '❌ Hali obuna bo\'lmagansiz!', show_alert: true });
     await answer({ text: '✅ Tasdiqlandi!' });
     return deliver(chatId, userId, rule);
@@ -1002,7 +1089,7 @@ app.get('/api/stats', adminOnly, (req, res) => res.json({ users: users.size, ...
 app.get('/health', (req, res) =>
   res.json({
     ok: true,
-    version: '8.2',
+    version: '8.3',
     publicUrl: PUBLIC_URL || '❌ PUBLIC_URL yo\'q',
     telegram: BOT_TOKEN ? '✅' : '❌ BOT_TOKEN yo\'q',
     instagramToken: IG_ACCESS_TOKEN ? '✅' : '❌ IG_ACCESS_TOKEN yo\'q',
@@ -1012,6 +1099,7 @@ app.get('/health', (req, res) =>
     keywords: RULES.map((r) => r.keyword),
     reminder: featured().map((r) => r.keyword),
     followCheck: env('FOLLOW_CHECK', 'on') !== 'off' ? `✅ @${IG_PROFILE}` : 'o\'chiq',
+    payment: { ownerChat: OWNER_CHAT_ID ? '✅' : '❌ OWNER_CHAT_ID yo\'q (botga /id yozing)', card: PAY_CARD ? '✅' : '❌ PAY_CARD yo\'q', price: PRO_PRICE, paid: payRules().map((r) => r.keyword) },
   })
 );
 // Telegram webhook'ni o'rnatish: brauzerda /setup?key=VERIFY_TOKEN ni bir marta oching (Vercel'da shart)
