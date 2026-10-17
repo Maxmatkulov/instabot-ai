@@ -417,7 +417,8 @@ const OWNER_CHAT_ID = env('OWNER_CHAT_ID');
 const PAY_CARD = env('PAY_CARD');
 const PAY_NAME = env('PAY_NAME');
 const PRO_PRICE = env('PRO_PRICE', '149 000');
-const payRules = () => RULES.filter((r) => r.pay);
+const payRules = () => RULES.filter((r) => r.pay && r.active !== false);
+const payPick = new Map(); // userId -> oxirgi tanlangan kurs kalit so'zi (chek qaysi kursga tegishli)
 const fmtPrice = (p) => String(p).replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ') || String(p);
 const payText = (rule) => {
   const price = fmtPrice(rule.price || PRO_PRICE);
@@ -437,6 +438,7 @@ const payText = (rule) => {
   );
 };
 async function payOffer(chatId, userId, rule) {
+  payPick.set(userId, rule.keyword);
   await send(chatId, payText(rule));
   if (OWNER_CHAT_ID) {
     const u = await bot.getChat(userId).catch(() => ({}));
@@ -446,8 +448,8 @@ async function payOffer(chatId, userId, rule) {
 // Chek keldi: egasiga yuboramiz, tugmalar bilan
 async function handleReceipt(msg) {
   const chatId = msg.chat.id, userId = msg.from.id;
-  const rule = payRules()[0];
-  if (!rule) return;
+  const rule = ruleByKeyword(payPick.get(userId)) || payRules()[0];
+  if (!rule || !rule.pay) return;
   if (!OWNER_CHAT_ID) {
     log('❌ OWNER_CHAT_ID yo\'q — chekni adminga yuborib bo\'lmadi');
     return send(chatId, `Chek qabul qilindi ✅ Admin tez orada ko'rib chiqadi. Savol bo'lsa: @${esc(OWNER_USERNAME)}`);
@@ -546,14 +548,21 @@ const reminderKb = () => ({
     inline_keyboard: [
       ...featured().map((r) => [{ text: `🎁 ${r.keyword}`, callback_data: `get:${r.keyword}` }]),
       [{ text: '📚 Barcha qo\'llanmalar', callback_data: 'guides' }],
+      ...(payRules().length ? [[{ text: '💎 Kurslar', callback_data: 'courses' }]] : []),
     ],
   },
+});
+const coursesText = () =>
+  `💎 <b>Kurslar</b>\n\nPullik, to'liq paketlar. Birini tanlang, batafsil ma'lumot va to'lov shu yerda 👇` +
+  (payRules().length ? '' : '\n\nHozircha kurs yo\'q, tez orada.');
+const coursesKb = () => ({
+  reply_markup: { inline_keyboard: payRules().map((r) => [{ text: `💎 ${r.title} · ${fmtPrice(r.price || PRO_PRICE)} so'm`, callback_data: `get:${r.keyword}` }]) },
 });
 const guidesKb = () => ({ reply_markup: { inline_keyboard: guideRules().map((r) => [{ text: `🎁 ${r.title}`, callback_data: `get:${r.keyword}` }]) } });
 
 const userKb = {
   reply_markup: {
-    keyboard: [[{ text: '🤖 AI Chat' }, { text: '📚 Menyu' }], [{ text: '🌐 Til' }, { text: '📢 Kanal' }]],
+    keyboard: [[{ text: '🤖 AI Chat' }, { text: '📚 Menyu' }], [{ text: '💎 Kurslar' }, { text: '📢 Kanal' }], [{ text: '🌐 Til' }]],
     resize_keyboard: true,
   },
 };
@@ -684,6 +693,7 @@ bot.on('message', track(async (msg) => {
       },
     });
   }
+  if (text === '💎 Kurslar') return send(chatId, coursesText(), coursesKb());
   if (text === '📚 Menyu') {
     if (RULES.some((r) => r.file)) {
       return send(chatId, '📚 <b>Qo\'llanmalar</b>\nKeraklisini tanlang 👇', {
@@ -773,6 +783,10 @@ ${ok ? '✅ TASDIQLANDI, paket yuborildi' : '❌ Fayl yuborilmadi, logni tekshir
     if (!(await checkSub(userId))) return answer({ text: '❌ Hali obuna bo\'lmagansiz!', show_alert: true });
     await answer({ text: '✅ Tasdiqlandi!' });
     return deliver(chatId, userId, rule);
+  }
+  if (data === 'courses') {
+    await answer();
+    return send(chatId, coursesText(), coursesKb());
   }
   if (data === 'guides') {
     await answer();
