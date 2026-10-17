@@ -468,6 +468,9 @@ async function sendPaid(userId, rule) {
       caption: `🎉 To'lov tasdiqlandi! Mana <b>${esc(rule.title)}</b>\n\n${rule.caption ? esc(rule.caption) : 'Ichidagi README.md da o\'rnatish tartibi bor.'}`,
       parse_mode: 'HTML',
     });
+    for (const f of rule.paidExtra || []) {
+      await bot.sendDocument(userId, `${PUBLIC_URL}/${f}`, { caption: '📖 Yo\'riqnoma: avval shuni o\'qing' }).catch((e) => log('❌ paidExtra:', e.message));
+    }
     return true;
   } catch (e) {
     log('❌ pullik fayl:', e.message);
