@@ -413,19 +413,29 @@ const subscribeKb = (kw) => ({
 // Egasi Telegram'da /id yozib bilib oladi va Vercel'ga OWNER_CHAT_ID qilib qo'yadi
 const OWNER_CHAT_ID = env('OWNER_CHAT_ID');
 // ───── Pullik paket: to'lov → chek → admin tasdig'i → fayl ─────
-// Vercel → Environment Variables: PAY_CARD (karta raqami), PAY_NAME (karta egasi), PRO_PRICE (masalan "49 000")
+// Vercel → Environment Variables: PAY_CARD (karta raqami), PAY_NAME (karta egasi), PRO_PRICE (masalan "149 000")
 const PAY_CARD = env('PAY_CARD');
 const PAY_NAME = env('PAY_NAME');
-const PRO_PRICE = env('PRO_PRICE', '49 000');
+const PRO_PRICE = env('PRO_PRICE', '149 000');
 const payRules = () => RULES.filter((r) => r.pay);
-const payText = (rule) =>
-  `💎 <b>${esc(rule.title)}</b>\n\n${rule.payDesc ? esc(rule.payDesc) + '\n\n' : ''}` +
-  `💰 Narxi: <b>${esc(rule.price || PRO_PRICE)} so'm</b>\n\n` +
-  (PAY_CARD
-    ? `1️⃣ Shu kartaga to'lang:\n<code>${esc(PAY_CARD)}</code>${PAY_NAME ? `\n👤 ${esc(PAY_NAME)}` : ''}\n\n` +
-      `2️⃣ To'lov chekini (skrinshot) <b>shu yerga rasm qilib yuboring</b>.\n\n` +
-      `3️⃣ Admin tasdiqlagach, paket shu chatga keladi ✅`
-    : `To'lov ma'lumotlari tez orada shu yerda bo'ladi. Savol bo'lsa: @${esc(OWNER_USERNAME)}`);
+const fmtPrice = (p) => String(p).replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ') || String(p);
+const payText = (rule) => {
+  const price = fmtPrice(rule.price || PRO_PRICE);
+  const per = Math.round(parseInt(price.replace(/\s/g, ''), 10) / 30);
+  return (
+    `💎 <b>${esc(rule.title)}</b>\n\n` +
+    (rule.payDesc ? esc(rule.payDesc) + '\n\n' : '') +
+    `<b>Narx haqida ochiq gapiray.</b>\n` +
+    `Bitta reelsni montajchiga topshirsangiz, shu pulning o'zi ketadi. Bu esa <b>cheksiz</b> reels uchun: 30 ta qilsangiz, har biri ~${per.toLocaleString('en').replace(/,/g, ' ')} so'm. Pulni bilimga sarflaysiz, o'sha bilim esa har hafta o'zini oqlaydi.\n\n` +
+    `💰 Launch narxi: <b>${esc(price)} so'm</b> (bir marta, obunasiz)\n\n` +
+    `⚠️ Kerak: Claude Code, Node.js, Python va ffmpeg. O'rnatishda qiynalsangiz @${esc(OWNER_USERNAME)} ga yozing, yordam beraman.\n\n` +
+    (PAY_CARD
+      ? `1️⃣ Shu kartaga to'lang:\n<code>${esc(PAY_CARD)}</code>${PAY_NAME ? `\n👤 ${esc(PAY_NAME)}` : ''}\n\n` +
+        `2️⃣ To'lov chekini (skrinshot) <b>shu yerga rasm qilib yuboring</b>.\n\n` +
+        `3️⃣ Tasdiqlangach, paket shu chatga keladi ✅`
+      : `To'lov ma'lumotlari tez orada shu yerda bo'ladi. Savol bo'lsa: @${esc(OWNER_USERNAME)}`)
+  );
+};
 async function payOffer(chatId, userId, rule) {
   await send(chatId, payText(rule));
   if (OWNER_CHAT_ID) {
