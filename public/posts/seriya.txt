@@ -1,0 +1,19 @@
+🎬 «Prompt emas, rejissyor kerak»
+
+Ko'pchilik Claude'dan "zo'r video qilib ber" deydi va o'rtacha natija oladi. Muammo promptda emas, rejissyorlikda: Claude'ga mavzu emas, ish tartibini bering.
+
+Shu fikr bo'yicha 3 qismli seriya chiqaryapman. Asoslarim:
+
+▫️ Videodagi do'ppili personaj rasm emas, kod bilan chizilgan 3D obyekt, og'zi ovozga mos harakatlanadi.
+▫️ Subtitr so'zma-so'z: aytilgan so'z yonadi, ekrandagi har element ovozdagi aniq so'zga bog'langan.
+▫️ Tovush effektlari va musiqa ham kod bilan yasalgan.
+▫️ 1-qism 51,5 soniya, to'liq render 4 daqiqa 27 soniya oldi (o'zim o'lchadim).
+▫️ Dastur Remotion: kod bilan video yasaydi, shaxslar va 3 kishigacha kompaniya uchun bepul.
+
+Qoidalar aniq: hook birinchi 3 soniyada, har 2-3 soniyada yangi sahna, ovozsiz ham tushunarli. Buni Claude'ga bir marta yozasiz, u har safar bajaradi.
+
+1) hook va qoidalar
+2) bepul vositalar
+3) butun jarayon
+
+Boshlash uchun bepul skill tayyor: @mmnchat_bot ga SKILL deb yozing.

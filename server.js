@@ -985,6 +985,31 @@ app.get('/admin/channel-video', async (req, res) => {
   res.json(row);
 });
 
+// Kanalga rasm + izoh (yoki faqat matn). Fayllar: public/posts/<nom>.png (ixtiyoriy) va <nom>.txt
+// /admin/channel-post?key=KEY&name=seriya (ko'rish) ... &send=1 (kanalga yuboradi)
+app.get('/admin/channel-post', async (req, res) => {
+  if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  const name = String(req.query.name || '').replace(/[^a-z0-9_-]/gi, '');
+  const dir = path.join(__dirname, 'public', 'posts');
+  const txtFile = path.join(dir, `${name}.txt`);
+  if (!name || !fs.existsSync(txtFile)) {
+    const have = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.txt')).map((f) => f.slice(0, -4)) : [];
+    return res.json({ error: 'post nomi yo\'q', have });
+  }
+  const text = fs.readFileSync(txtFile, 'utf8').trim();
+  const hasImg = fs.existsSync(path.join(dir, `${name}.png`));
+  const row = { name, channel: TG_CHANNEL, image: hasImg, chars: text.length, send: req.query.send === '1', preview: text.slice(0, 120) };
+  if (row.send) {
+    try {
+      const m = hasImg
+        ? await bot.sendPhoto(TG_CHANNEL, `${PUBLIC_URL}/posts/${name}.png`, { caption: text.slice(0, 1024) })
+        : await bot.sendMessage(TG_CHANNEL, text, { disable_web_page_preview: true });
+      row.sent = true; row.message_id = m.message_id;
+    } catch (e) { row.sent = false; row.error = e.message; }
+  }
+  res.json(row);
+});
+
 // ───────────────────────── Reels avto-post ─────────────────────────
 const REELS = {
   skill60: {
