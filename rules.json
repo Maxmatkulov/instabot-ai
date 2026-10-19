@@ -91,6 +91,31 @@
       "upsell": "PRO"
     },
     {
+      "keyword": "HOOK",
+      "aliases": [
+        "HOOKK",
+        "HOOKNI",
+        "HOK",
+        "HUK",
+        "HOOK!",
+        "ХУК",
+        "ХООК"
+      ],
+      "title": "Reelsing yurmayaptimi? Birinchi 3 soniya qoidasi + bepul skill",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/skill-qollanma.pdf",
+      "remind": true,
+      "caption": "Qo'llanma tayyor. Eng oddiy skill shabloni ichida, 3 daqiqada o'zingnikini yozasan.",
+      "extra": [
+        {
+          "file": "guides/reels-rejissyor-lite.zip",
+          "caption": "🎬 Bepul skill: Reels Rejissyor Lite. U hook, har 2 soniyada yangi sahna va so'zma-so'z subtitr qoidalarini Claude'ga o'rgatadi. Zip ichidagi README.md da o'rnatish tartibi bor."
+        }
+      ],
+      "upsell": "PRO"
+    },
+    {
       "keyword": "REELS",
       "aliases": [
         "RELS",
@@ -261,7 +286,9 @@
       "follow": false,
       "payDesc": "Siz ko'rgan videolar (do'ppili Claude, so'zma-so'z subtitr, og'iz harakati, SFX) aynan shu paket bilan qilingan.\n\n📦 Ichida:\n• Tayyor Remotion loyihasi: personaj, sahnalar, o'tishlar\n• Ovozga mos og'iz harakati va so'zma-so'z subtitr (avto)\n• SFX + musiqa miksi\n• Tez render skripti (~5 daqiqa)\n• To'liq rejissyor skill: g'oya, ssenariy, sahna jadvali\n\n🔁 Oldin: har reels uchun soatlab montaj yoki montajchiga pul.\nEndi: ovozni yozasiz, qolganini Claude yig'adi.",
       "paidFile": "p/9987536685696bbb0d142f89/reels-rejissyor-pro.zip",
-      "paidExtra": ["p/9987536685696bbb0d142f89/YORIQNOMA.pdf"],
+      "paidExtra": [
+        "p/9987536685696bbb0d142f89/YORIQNOMA.pdf"
+      ],
       "reels": [],
       "caption": "Avval keyingi xabardagi YORIQNOMA.pdf ni oching: noldan qadam-baqadam tushuntirilgan. Savol bo'lsa @mmn0300 ga yozing."
     },
