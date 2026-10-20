@@ -1100,6 +1100,28 @@ app.get('/api/cron/daily', async (req, res) => {
   res.json(out);
 });
 
+// Vercel Cron: kanalga video + PDF. ?date=YYYY-MM-DD (Toshkent sanasi) mos kelganda va faqat bir marta ishlaydi
+let chanCronDone = '';
+app.get('/api/cron/channel-video', async (req, res) => {
+  const ua = String(req.headers['user-agent'] || '');
+  if (!ua.includes('vercel-cron') && req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'ruxsat yo\'q' });
+  const today = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+  if (req.query.date !== today) return res.json({ skipped: `bugun ${today}, reja ${req.query.date}` });
+  const name = String(req.query.name || '');
+  const v = CHAN_VIDEOS[name];
+  if (!v) return res.json({ error: 'video nomi yo\'q' });
+  if (chanCronDone === `${today}:${name}`) return res.json({ skipped: 'allaqachon yuborilgan' });
+  chanCronDone = `${today}:${name}`;
+  const out = { name, channel: TG_CHANNEL };
+  try {
+    const m = await bot.sendVideo(TG_CHANNEL, `${PUBLIC_URL}/${v.video}`, { caption: v.text.slice(0, 1024), parse_mode: 'HTML', supports_streaming: true });
+    out.sent = true; out.message_id = m.message_id;
+    out.pdf = await postChannelPdf(v.kw);
+  } catch (e) { out.sent = false; out.error = e.message; chanCronDone = ''; }
+  log('📢 cron kanal:', JSON.stringify(out));
+  res.json(out);
+});
+
 // Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
 app.post('/webhook/instagram', async (req, res) => {
   if (!validMetaSignature(req)) {
