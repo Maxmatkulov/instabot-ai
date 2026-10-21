@@ -1,28 +1,28 @@
 # ELIZA (1966, Joseph Weizenbaum, MIT) — o'zbekcha mini-versiya
-# Ishga tushirish:  python eliza.py     (chiqish: "xayr" deb yoz)
-# U hech narsani tushunmaydi: kalit so'zni topadi va gapingni savol qilib qaytaradi.
+# Ishga tushirish:  python eliza.py     (chiqish: "xayr" deb yozing)
+# U hech narsani tushunmaydi: kalit so'zni topadi va gapingizni savol qilib qaytaradi.
 import random, re
 
-# gapdagi olmoshlarni "ko'zguga" aylantirish: men -> sen
-MIRROR = {"men": "sen", "menga": "senga", "mening": "sening", "meni": "seni", "menda": "sende",
-          "sen": "men", "senga": "menga", "sening": "mening", "seni": "meni"}
+# gapdagi olmoshlarni "ko'zguga" aylantirish: men -> siz
+MIRROR = {"men": "siz", "menga": "sizga", "mening": "sizning", "meni": "sizni", "menda": "sizda",
+          "siz": "men", "sizga": "menga", "sizning": "mening", "sizni": "meni", "sizda": "menda"}
 
 # (andoza, javoblar). {0} = gapning andozadan keyingi qismi
 RULES = [
-    (r"men (.*?)\s*xafaman", ["Nega {0} xafasan?", "Xafalik qachondan beri bor?"]),
-    (r"men (.*?)\s*charchadim", ["Nimadan charchading?", "Qachondan beri charchagansan?"]),
-    (r"men (.*?)\s*qo'rqaman", ["Nimadan qo'rqasan?", "Bu qo'rquv qachon boshlandi?"]),
-    (r"men (.*?)\s*xohlayman", ["Nega {0} xohlaysan?", "Agar {0} bo'lsa, nima o'zgaradi?"]),
-    (r"men (.*?)\s*bilmayman", ["Nega bilmaysan deb o'ylaysan?", "Agar bilsang, nima qilarding?"]),
-    (r"(.*) onam (.*)", ["Onang haqida ko'proq gapir.", "Onang bilan munosabating qanday?"]),
-    (r"(.*) otam (.*)", ["Otang haqida ko'proq gapir."]),
-    (r"(.*) ish (.*)", ["Ishing haqida ko'proq gapirib ber.", "Ish seni nima qiladi?"]),
-    (r"(.*) pul (.*)", ["Pul sen uchun nimani anglatadi?"]),
-    (r"(.*) hech kim (.*)", ["Aniq kimdir yodingga tushyaptimi?"]),
-    (r"(.*) doim (.*)", ["Aniq bir misol keltira olasanmi?"]),
-    (r"(.*)\?", ["Sen o'zing nima deb o'ylaysan?", "Nega bu savolni berding?"]),
+    (r"men (.*?)\s*xafaman", ["Nega {0} xafasiz?", "Xafalik qachondan beri bor?"]),
+    (r"men (.*?)\s*charchadim", ["Nimadan charchadingiz?", "Qachondan beri charchagansiz?"]),
+    (r"men (.*?)\s*qo'rqaman", ["Nimadan qo'rqasiz?", "Bu qo'rquv qachon boshlandi?"]),
+    (r"men (.*?)\s*xohlayman", ["Nega {0} xohlaysiz?", "Agar {0} bo'lsa, nima o'zgaradi?"]),
+    (r"men (.*?)\s*bilmayman", ["Nega bilmaysiz deb o'ylaysiz?", "Agar bilsangiz, nima qilardingiz?"]),
+    (r"(.*) onam (.*)", ["Onangiz haqida ko'proq gapiring.", "Onangiz bilan munosabatingiz qanday?"]),
+    (r"(.*) otam (.*)", ["Otangiz haqida ko'proq gapiring."]),
+    (r"(.*) ish (.*)", ["Ishingiz haqida ko'proq gapirib bering.", "Ish sizga nima beradi?"]),
+    (r"(.*) pul (.*)", ["Pul siz uchun nimani anglatadi?"]),
+    (r"(.*) hech kim (.*)", ["Aniq kimdir yodingizga tushyaptimi?"]),
+    (r"(.*) doim (.*)", ["Aniq bir misol keltira olasizmi?"]),
+    (r"(.*)\?", ["O'zingiz nima deb o'ylaysiz?", "Nega bu savolni berdingiz?"]),
 ]
-FALLBACK = ["Tushundim. Davom et.", "Buni ko'proq tushuntirib ber.", "Bu sen uchun nima anglatadi?", "Mm. Keyin-chi?"]
+FALLBACK = ["Tushundim. Davom eting.", "Buni ko'proq tushuntirib bering.", "Bu siz uchun nima anglatadi?", "Mm. Keyin-chi?"]
 
 def mirror(text):
     return " ".join(MIRROR.get(w, w) for w in text.split())
@@ -39,9 +39,9 @@ def reply(text):
     return random.choice(FALLBACK)
 
 if __name__ == "__main__":
-    print("ELIZA: Salom. Nima bezovta qilyapti?")
+    print("ELIZA: Salom. Sizni nima bezovta qilyapti?")
     while True:
-        s = input("sen: ")
+        s = input("siz: ")
         if s.lower().strip() in ("xayr", "chiq", "exit"):
             print("ELIZA: Xayr. Yana gaplashamiz."); break
         print("ELIZA:", reply(s))
