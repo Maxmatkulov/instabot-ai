@@ -116,6 +116,22 @@
       "upsell": "PRO"
     },
     {
+      "keyword": "ELIZA",
+      "aliases": [
+        "ELIZAA",
+        "ELIZANI",
+        "ELIZ",
+        "ЭЛИЗА",
+        "ELISA"
+      ],
+      "title": "ELIZA: 1966-yildagi birinchi chatbot (o'zbekcha mini-versiya)",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/eliza.py",
+      "remind": true,
+      "caption": "Fayl tayyor. Python o'rnatilgan bo'lsa, terminalda `python eliza.py` yozing va 1966-yildagi dasturga o'zbekcha gapiring. Chiqish uchun \"xayr\" deb yozing."
+    },
+    {
       "keyword": "REELS",
       "aliases": [
         "RELS",
