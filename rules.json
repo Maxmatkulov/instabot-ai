@@ -321,6 +321,21 @@
       "waitlist": true,
       "waitlistText": "2-qism chiqishi bilan birinchilardan bo'lib shu yerda xabar beramiz. Hozircha bepul Lite skillni olish uchun SKILL deb yozing.",
       "reels": []
+    },
+    {
+      "keyword": "HAQIQAT",
+      "aliases": [
+        "HAQIQATT",
+        "HAQIQAD",
+        "ХАКИКАТ",
+        "HAQIQAT!"
+      ],
+      "title": "Tanqidchi prompt: AI maqtamasin",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/tanqidchi-prompt.pdf",
+      "remind": true,
+      "caption": "Tayyor. Ichida 4 ta savol bor: AI g'oyangizni maqtamay, kamchiligini aytadi. Eng ko'p ishlatiladigani: \"Bu g'oyaning 3 ta eng katta kamchiligini ayt. Maqtama.\""
     }
   ]
 }
