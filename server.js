@@ -661,9 +661,36 @@ async function askAI(history, lang) {
   return GROQ_API_KEY || ANTHROPIC_API_KEY ? 'AI vaqtincha ishlamayapti, keyinroq urinib ko\'ring.' : 'AI ulanmagan.';
 }
 
+
+// Guruhda kalit so'z yozilsa: xabarga javob sifatida qo'llanma (obuna bo'lsa), bo'lmasa obuna tugmasi.
+const groupSeen = new Set();
+async function groupKeyword(msg) {
+  if (!msg.from || msg.from.is_bot || msg.is_automatic_forward || msg.sender_chat) return;
+  const text = String(msg.text || '').trim();
+  if (text.startsWith('/') || text.split(/\s+/).length > 2) return;
+  const rule = matchRule(text);
+  if (!rule) return;
+  const dk = `${msg.chat.id}:${msg.message_id}`;
+  if (groupSeen.has(dk)) return;
+  groupSeen.add(dk); if (groupSeen.size > 500) groupSeen.clear();
+  const chatId = msg.chat.id, userId = msg.from.id, reply = { reply_to_message_id: msg.message_id, allow_sending_without_reply: true };
+  const dm = { reply_markup: { inline_keyboard: [[{ text: '📩 Botda olish', url: `https://t.me/${TG_BOT_USERNAME}?start=${rule.keyword}` }]] } };
+  log(`👥 guruh kalit so'z: ${rule.keyword}`);
+  if (rule.pay || rule.waitlist || !rule.file || !PUBLIC_URL) return send(chatId, `📩 <b>${esc(rule.title)}</b> botda beriladi. Tugmani bosing 👇`, { ...reply, ...dm });
+  if (!(await checkSub(userId))) {
+    return send(chatId, `🎁 <b>${esc(rule.title)}</b>\n\nOlish uchun kanalga obuna bo'ling, keyin "✅ Obuna bo'ldim" ni bosing 👇`, { ...reply, ...subscribeKb(rule.keyword) });
+  }
+  stats.delivered++;
+  try {
+    await bot.sendDocument(chatId, `${PUBLIC_URL}/${rule.file}`, { caption: `✅ Mana <b>${esc(rule.title)}</b> 📘\n\n💾 Saqlab qo'ying.`, parse_mode: 'HTML', ...reply });
+  } catch (e) { log('❌ guruh sendDocument:', e.message); await send(chatId, `📩 Fayl botda: tugmani bosing 👇`, { ...reply, ...dm }); }
+}
+
 bot.on('message', track(async (msg) => {
   if ((msg.photo || msg.document) && msg.chat.type === 'private' && !isOwner(msg.from.username)) return handleReceipt(msg);
   if (!msg.text || msg.text.startsWith('/start')) return;
+  // Guruh (kanal muhokama guruhi): faqat kalit so'zga javob beramiz, boshqa gapga aralashmaymiz (AI chat, menyu yo'q)
+  if (msg.chat.type === 'group' || msg.chat.type === 'supergroup') return groupKeyword(msg);
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   // /menu va /ai buyruqlari — pastdagi tugmalar bilan bir xil ishlaydi
