@@ -365,6 +365,15 @@ const getUser = (id) => {
   if (!users.has(id)) users.set(id, { questions: 0, history: [], lang: 'uz', aiMode: false });
   return users.get(id);
 };
+
+// Kanal a'zolari soni (haqiqiy, Telegram'dan). 10 daqiqa keshlanadi; olinmasa qator ko'rsatilmaydi
+let _cc = { n: 0, t: 0 };
+async function chanCountLine() {
+  try {
+    if (!_cc.n || Date.now() - _cc.t > 600e3) _cc = { n: await bot.getChatMemberCount(TG_CHANNEL), t: Date.now() };
+    return _cc.n > 0 ? `👥 Kanalimizda <b>${_cc.n.toLocaleString('en-US').replace(/,/g, ' ')}</b> kishi bilan birga o'rganamiz\n\n` : '';
+  } catch { return ''; }
+}
 const isOwner = (u) => (u || '').toLowerCase() === OWNER_USERNAME;
 
 // Serverless (Vercel) uchun: handlerlar tugaguncha javobni kutamiz, aks holda funksiya yarim yo'lda to'xtaydi
@@ -580,7 +589,7 @@ bot.onText(/^\/start(?:\s+(.+))?$/, track(async (msg, match) => {
 
   const rule = ruleByKeyword(param);
   if (rule) {
-    await send(chatId, `Salom, <b>${name}</b>! 👋`, userKb);
+    await send(chatId, `${await chanCountLine()}Salom, <b>${name}</b>! 👋`, userKb);
     return deliver(chatId, msg.from.id, rule);
   }
 
@@ -596,7 +605,7 @@ bot.onText(/^\/start(?:\s+(.+))?$/, track(async (msg, match) => {
       },
     });
   }
-  await send(chatId, `👋 Salom, <b>${name}</b>!\n\n🤖 AI yordamchi botga xush kelibsiz!`, userKb);
+  await send(chatId, `${await chanCountLine()}👋 Salom, <b>${name}</b>!\n\n🤖 AI yordamchi botga xush kelibsiz!`, userKb);
   return send(chatId, reminderText(), reminderKb());
 }));
 
@@ -967,6 +976,8 @@ app.get('/admin/channel', async (req, res) => {
 
 // Kanalga video + izoh. /admin/channel-video?key=KEY&name=sayt (ko'rish) ... &send=1 (video), &pdf=1 (PDF ham)
 const CHAN_VIDEOS = {
+  band: { video: 'reels/band.mp4', kw: 'BAND', text: "📄 <b>Shartnomani imzolashdan oldin shu 1 narsani tekshiring</b>\n\nKo'pchilik shartnomani o'qimay imzolaydi. Imzolashdan oldin AI'ga tekshirtiring va xavfli bandlarni oldindan toping.\n\n📘 Tekshiruv varag'i PDF'da, pastda. Instagramda izohga <code>BAND</code> deb yozsangiz, DM'ga ham keladi." },
+  firib: { video: 'reels/firib.mp4', kw: 'FIRIB', text: "⚠️ <b>Bu faylni ochmang: Telegramdagi 4 ta firibgarlik usuli</b>\n\n1️⃣ «Rasmingiz topildi» deb kelgan .apk fayl\n2️⃣ Do'stingiz nomidan qarz so'rash: avval qo'ng'iroq qiling\n3️⃣ Kodni so'rash: Telegram kodini hech kimga aytmang\n4️⃣ «Yutuq» havolasi\n\n🛡 Himoya: ikki bosqichli tekshiruvni yoqing va qurilmalarni tekshiring. Qadamma-qadam yo'riqnoma PDF'da, pastda.\n\n📱 Android uchun APK Qo'riqchi: https://play.google.com/store/apps/details?id=com.baxtiyorov.security" },
   hook: { video: 'reels/hook.mp4', kw: 'HOOK', text: "🎯 <b>Reelsing yurmayaptimi? Muammo videoda emas, birinchi 3 soniyada</b>\n\nMening reelsimni 25 mingta odam ko'rdi, yarmi 3 soniyada tashlab ketdi. Ko'proq ko'rilishi uchun 4 ta qoida:\n\n1️⃣ Nol kadrda harakat\n2️⃣ Haqiqiy ilova, haqiqiy ekran\n3️⃣ Gapni tomoshabinning akkaunti haqida qil\n4️⃣ Har gapda tasvir o'zgarsin\n\n🎁 Bepul skill va qo'llanma PDF'da, pastda. Instagramda izohga <code>HOOK</code> deb yozsangiz, DM'ga ham keladi." },
   haqiqat: { video: 'reels/haqiqat.mp4', kw: 'HAQIQAT', text: "🪞 <b>AI sizga har doim \"ha\" deydi. Bu xavfli</b>\n\nStanford olimlari 11 ta mashhur AI ni sinadi (Science, 2026). AI odamlarga qaraganda foydalanuvchi tomonini o'rtacha 49% ko'proq oladi. Odamlar esa aynan shunday AI ga ko'proq ishonadi.\n\n✅ Yechim: maqtovni emas, tanqidni so'rang.\n\n🎁 4 ta tayyor \"Tanqidchi prompt\" PDF'da, pastda. Instagramda izohga <code>HAQIQAT</code> deb yozsangiz, DM'ga ham keladi." },
   plagin: { video: 'reels/plagin.mp4', kw: 'PLAGIN', text: "🔌 <b>Claude'ga reels qildirishdan oldin shu 3 plaginni o'rnating</b>\n\n1️⃣ Virality skill: hookni tekshiradi\n2️⃣ Content Skills: 54 ta bepul skill\n3️⃣ Remotion skills: kod yozib video qiladi\n\n📘 Havolalar va o'rnatish buyruqlari PDF'da, pastda." },
@@ -1124,6 +1135,62 @@ app.get('/api/cron/channel-video', async (req, res) => {
 });
 
 // Instagram webhook — hodisalar. Serverless'da ish tugaguncha kutib, keyin 200 qaytaramiz (Meta 20 s kutadi).
+
+// ───────── Kanal avto-joylash (Vercel Cron, Toshkent vaqti) ─────────
+// Kechqurun 21:00: public/schedule.json → {"2026-10-23": ["band","firib"]} — shu kunning video(lar)i + PDF.
+// Ertalab 08:00: public/news/YYYY-MM-DD/{caption.txt, 1.png..10.png} bor bo'lsa — salom + yangilik karuseli. Fayl yo'q bo'lsa hech narsa uydirilmaydi.
+const tashkentToday = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+const cronAuth = (req) => String(req.headers['user-agent'] || '').includes('vercel-cron') || req.query.key === (env('BACKFILL_KEY') || VERIFY_TOKEN);
+const cronDone = new Set();
+app.get('/api/cron/evening', async (req, res) => {
+  if (!cronAuth(req)) return res.status(403).json({ error: 'ruxsat yo\'q' });
+  const today = req.query.date || tashkentToday();
+  let sched = {};
+  try { sched = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'schedule.json'), 'utf8')); } catch {}
+  const names = sched[today] || [];
+  const out = { today, names, results: [] };
+  for (const name of names) {
+    const v = CHAN_VIDEOS[name];
+    const k = `e:${today}:${name}`;
+    if (!v) { out.results.push({ name, error: 'video nomi yo\'q' }); continue; }
+    if (cronDone.has(k)) { out.results.push({ name, skipped: 'allaqachon' }); continue; }
+    cronDone.add(k);
+    try {
+      const m = await bot.sendVideo(TG_CHANNEL, `${PUBLIC_URL}/${v.video}`, { caption: v.text.slice(0, 1024), parse_mode: 'HTML', supports_streaming: true });
+      out.results.push({ name, sent: true, message_id: m.message_id, pdf: await postChannelPdf(v.kw) });
+    } catch (e) { cronDone.delete(k); out.results.push({ name, sent: false, error: e.message }); }
+  }
+  log('📢 kechki cron:', JSON.stringify(out));
+  res.json(out);
+});
+app.get('/api/cron/morning', async (req, res) => {
+  if (!cronAuth(req)) return res.status(403).json({ error: 'ruxsat yo\'q' });
+  const today = req.query.date || tashkentToday();
+  const dir = path.join(__dirname, 'public', 'news', today);
+  const out = { today };
+  if (!fs.existsSync(path.join(dir, 'caption.txt'))) { out.skipped = 'bugungi yangilik papkasi yo\'q'; return res.json(out); }
+  const k = `m:${today}`;
+  if (cronDone.has(k)) return res.json({ ...out, skipped: 'allaqachon' });
+  cronDone.add(k);
+  const caption = fs.readFileSync(path.join(dir, 'caption.txt'), 'utf8').trim();
+  const slides = fs.readdirSync(dir).filter((f) => /^\d+\.(png|jpg)$/i.test(f)).sort((a, b) => parseInt(a) - parseInt(b)).slice(0, 10);
+  try {
+    if (slides.length >= 2) {
+      const media = slides.map((f, i) => ({ type: 'photo', media: `${PUBLIC_URL}/news/${today}/${f}`, ...(i === 0 ? { caption: caption.slice(0, 1024), parse_mode: 'HTML' } : {}) }));
+      const m = await bot.sendMediaGroup(TG_CHANNEL, media);
+      out.sent = true; out.count = m.length;
+    } else if (slides.length === 1) {
+      const m = await bot.sendPhoto(TG_CHANNEL, `${PUBLIC_URL}/news/${today}/${slides[0]}`, { caption: caption.slice(0, 1024), parse_mode: 'HTML' });
+      out.sent = true; out.message_id = m.message_id;
+    } else {
+      const m = await bot.sendMessage(TG_CHANNEL, caption, { parse_mode: 'HTML', disable_web_page_preview: true });
+      out.sent = true; out.message_id = m.message_id;
+    }
+  } catch (e) { cronDone.delete(k); out.sent = false; out.error = e.message; }
+  log('☀️ ertalabki cron:', JSON.stringify(out));
+  res.json(out);
+});
+
 app.post('/webhook/instagram', async (req, res) => {
   if (!validMetaSignature(req)) {
     log('⛔ IG webhook: imzo noto\'g\'ri — rad etildi');
