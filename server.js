@@ -1267,6 +1267,12 @@ app.get('/api/cron/slot', async (req, res) => {
         ? await bot.sendPhoto(TG_CHANNEL, `${PUBLIC_URL}/content/literacy/${li}.png`, { caption: cap, parse_mode: 'HTML' })
         : await bot.sendMessage(TG_CHANNEL, cap, { parse_mode: 'HTML', disable_web_page_preview: true });
       out.message_id = m.message_id;
+      const qz = lit[li][2];
+      if (qz) {
+        await new Promise((r) => setTimeout(r, 1500));
+        const m2 = await bot.sendPoll(TG_CHANNEL, uzc(`📝 Quiz: ${qz.q}`).slice(0, 300), qz.o.map((x) => uzc(x).slice(0, 100)), { type: 'quiz', correct_option_id: qz.c, explanation: uzc(qz.e).slice(0, 200), is_anonymous: true });
+        out.quiz = m2.message_id;
+      }
     }
     out.sent = true;
   } catch (e) { cronDone.delete(k); out.sent = false; out.error = e.message; }

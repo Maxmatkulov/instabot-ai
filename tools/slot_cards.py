@@ -28,7 +28,7 @@ def tips():
 def literacy():
     items = json.load(open(os.path.join(nc.ROOT, 'public/content/literacy.json')))
     d = os.path.join(nc.ROOT, 'public/content/literacy'); os.makedirs(d, exist_ok=True)
-    for i, (t, b) in enumerate(items):
+    for i, (t, b, *_) in enumerate(items):
         card('KOMPYUTER SAVODXONLIGI', t, b, f'{d}/{i}.png', label=f'{i + 1} / {len(items)}', accent=nc.TG)
     print(len(items), 'ta karta ->', d)
 
