@@ -368,11 +368,35 @@ const getUser = (id) => {
 
 // Kanal a'zolari soni (haqiqiy, Telegram'dan). 10 daqiqa keshlanadi; olinmasa qator ko'rsatilmaydi
 let _cc = { n: 0, t: 0 };
+
+// ───────── Foydalanuvchilar bazasi (Supabase, schema instabot; RPC orqali) ─────────
+const SB_URL = env('SUPABASE_URL', 'https://eofojlcuvynelgtoamyn.supabase.co');
+const SB_KEY = env('SUPABASE_ANON_KEY', 'sb_publishable_W6c5aLbzCwKSBZDT7iEhQw_l9djI_1K'); // ochiq (publishable) kalit; faqat RPC funksiyalarga ruxsat
+async function sb(fn, args) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, { method: 'POST', headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify(args || {}), signal: AbortSignal.timeout(4000) });
+    if (!r.ok) { log('❌ supabase', fn, r.status); return null; }
+    const t = await r.text(); return t ? JSON.parse(t) : true;
+  } catch (e) { log('❌ supabase', fn, e.message); return null; }
+}
+const trackUser = (u, source) => (u && !u.is_bot ? sb('instabot_track', { p_id: u.id, p_username: u.username || null, p_name: u.first_name || null, p_source: source || null }) : null);
+const trackEvent = (kind, keyword, id) => sb('instabot_event', { p_kind: kind, p_keyword: keyword || null, p_id: id || null });
+let statsCache = { at: 0, v: null };
+async function dbStats() {
+  if (Date.now() - statsCache.at < 60e3 && statsCache.v) return statsCache.v;
+  const v = await sb('instabot_stats'); if (v) statsCache = { at: Date.now(), v }; return v;
+}
+
 async function chanCountLine() {
+  let line = '';
   try {
     if (!_cc.n || Date.now() - _cc.t > 600e3) _cc = { n: await bot.getChatMemberCount(TG_CHANNEL), t: Date.now() };
-    return _cc.n > 0 ? `👥 Kanalimizda <b>${_cc.n.toLocaleString('en-US').replace(/,/g, ' ')}</b> kishi bilan birga o'rganamiz\n\n` : '';
-  } catch { return ''; }
+    const fmt = (n) => n.toLocaleString('en-US').replace(/,/g, ' ');
+    const st = await dbStats();
+    if (st?.total > 0) line += `🤖 Botdan <b>${fmt(Number(st.total))}</b> kishi foydalanmoqda\n`;
+    if (_cc.n > 0) line += `👥 Kanalimizda <b>${fmt(_cc.n)}</b> kishi bilan birga o'rganamiz\n`;
+  } catch {}
+  return line ? line + '\n' : '';
 }
 const isOwner = (u) => (u || '').toLowerCase() === OWNER_USERNAME;
 
@@ -511,7 +535,7 @@ async function deliver(chatId, userId, rule) {
       subscribeKb(rule.keyword)
     );
   }
-  stats.delivered++;
+  stats.delivered++; trackEvent('delivered', rule.keyword, userId);
   // Kutish ro'yxati (masalan XABARNOMA): fayl yo'q — ro'yxatga yozamiz va egasiga xabar beramiz
   if (rule.waitlist) return joinWaitlist(chatId, userId, rule);
   const url = rule.postUrl || CHANNEL_URL;
@@ -582,6 +606,7 @@ const userKb = {
 bot.onText(/^\/id$/, track(async (msg) => send(msg.chat.id, `Chat ID: <code>${msg.chat.id}</code>`)));
 
 bot.onText(/^\/start(?:\s+(.+))?$/, track(async (msg, match) => {
+  if (msg.chat.type === 'private') await trackUser(msg.from, match?.[1] ? `start:${match[1]}` : 'start');
   const chatId = msg.chat.id;
   const name = esc(msg.from.first_name || 'do\'stim');
   const param = (match[1] || '').trim();
@@ -680,7 +705,7 @@ async function groupKeyword(msg) {
   if (!(await checkSub(userId))) {
     return send(chatId, `🎁 <b>${esc(rule.title)}</b>\n\nOlish uchun kanalga obuna bo'ling, keyin "✅ Obuna bo'ldim" ni bosing 👇`, { ...reply, ...subscribeKb(rule.keyword) });
   }
-  stats.delivered++;
+  stats.delivered++; trackEvent('delivered', rule.keyword, userId);
   try {
     await bot.sendDocument(chatId, `${PUBLIC_URL}/${rule.file}`, { caption: `✅ Mana <b>${esc(rule.title)}</b> 📘\n\n💾 Saqlab qo'ying.`, parse_mode: 'HTML', ...reply });
   } catch (e) { log('❌ guruh sendDocument:', e.message); await send(chatId, `📩 Fayl botda: tugmani bosing 👇`, { ...reply, ...dm }); }
@@ -689,6 +714,7 @@ async function groupKeyword(msg) {
 bot.on('message', track(async (msg) => {
   if ((msg.photo || msg.document) && msg.chat.type === 'private' && !isOwner(msg.from.username)) return handleReceipt(msg);
   if (!msg.text || msg.text.startsWith('/start')) return;
+  if (msg.chat.type === 'private') trackUser(msg.from, null);
   // Guruh (kanal muhokama guruhi): faqat kalit so'zga javob beramiz, boshqa gapga aralashmaymiz (AI chat, menyu yo'q)
   if (msg.chat.type === 'group' || msg.chat.type === 'supergroup') return groupKeyword(msg);
   const chatId = msg.chat.id;
@@ -705,11 +731,12 @@ bot.on('message', track(async (msg) => {
 
   if (isOwner(msg.from.username)) {
     if (text === '📊 Statistika') {
+      const db = await dbStats();
       return send(
         chatId,
         `📊 <b>Statistika</b> (server qayta ishga tushgandan beri)\n` +
           `💬 Izohlar: ${stats.comments}\n🎯 Kalit so'z: ${stats.matched}\n📩 DM yuborildi: ${stats.dmSent}\n` +
-          `❌ DM xato: ${stats.dmFailed}\n▶️ /start: ${stats.tgStarts}\n🎁 Berildi: ${stats.delivered}\n👥 Users: ${users.size}`
+          `❌ DM xato: ${stats.dmFailed}\n▶️ /start: ${stats.tgStarts}\n🎁 Berildi: ${stats.delivered}\n👥 Users: ${users.size}` + (db ? `\n\n🗄 <b>Doimiy baza</b>\n👥 Jami foydalanuvchi: <b>${db.total}</b>\n🆕 Bugun: ${db.today} · 7 kun: ${db.week}\n🔥 7 kunda faol: ${db.active_week}\n🎁 Berilgan qo'llanma: ${db.delivered_total} (bugun ${db.delivered_today})\n🏆 Top: ${(db.top_keywords || []).map((k) => k.keyword + ' ' + k.n).join(', ') || '-'}` : '')
       );
     }
     if (text === '⚙️ Sozlamalar') {
@@ -793,6 +820,7 @@ bot.on('message', track(async (msg) => {
 bot.on('callback_query', track(async (q) => {
   const chatId = q.message?.chat.id;
   const userId = q.from.id;
+  if (q.message?.chat.type === 'private') trackUser(q.from, 'callback');
   const data = q.data || '';
   const user = getUser(userId);
   const answer = (opts) => bot.answerCallbackQuery(q.id, opts).catch(() => {});
