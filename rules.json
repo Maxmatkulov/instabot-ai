@@ -336,6 +336,22 @@
       "file": "guides/tanqidchi-prompt.pdf",
       "remind": true,
       "caption": "Tayyor. Ichida 4 ta savol bor: AI g'oyangizni maqtamay, kamchiligini aytadi. Eng ko'p ishlatiladigani: \"Bu g'oyaning 3 ta eng katta kamchiligini ayt. Maqtama.\""
+    },
+    {
+      "keyword": "BAND",
+      "aliases": [
+        "BANDD",
+        "BAND!",
+        "БАНД",
+        "BANT",
+        "BANDLAR"
+      ],
+      "title": "Shartnoma tekshiruv so'rovi: xavfli bandlarni top",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/shartnoma-tekshiruv.pdf",
+      "remind": true,
+      "caption": "Tayyor. Ichida shartnomani tekshiradigan so'rov bor. Passport va karta raqamini [YASHIRIN] ga almashtirib bering. Bu yuridik maslahat emas."
     }
   ]
 }
