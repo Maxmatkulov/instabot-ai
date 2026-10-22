@@ -85,8 +85,8 @@ def main(path):
         d.text((80, H - 170), 'Manba: ' + it['source'], font=f(B, 34), fill=TG)
         d.text((80, H - 110), '@mashrabbekmaxmatkulov', font=f(R, 30), fill=MUT)
         im.save(f'{out}/{n}.png'); n += 1
-    im, d = base(); d.text((80, 380), 'Har kuni', font=f(B, 110), fill=IV); d.text((80, 510), 'shu yerda', font=f(B, 110), fill=TG)
-    block(d, 80, 700, "Kanalga obuna bo'ling: ertalab yangiliklar, kechqurun video va tayyor PDF yo'riqnoma.", f(R, 46), (205, 214, 228), W - 160, 66)
+    im, d = base(); d.text((80, 380), 'Kanalga', font=f(B, 110), fill=IV); d.text((80, 510), "obuna bo'ling", font=f(B, 110), fill=TG)
+    block(d, 80, 700, "Yangiliklarni biz bilan kuzatib boring va obuna bo'lib qo'ying.", f(R, 46), (205, 214, 228), W - 160, 66)
     d.text((80, 1000), '@mashrabbekmaxmatkulov', font=f(B, 44), fill=AMB)
     d.text((80, 1080), "Qo'llanmalar: @mmnchat_bot", font=f(R, 40), fill=MUT)
     im.save(f'{out}/{n}.png'); print('tayyor', n, 'ta rasm ->', out)
