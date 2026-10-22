@@ -1194,9 +1194,9 @@ app.get('/api/cron/morning', async (req, res) => {
 });
 
 
-// Kun davomidagi slotlar: 12:00 PDF qo'llanma (aylanma), 15:00 kunlik maslahat, 18:00 so'rovnoma (+ kechki video teaseri).
+// Kun davomidagi slotlar: 12:00 PDF qo'llanma (aylanma), 15:00 kunlik maslahat, 18:00 Kompyuter savodxonligi darsi (+ kechki video teaseri).
 // Tashqi trigger (GitHub Actions) chaqiradi: /api/cron/slot?slot=12|15|18  (UA: vercel-cron). Kontent: public/content/{tips,polls}.json
-const uzc = (t) => String(t).split(/(@\S+|https?:\/\/\S+)/).map((x, i) => (i % 2 ? x : x
+const uzc = (t) => String(t).split(/(@\S+|https?:\/\/\S+|\S*\+\S*|\b(?:Shift|Compress|Heading|References|Data|Sort|Zip|Windows|Word|Excel)\b)/).map((x, i) => (i % 2 ? x : x
   .replace(/o['‘ʻ]/g, 'ö').replace(/O['‘ʻ]/g, 'Ö').replace(/g['‘ʻ]/g, 'ğ').replace(/G['‘ʻ]/g, 'Ğ')
   .replace(/sh/g, 'ş').replace(/Sh/g, 'Ş').replace(/ch/g, 'ç').replace(/Ch/g, 'Ç'))).join('');
 const CHAN_LINKS = '📢 Telegram: https://t.me/mashrabbekmaxmatkulov\n📸 Instagram: https://instagram.com/mashrab.axi';
@@ -1230,14 +1230,15 @@ app.get('/api/cron/slot', async (req, res) => {
       out.message_id = m.message_id;
     } else {
       const sched = readJson('schedule.json', {});
-      const tonight = sched[today] || [];
-      if (tonight.length) {
-        const m0 = await bot.sendMessage(TG_CHANNEL, uzc(`🎬 Bugun soat <b>21:00</b> da yangi video va uning PDF qo'llanmasi chiqadi. Kanalda qoling!\n\n`) + CHAN_LINKS, { parse_mode: 'HTML' });
-        out.teaser = m0.message_id;
-      }
-      const p = pick(readJson('content/polls.json', []), i);
-      if (!p) throw new Error('polls.json bo\'sh');
-      const m = await bot.sendPoll(TG_CHANNEL, uzc(p.q).slice(0, 300), p.o.slice(0, 10).map((x) => uzc(x).slice(0, 100)), { is_anonymous: true });
+      const lit = readJson('content/literacy.json', []);
+      if (!lit.length) throw new Error('literacy.json bo\'sh');
+      const li = ((i % lit.length) + lit.length) % lit.length;
+      const tonight = (sched[today] || []).length ? `\n\n🎬 Bugun soat <b>21:00</b> da yangi video va uning PDF qo'llanmasi chiqadi.` : '';
+      const cap = uzc(`🖥 <b>Kompyuter savodxonligi</b>\n\n<b>${esc(lit[li][0])}</b>\n\n${esc(lit[li][1])}${tonight}\n\n👉 Yangi darslarni biz bilan kuzatib boring va obuna bo'lib qo'ying.`) + `\n\n${CHAN_LINKS}`;
+      const img = path.join(__dirname, 'public', 'content', 'literacy', `${li}.png`);
+      const m = fs.existsSync(img) && cap.length <= 1024
+        ? await bot.sendPhoto(TG_CHANNEL, `${PUBLIC_URL}/content/literacy/${li}.png`, { caption: cap, parse_mode: 'HTML' })
+        : await bot.sendMessage(TG_CHANNEL, cap, { parse_mode: 'HTML', disable_web_page_preview: true });
       out.message_id = m.message_id;
     }
     out.sent = true;

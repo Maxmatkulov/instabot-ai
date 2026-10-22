@@ -1,0 +1,122 @@
+[
+[
+"Ctrl+Z: xatoni bir zumda qaytaring",
+"Noto'g'ri o'chirdingizmi yoki yozdingizmi? Ctrl+Z oxirgi amalni qaytaradi. Ctrl+Y esa qaytarilganini yana tiklaydi. Word, Excel va brauzerda ishlaydi."
+],
+[
+"Ctrl+C, Ctrl+V, Ctrl+X: uchta asosiy tugma",
+"Ctrl+C nusxalaydi, Ctrl+V qo'yadi, Ctrl+X kesib oladi. Sichqoncha bilan menyu qidirishdan ko'ra ancha tez. Telefonda ham matnni ushlab turib shuni qilasiz."
+],
+[
+"Ctrl+F: sahifadan kerakli so'zni toping",
+"Uzun hujjat yoki sayt ichidan so'zni topish uchun Ctrl+F bosing va so'zni yozing. Hamma topilgan joylar belgilanadi. Hujjatni boshidan o'qish shart emas."
+],
+[
+"Fayl nomi va papka: tartib 5 daqiqada",
+"Fayllarni \"yangi1\", \"yangi2\" deb saqlamang. Sana va mazmun yozing: \"2026-10-shartnoma-ali\". Mavzu bo'yicha papkalar oching. Yarim yildan keyin kerakli faylni sekundlarda topasiz."
+],
+[
+"Zaxira nusxa: 3-2-1 qoidasi",
+"Muhim fayl 3 nusxada, 2 xil joyda (kompyuter va tashqi disk), 1 nusxa boshqa joyda (bulut) bo'lsin. Bitta qurilma buzilsa, hamma narsa yo'qolmaydi."
+],
+[
+"Skrinshot: ekranni rasmga oling",
+"Windowsda Win+Shift+S bosib, kerakli qismni belgilang. Rasm xotiraga tushadi, Ctrl+V bilan chatga qo'yasiz. Telefonda: Android'da quvvat va tovushni pasaytirish tugmalarini, iPhone'da yon tugma va tovushni oshirish tugmasini birga bosing."
+],
+[
+"Brauzerda yopilgan oynani qaytaring",
+"Tasodifan oynani yopdingizmi? Ctrl+Shift+T uni qaytaradi. Ketma-ket bosib, avvalgilarini ham ochasiz."
+],
+[
+"Parol qanday bo'lishi kerak",
+"Uzun va noyob bo'lsin: 12 va undan ko'p belgi. Qisqa murakkab paroldan uzun oddiy ibora yaxshiroq. Har hisobga alohida parol qo'ying."
+],
+[
+"Keshni tozalash: sayt ishlamasa",
+"Sayt noto'g'ri ko'rinsa yoki kirmasa, brauzer keshini tozalang: Ctrl+Shift+Delete. Parollar o'chib ketmasligi uchun faqat \"kesh\"ni belgilang."
+],
+[
+"Excel: SUM bilan yig'indini toping",
+"Katakka =SUM(A1:A10) yozing: A1 dan A10 gacha hamma raqam yig'iladi. Qo'lda qo'shishdan tez va xatosiz. Tez yo'li: ustun tagiga o'tib Alt+= bosing."
+],
+[
+"Excel: ustunni tartiblash",
+"Jadvalni belgilang, Data bo'limidan Sort ni tanlang. Raqamni kichikdan kattaga yoki alifbo bo'yicha tartiblaydi. Tartiblashdan oldin butun jadvalni belgilashni unutmang."
+],
+[
+"PDF ni Word'ga aylantirmasdan tahrirlash",
+"PDF ni Word bilan ochib ko'ring: Word uni tahrirlanadigan hujjatga o'giradi. Murakkab shakllarda tartib biroz buzilishi mumkin, shuning uchun asl nusxani saqlab qo'ying."
+],
+[
+"Wi-Fi sekinmi: 3 ta tekshiruv",
+"Avval routerni 30 soniyaga o'chirib yoqing. Keyin telefondan yaqinroq turing. Oxirida boshqa qurilmalar yuklab olayotganini tekshiring. Ko'pincha shu yetadi."
+],
+[
+"Telefon xotirasi to'ldimi",
+"Sozlamalardan nima ko'p joy egallayotganini ko'ring. Odatda video, WhatsApp va Telegram keshi. Keraksizini o'chiring, kerakli rasmlarni buluta saqlang."
+],
+[
+"Ikki bosqichli tasdiqlash nima",
+"Parolingizdan tashqari telefonga kelgan kod ham so'raladi. Parol sizib chiqsa ham, hisobingizga kirish qiyin bo'ladi. Birinchi navbatda pochta va Telegramda yoqing."
+],
+[
+"Fishing: soxta sahifani qanday tanish",
+"Havola manzilini diqqat bilan o'qing: bir harfi o'zgargan bo'lishi mumkin. Shoshiltiradigan xabarlarga ishonmang. Bankni faqat rasmiy ilova yoki saytdan oching."
+],
+[
+"Word: sarlavha uslublari bilan mundarija",
+"Sarlavhalarni oddiy kattalashtirish o'rniga Heading uslubi bilan belgilang. Keyin References bo'limidan mundarijani bir bosishda yaratasiz."
+],
+[
+"Windows: Win+D va Alt+Tab",
+"Win+D hamma oynalarni yashirib ish stolini ko'rsatadi. Alt+Tab ochiq oynalar orasida o'tadi. Ikkalasi ham kunda o'nlab marta vaqt tejaydi."
+],
+[
+"Fayl kengaytmasi nima",
+"Nuqtadan keyingi qism faylning turini bildiradi: .pdf, .docx, .jpg. Noma'lum .exe faylni hech qachon ochmang, hatto do'stingizdan kelgan bo'lsa ham."
+],
+[
+"Antivirus kerakmi",
+"Windows'dagi o'rnatilgan himoya ko'pchilik uchun yetarli. Muhimi: tizimni yangilab turish va noma'lum dasturlarni o'rnatmaslik. Ikkita antivirus bir vaqtda kompyuterni sekinlashtiradi."
+],
+[
+"Bulut nima",
+"Fayllaringiz internetdagi serverda saqlanadi va istalgan qurilmadan ochiladi. Telefon yo'qolsa ham fayllar qoladi. Muhim hujjatlar uchun ikki bosqichli himoyani yoqing."
+],
+[
+"Kompyuter qotib qoldimi",
+"Avval Ctrl+Shift+Esc bilan Vazifalar dispetcherini oching va qotgan dasturni yoping. Hammasi qotgan bo'lsa, quvvat tugmasini bosib turib o'chiring. Ochiq fayllar saqlanmagan bo'lishi mumkin."
+],
+[
+"Elektron pochta: 3 ta odat",
+"Mavzuni aniq yozing. Muhim fayllarni ilova qilganingizni tekshiring. Noma'lum jo'natuvchining havola va fayllarini ochmang. Shu uchtasi xatolarning ko'pini oldini oladi."
+],
+[
+"Brauzer xatcho'plari",
+"Kerakli sahifani Ctrl+D bilan saqlang. Mavzu bo'yicha papkalarga bo'ling. Bir yildan keyin kerakli maqolani qidirib vaqt yo'qotmaysiz."
+],
+[
+"Ekranni yozib olish",
+"Windowsda Win+G, iPhone va Android'da ekran yozish tugmasi bor. Biror narsani ko'rsatib tushuntirish uchun matndan ancha tushunarli."
+],
+[
+"Matnni formatsiz qo'yish",
+"Brauzer va Google Docs'da Ctrl+Shift+V matnni manba formatisiz qo'yadi. Saytdan nusxalagan matn hujjatingizda g'alati shrift bilan chiqmaydi."
+],
+[
+"Zip fayl nima",
+"Zip ko'p faylni bittaga sig'dirib, hajmini kamaytiradi. Fayl ustida o'ng tugmani bosing, \"Compress\" yoki \"Zip\" ni tanlang. Jo'natish uchun juda qulay."
+],
+[
+"Kompyuterni yangilash nega kerak",
+"Yangilanishlar nafaqat yangi imkoniyat, balki xavfsizlik teshiklarini ham yopadi. Kechasi o'z-o'zidan yangilanishni yoqib qo'ying."
+],
+[
+"Fayl hajmi: MB va GB",
+"1 GB taxminan 1000 MB. Bir rasm odatda bir necha MB, bir soatlik video bir necha yuz MB. Xotira rejasini shunga qarab tanlang."
+],
+[
+"Uzoq yozmang: ovoz bilan kiriting",
+"Telefon va kompyuterda ovozli yozish bor. Telefonda klaviaturadagi mikrofon belgisini bosing. Uzun xabarni tez yozasiz, keyin faqat tahrir qilasiz."
+]
+]
