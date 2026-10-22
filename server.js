@@ -1192,6 +1192,50 @@ app.get('/api/cron/morning', async (req, res) => {
   res.json(out);
 });
 
+
+// Kun davomidagi slotlar: 12:00 PDF qo'llanma (aylanma), 15:00 kunlik maslahat, 18:00 so'rovnoma (+ kechki video teaseri).
+// Tashqi trigger (GitHub Actions) chaqiradi: /api/cron/slot?slot=12|15|18  (UA: vercel-cron). Kontent: public/content/{tips,polls}.json
+const SLOT_PDFS = ['PROMPT', 'XAVF', 'EXCEL', 'CV', 'AHMOQONA', 'SKILL', 'CLAUDE', 'BOT', 'SAYT', 'REELS', 'HAQIQAT', 'PLAGIN', 'RUXSAT', 'XOTIRA'];
+const dayIndex = (d) => Math.floor((Date.parse(d + 'T00:00:00Z') - Date.parse('2026-10-24T00:00:00Z')) / 864e5);
+const pick = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
+const readJson = (f, def) => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'public', f), 'utf8')); } catch { return def; } };
+app.get('/api/cron/slot', async (req, res) => {
+  if (!cronAuth(req)) return res.status(403).json({ error: 'ruxsat yo\'q' });
+  const today = req.query.date || tashkentToday();
+  const slot = String(req.query.slot || '');
+  const out = { today, slot };
+  if (!['12', '15', '18'].includes(slot)) return res.status(400).json({ ...out, error: 'slot 12|15|18' });
+  const k = `s:${today}:${slot}`;
+  if (cronDone.has(k)) return res.json({ ...out, skipped: 'allaqachon' });
+  cronDone.add(k);
+  const i = dayIndex(today);
+  try {
+    if (slot === '12') {
+      out.kw = pick(SLOT_PDFS, i);
+      out.result = await postChannelPdf(out.kw);
+    } else if (slot === '15') {
+      const tip = pick(readJson('content/tips.json', []), i);
+      if (!tip) throw new Error('tips.json bo\'sh');
+      const m = await bot.sendMessage(TG_CHANNEL, `💡 <b>Kun maslahati</b>\n\n${esc(tip)}\n\n📩 Qo'llanmalar: @${TG_BOT_USERNAME}`, { parse_mode: 'HTML', disable_web_page_preview: true });
+      out.message_id = m.message_id;
+    } else {
+      const sched = readJson('schedule.json', {});
+      const tonight = sched[today] || [];
+      if (tonight.length) {
+        const m0 = await bot.sendMessage(TG_CHANNEL, `🎬 Bugun soat <b>21:00</b> da yangi video va uning PDF qo'llanmasi chiqadi. Kanalda qoling!`, { parse_mode: 'HTML' });
+        out.teaser = m0.message_id;
+      }
+      const p = pick(readJson('content/polls.json', []), i);
+      if (!p) throw new Error('polls.json bo\'sh');
+      const m = await bot.sendPoll(TG_CHANNEL, p.q.slice(0, 300), p.o.slice(0, 10).map((x) => x.slice(0, 100)), { is_anonymous: true });
+      out.message_id = m.message_id;
+    }
+    out.sent = true;
+  } catch (e) { cronDone.delete(k); out.sent = false; out.error = e.message; }
+  log('⏰ slot cron:', JSON.stringify(out));
+  res.json(out);
+});
+
 app.post('/webhook/instagram', async (req, res) => {
   if (!validMetaSignature(req)) {
     log('⛔ IG webhook: imzo noto\'g\'ri — rad etildi');

@@ -1,0 +1,16 @@
+[
+{"q":"Obunalaringizni oxirgi marta qachon tekshirgansiz?","o":["Shu oyda","Bir necha oy oldin","Hech qachon","Nimaga tekshirish kerak?"]},
+{"q":"Parollaringizni qanday saqlaysiz?","o":["Parol menejerida","Xotiramda","Bitta parolni hamma joyda ishlataman","Daftarga yozaman"]},
+{"q":"Sizga hech qachon firibgar qo'ng'iroq qilganmi?","o":["Ha, tanidim","Ha, deyarli ishonib qoldim","Yo'q","Bilmayman"]},
+{"q":"AIdan kundalik hayotda qanchalik foydalanasiz?","o":["Har kuni","Haftada bir necha marta","Kamdan-kam","Hali sinab ko'rmaganman"]},
+{"q":"Shartnomani imzolashdan oldin to'liq o'qiysizmi?","o":["Har doim","Faqat muhim joylarini","Deyarli o'qimayman","Boshqa birov o'qiydi"]},
+{"q":"Qaysi mavzuda keyingi qo'llanmani xohlaysiz?","o":["Xavfsizlik va firibgarlik","AI bilan ishlash","Pul va byudjet","Ish va karyera"]},
+{"q":"Ikki bosqichli tasdiqlash (2FA) yoqilganmi?","o":["Hamma muhim joyda","Faqat bir-ikkitasida","Yoqilmagan","2FA nima?"]},
+{"q":"Telefoningizdagi zaxira nusxa haqida nima deysiz?","o":["Avtomatik saqlanadi","Ba'zan qo'lda saqlayman","Saqlamayman","Yo'qotganim yo'q"]},
+{"q":"Reels formatidagi qaysi video sizga ko'proq foydali?","o":["Qisqa maslahat","Bosqichma-bosqich qo'llanma","Yangiliklar sharhi","Tajriba va misollar"]},
+{"q":"Oylik xarajatlaringizni yozib borasizmi?","o":["Ha, ilovada","Ha, daftarda","Ba'zan","Yo'q"]},
+{"q":"Ish suhbatiga tayyorlanishda AIdan foydalanganmisiz?","o":["Ha, juda foydali bo'ldi","Ha, ammo foydasi kam","Yo'q, lekin xohlayman","Yo'q va kerak emas"]},
+{"q":"Eski oilaviy suratlaringiz qayerda saqlanadi?","o":["Telefon va bulutda","Faqat telefonda","Qog'oz albomda","Yo'qolib ketgan"]},
+{"q":"Telegram kanalimizdagi eng foydali narsa nima?","o":["PDF qo'llanmalar","Ertalabki yangiliklar","Kunlik maslahatlar","Videolar"]},
+{"q":"Keyingi video uchun qaysi mavzu ko'proq qiziq?","o":["Eski suratlarni tiklash","Foydali AI asboblar","Maxfiylik va ruxsatlar","Parol xavfsizligi"]}
+]

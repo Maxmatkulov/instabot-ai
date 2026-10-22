@@ -1,0 +1,27 @@
+name: kanal-slotlar
+# Toshkent 12:00, 15:00, 18:00 = UTC 07:00, 10:00, 13:00. GitHub cron 5-20 daqiqa kechikishi mumkin.
+on:
+  schedule:
+    - cron: '0 7 * * *'
+    - cron: '0 10 * * *'
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: '12, 15 yoki 18'
+        required: true
+jobs:
+  slot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slotni chaqirish
+        env:
+          BOT_URL: ${{ vars.BOT_URL }}
+          CRON_SCHEDULE: ${{ github.event.schedule }}
+          IN_SLOT: ${{ github.event.inputs.slot }}
+        run: |
+          if [ -z "$BOT_URL" ]; then echo "BOT_URL o'zgaruvchisi yo'q"; exit 1; fi
+          case "$CRON_SCHEDULE" in
+            "0 7 * * *") SLOT=12;; "0 10 * * *") SLOT=15;; "0 13 * * *") SLOT=18;; *) SLOT="$IN_SLOT";;
+          esac
+          curl -fsS -A "vercel-cron/1.0" --retry 3 --retry-delay 20 "${BOT_URL%/}/api/cron/slot?slot=$SLOT"
