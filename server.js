@@ -1079,15 +1079,16 @@ async function runReel(name, publish) {
     return { ...res, error: e.message };
   }
 }
-async function postChannelPdf(kw) {
+async function postChannelPdf(kw, opts = {}) {
   const rule = ruleByKeyword(kw);
   if (!rule?.file) return { error: 'fayl yo\'q' };
   const caption =
     `📘 <b>${esc(rule.title)}</b>\n\n` + (rule.caption ? `${esc(rule.caption)}\n\n` : '') +
     `💾 Saqlab qo'ying — kerak bo'lganda qaytib ko'rasiz.\n\n📩 Yana shunaqa qo'llanmalar: @${TG_BOT_USERNAME}\n` +
     `📸 Instagram: Reels izohiga <code>${esc(rule.keyword)}</code> deb yozing, DM'ga yuboriladi.`;
+  const finalCap = opts.slot ? uzc(`📘 <b>${esc(rule.title)}</b>\n\n` + (rule.caption ? `${esc(rule.caption)}\n\n` : '') + `💾 Saqlab qo'ying, kerak bo'lganda qaytib ko'rasiz.\n\n👉 Yangi qo'llanmalarni biz bilan kuzatib boring va obuna bo'lib qo'ying.\n\n`) + `${CHAN_LINKS}\n🤖 @${TG_BOT_USERNAME}` : caption;
   try {
-    const m = await bot.sendDocument(TG_CHANNEL, `${PUBLIC_URL}/${rule.file}`, { caption: caption.slice(0, 1024), parse_mode: 'HTML' });
+    const m = await bot.sendDocument(TG_CHANNEL, `${PUBLIC_URL}/${rule.file}`, { caption: finalCap.slice(0, 1024), parse_mode: 'HTML' });
     return { sent: true, message_id: m.message_id };
   } catch (e) {
     return { sent: false, error: e.message };
@@ -1195,6 +1196,10 @@ app.get('/api/cron/morning', async (req, res) => {
 
 // Kun davomidagi slotlar: 12:00 PDF qo'llanma (aylanma), 15:00 kunlik maslahat, 18:00 so'rovnoma (+ kechki video teaseri).
 // Tashqi trigger (GitHub Actions) chaqiradi: /api/cron/slot?slot=12|15|18  (UA: vercel-cron). Kontent: public/content/{tips,polls}.json
+const uzc = (t) => String(t).split(/(@\S+|https?:\/\/\S+)/).map((x, i) => (i % 2 ? x : x
+  .replace(/o['‘ʻ]/g, 'ö').replace(/O['‘ʻ]/g, 'Ö').replace(/g['‘ʻ]/g, 'ğ').replace(/G['‘ʻ]/g, 'Ğ')
+  .replace(/sh/g, 'ş').replace(/Sh/g, 'Ş').replace(/ch/g, 'ç').replace(/Ch/g, 'Ç'))).join('');
+const CHAN_LINKS = '📢 Telegram: https://t.me/mashrabbekmaxmatkulov\n📸 Instagram: https://instagram.com/mashrab.axi';
 const SLOT_PDFS = ['PROMPT', 'XAVF', 'EXCEL', 'CV', 'AHMOQONA', 'SKILL', 'CLAUDE', 'BOT', 'SAYT', 'REELS', 'HAQIQAT', 'PLAGIN', 'RUXSAT', 'XOTIRA'];
 const dayIndex = (d) => Math.floor((Date.parse(d + 'T00:00:00Z') - Date.parse('2026-10-24T00:00:00Z')) / 864e5);
 const pick = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
@@ -1212,22 +1217,27 @@ app.get('/api/cron/slot', async (req, res) => {
   try {
     if (slot === '12') {
       out.kw = pick(SLOT_PDFS, i);
-      out.result = await postChannelPdf(out.kw);
+      out.result = await postChannelPdf(out.kw, { slot: true });
     } else if (slot === '15') {
-      const tip = pick(readJson('content/tips.json', []), i);
-      if (!tip) throw new Error('tips.json bo\'sh');
-      const m = await bot.sendMessage(TG_CHANNEL, `💡 <b>Kun maslahati</b>\n\n${esc(tip)}\n\n📩 Qo'llanmalar: @${TG_BOT_USERNAME}`, { parse_mode: 'HTML', disable_web_page_preview: true });
+      const tips = readJson('content/tips.json', []);
+      if (!tips.length) throw new Error('tips.json bo\'sh');
+      const ti = ((i % tips.length) + tips.length) % tips.length;
+      const cap = uzc(`💡 <b>Kun maslahati</b>\n\n${esc(tips[ti])}\n\n👉 Maslahatlarni biz bilan kuzatib boring va obuna bo'lib qo'ying.`) + `\n\n${CHAN_LINKS}`;
+      const img = path.join(__dirname, 'public', 'content', 'tips', `${ti}.png`);
+      const m = fs.existsSync(img) && cap.length <= 1024
+        ? await bot.sendPhoto(TG_CHANNEL, `${PUBLIC_URL}/content/tips/${ti}.png`, { caption: cap, parse_mode: 'HTML' })
+        : await bot.sendMessage(TG_CHANNEL, cap, { parse_mode: 'HTML', disable_web_page_preview: true });
       out.message_id = m.message_id;
     } else {
       const sched = readJson('schedule.json', {});
       const tonight = sched[today] || [];
       if (tonight.length) {
-        const m0 = await bot.sendMessage(TG_CHANNEL, `🎬 Bugun soat <b>21:00</b> da yangi video va uning PDF qo'llanmasi chiqadi. Kanalda qoling!`, { parse_mode: 'HTML' });
+        const m0 = await bot.sendMessage(TG_CHANNEL, uzc(`🎬 Bugun soat <b>21:00</b> da yangi video va uning PDF qo'llanmasi chiqadi. Kanalda qoling!\n\n`) + CHAN_LINKS, { parse_mode: 'HTML' });
         out.teaser = m0.message_id;
       }
       const p = pick(readJson('content/polls.json', []), i);
       if (!p) throw new Error('polls.json bo\'sh');
-      const m = await bot.sendPoll(TG_CHANNEL, p.q.slice(0, 300), p.o.slice(0, 10).map((x) => x.slice(0, 100)), { is_anonymous: true });
+      const m = await bot.sendPoll(TG_CHANNEL, uzc(p.q).slice(0, 300), p.o.slice(0, 10).map((x) => uzc(x).slice(0, 100)), { is_anonymous: true });
       out.message_id = m.message_id;
     }
     out.sent = true;

@@ -90,4 +90,4 @@ def main(path):
     d.text((80, 1000), '@mashrabbekmaxmatkulov', font=f(B, 44), fill=AMB)
     d.text((80, 1080), "Qo'llanmalar: @mmnchat_bot", font=f(R, 40), fill=MUT)
     im.save(f'{out}/{n}.png'); print('tayyor', n, 'ta rasm ->', out)
-main(sys.argv[1])
+if __name__ == '__main__': main(sys.argv[1])
