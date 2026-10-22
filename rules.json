@@ -352,6 +352,24 @@
       "file": "guides/shartnoma-tekshiruv.pdf",
       "remind": true,
       "caption": "Tayyor. Ichida shartnomani tekshiradigan so'rov bor. Passport va karta raqamini [YASHIRIN] ga almashtirib bering. Bu yuridik maslahat emas."
+    },
+    {
+      "keyword": "FIRIB",
+      "aliases": [
+        "FIRIBB",
+        "FIRIB!",
+        "FIRIBGAR",
+        "FIREB",
+        "FRIB",
+        "ФИРИБ",
+        "FIRIP"
+      ],
+      "title": "Firibgarlikning 7 belgisi va himoya",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/firibgarlik-7-belgi.pdf",
+      "remind": true,
+      "caption": "Tayyor varaq: firibgarlikning 7 belgisi va himoya. Oilangizga yuboring.\n\nAndroid uchun APK Qo'riqchi ilovasi (Google Play):\nhttps://play.google.com/store/apps/details?id=com.baxtiyorov.security\nO'rnatishdan oldin ilova so'raydigan ruxsatlarni o'qib chiqing."
     }
   ]
 }
