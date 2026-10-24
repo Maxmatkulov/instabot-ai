@@ -386,6 +386,22 @@
       "file": "guides/obuna-tekshiruv.pdf",
       "remind": true,
       "caption": "Tayyor yo'riqnoma: obunalarni 10 daqiqada tekshirish (iPhone va Android yo'llari bilan) va to'ldiriladigan jadval.\n\nBitta tekshiruv oyiga ko'p pulni tejashi mumkin. Saqlab qo'ying."
+    },
+    {
+      "keyword": "TIKLA",
+      "aliases": [
+        "TIKLAA",
+        "TIKLA!",
+        "TIKLASH",
+        "TIKLAB",
+        "ТИКЛА"
+      ],
+      "title": "Eski suratni tiklash: tayyor promptlar",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/tiklash-promptlar.pdf",
+      "remind": true,
+      "caption": "Tayyor promptlar: eski suratni tiklash uchun 5 ta prompt (oddiy tiklash, oq-qora suratga rang, yirtilgan joy, xira yuz, yuz o'zgarsa qayta so'rash).\n\nAsl suratni hech qachon tashlamang: AI taxmin qiladi, asl nusxa esa tarix."
     }
   ]
 }
