@@ -401,7 +401,7 @@
       "reels": [],
       "file": "guides/tiklash-promptlar.pdf",
       "remind": true,
-      "caption": "Tayyor promptlar: eski suratni tiklash uchun 5 ta prompt (oddiy tiklash, oq-qora suratga rang, yirtilgan joy, xira yuz, yuz o'zgarsa qayta so'rash).\n\nAsl suratni hech qachon tashlamang: AI taxmin qiladi, asl nusxa esa tarix."
+      "caption": "Tayyor promptlar: eski suratni tiklash uchun 5 ta prompt, har biri o'zbekcha va inglizcha (oddiy tiklash, oq-qora suratga rang, yirtilgan joy, xira yuz, yuz o'zgarsa qayta so'rash).\n\nAsl suratni hech qachon tashlamang: AI taxmin qiladi, asl nusxa esa tarix."
     }
   ]
 }
