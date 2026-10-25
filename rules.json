@@ -402,6 +402,22 @@
       "file": "guides/tiklash-promptlar.pdf",
       "remind": true,
       "caption": "Tayyor promptlar: eski suratni tiklash uchun 5 ta prompt, har biri o'zbekcha va inglizcha (oddiy tiklash, oq-qora suratga rang, yirtilgan joy, xira yuz, yuz o'zgarsa qayta so'rash).\n\nAsl suratni hech qachon tashlamang: AI taxmin qiladi, asl nusxa esa tarix."
+    },
+    {
+      "keyword": "YURAK",
+      "aliases": [
+        "YURAKK",
+        "YURAK!",
+        "PULS",
+        "ЮРАК",
+        "YURAGIM"
+      ],
+      "title": "Puls jadvali: o'lchash va jurnal",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/puls-jadvali.pdf",
+      "remind": true,
+      "caption": "Puls jadvali: pulsni 30 soniyada o'lchash, kattalar uchun taxminiy me'yor, haftalik jurnal va AI uchun 2 ta tayyor prompt (o'zbekcha va inglizcha).\n\nBu tibbiy maslahat emas. Puls doim juda tez yoki sekin bo'lsa, ayniqsa bosh aylansa yoki holsizlik bo'lsa, shifokorga ko'ring."
     }
   ]
 }
