@@ -14,6 +14,7 @@ const path = require('path');
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const files = require('./files');
+const { promoState, resetPromoCache, KIND: PROMO_KIND } = require('./promo');
 
 // ───────────────────────── Sozlamalar (Railway → Variables) ─────────────────────────
 const env = (k, d = '') => (process.env[k] ?? d).trim();
@@ -453,15 +454,27 @@ const PRO_PRICE = env('PRO_PRICE', '149 000');
 const payRules = () => RULES.filter((r) => r.pay && r.active !== false);
 const payPick = new Map(); // userId -> oxirgi tanlangan kurs kalit so'zi (chek qaysi kursga tegishli)
 const fmtPrice = (p) => String(p).replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ') || String(p);
-const payText = (rule) => {
-  const price = fmtPrice(rule.price || PRO_PRICE);
+// Chegirma: "birinchi N kishiga". Joy faqat admin chekni tasdiqlaganda kamayadi (promo.js). Baza xato bersa — to'liq narx.
+const promoOf = (rule) => promoState(rule, async (kw) => {
+  const n = await sb('instabot_promo_count', { p_keyword: kw });
+  return typeof n === 'number' ? n : null;
+});
+const payText = (rule, promo) => {
+  const full = fmtPrice(rule.price || PRO_PRICE);
+  const price = promo ? fmtPrice(promo.price) : full;
   const per = Math.round(parseInt(price.replace(/\s/g, ''), 10) / 30);
+  const priceLine = promo
+    ? `💰 <s>${esc(full)} so'm</s> → <b>${esc(price)} so'm</b> (bir marta, obunasiz)\n` +
+      `🔥 Faqat birinchi <b>${promo.limit}</b> kishiga. Qolgan joy: <b>${promo.left} / ${promo.limit}</b>\n` +
+      (promo.bonusFile ? `🎁 Bonus: ${esc(promo.bonusText || '30 ta viral reels mavzu bazasi')} va PRO yangilanishlari umrbod bepul\n` : '') +
+      '\n'
+    : `💰 Narx: <b>${esc(price)} so'm</b> (bir marta, obunasiz)\n\n`;
   return (
     `💎 <b>${esc(rule.title)}</b>\n\n` +
     (rule.payDesc ? esc(rule.payDesc) + '\n\n' : '') +
     `<b>Narx haqida ochiq gapiray.</b>\n` +
     `Bitta reelsni montajchiga topshirsangiz, shu pulning o'zi ketadi. Bu esa <b>cheksiz</b> reels uchun: 30 ta qilsangiz, har biri ~${per.toLocaleString('en').replace(/,/g, ' ')} so'm. Pulni bilimga sarflaysiz, o'sha bilim esa har hafta o'zini oqlaydi.\n\n` +
-    `💰 Launch narxi: <b>${esc(price)} so'm</b> (bir marta, obunasiz)\n\n` +
+    priceLine +
     `⚠️ Kerak: Claude Code, Node.js, Python va ffmpeg. O'rnatishda qiynalsangiz @${esc(OWNER_USERNAME)} ga yozing, yordam beraman.\n\n` +
     (PAY_CARD
       ? `1️⃣ Shu kartaga to'lang:\n<code>${esc(PAY_CARD)}</code>${PAY_NAME ? `\n👤 ${esc(PAY_NAME)}` : ''}\n\n` +
@@ -472,7 +485,8 @@ const payText = (rule) => {
 };
 async function payOffer(chatId, userId, rule) {
   payPick.set(userId, rule.keyword);
-  await send(chatId, payText(rule));
+  const promo = await promoOf(rule);
+  await send(chatId, payText(rule, promo));
   if (OWNER_CHAT_ID) {
     const u = await bot.getChat(userId).catch(() => ({}));
     await send(OWNER_CHAT_ID, `👀 ${esc(rule.keyword)} so'radi: ${u.username ? '@' + esc(u.username) : esc(u.first_name || userId)} (id ${userId})${PAY_CARD ? '' : '\n⚠ PAY_CARD qo\'yilmagan!'}`);
@@ -489,12 +503,15 @@ async function handleReceipt(msg) {
   }
   await bot.forwardMessage(OWNER_CHAT_ID, chatId, msg.message_id).catch((e) => log('❌ forward:', e.message));
   const who = msg.from.username ? '@' + esc(msg.from.username) : esc(msg.from.first_name || userId);
-  await send(OWNER_CHAT_ID, `🧾 <b>Chek</b>: ${who} (id ${userId})\nPaket: ${esc(rule.title)} — ${esc(rule.price || PRO_PRICE)} so'm`, {
-    reply_markup: { inline_keyboard: [[{ text: '✅ Tasdiqlash', callback_data: `pok:${userId}:${rule.keyword}` }, { text: '❌ Rad etish', callback_data: `pno:${userId}:${rule.keyword}` }]] },
+  const promo = await promoOf(rule);
+  const priceTxt = promo ? `${esc(fmtPrice(promo.price))} so'm (chegirma, qolgan joy ${promo.left}/${promo.limit})` : `${esc(fmtPrice(rule.price || PRO_PRICE))} so'm`;
+  // oxirgi belgi: 1 = chegirma narxida to'lagan (bonus beriladi va joy kamayadi)
+  await send(OWNER_CHAT_ID, `🧾 <b>Chek</b>: ${who} (id ${userId})\nPaket: ${esc(rule.title)} — ${priceTxt}`, {
+    reply_markup: { inline_keyboard: [[{ text: '✅ Tasdiqlash', callback_data: `pok:${userId}:${rule.keyword}:${promo ? 1 : 0}` }, { text: '❌ Rad etish', callback_data: `pno:${userId}:${rule.keyword}:${promo ? 1 : 0}` }]] },
   });
   return send(chatId, `🧾 Chek qabul qilindi! Admin tekshirib tasdiqlashi bilan paket shu yerga keladi ⏳`);
 }
-async function sendPaid(userId, rule) {
+async function sendPaid(userId, rule, withBonus = false) {
   if (!rule.paidFile || !PUBLIC_URL) return false;
   try {
     await bot.sendDocument(userId, `${PUBLIC_URL}/${rule.paidFile}`, {
@@ -503,6 +520,13 @@ async function sendPaid(userId, rule) {
     });
     for (const f of rule.paidExtra || []) {
       await bot.sendDocument(userId, `${PUBLIC_URL}/${f}`, { caption: '📖 Yo\'riqnoma: avval shuni o\'qing' }).catch((e) => log('❌ paidExtra:', e.message));
+    }
+    // Chegirma bonusi (faqat birinchi N kishiga). Xato bo'lsa asosiy paket yuborilgani buzilmaydi.
+    if (withBonus && rule.promo?.bonusFile) {
+      await bot.sendDocument(userId, `${PUBLIC_URL}/${rule.promo.bonusFile}`, {
+        caption: `🎁 <b>Bonus:</b> ${esc(rule.promo.bonusText || '30 ta viral reels mavzu bazasi')}\n\nSiz birinchi ${rule.promo.limit} kishidan birisiz, shuning uchun PRO yangilanishlari sizga umrbod bepul ✅`,
+        parse_mode: 'HTML',
+      }).catch((e) => log('❌ bonus:', e.message));
     }
     return true;
   } catch (e) {
@@ -591,8 +615,13 @@ const reminderKb = () => ({
 const coursesText = () =>
   `💎 <b>Kurslar</b>\n\nPullik, to'liq paketlar. Birini tanlang, batafsil ma'lumot va to'lov shu yerda 👇` +
   (payRules().length ? '' : '\n\nHozircha kurs yo\'q, tez orada.');
-const coursesKb = () => ({
-  reply_markup: { inline_keyboard: payRules().map((r) => [{ text: `💎 ${r.title} · ${fmtPrice(r.price || PRO_PRICE)} so'm`, callback_data: `get:${r.keyword}` }]) },
+const coursesKb = async () => ({
+  reply_markup: {
+    inline_keyboard: await Promise.all(payRules().map(async (r) => {
+      const promo = await promoOf(r);
+      return [{ text: `💎 ${r.title} · ${promo ? '🔥 ' + fmtPrice(promo.price) : fmtPrice(r.price || PRO_PRICE)} so'm`, callback_data: `get:${r.keyword}` }];
+    })),
+  },
 });
 const guidesKb = () => ({ reply_markup: { inline_keyboard: guideRules().map((r) => [{ text: `🎁 ${r.title}`, callback_data: `get:${r.keyword}` }]) } });
 
@@ -759,7 +788,7 @@ bot.on('message', track(async (msg) => {
       },
     });
   }
-  if (text === '💎 Kurslar') return send(chatId, coursesText(), coursesKb());
+  if (text === '💎 Kurslar') return send(chatId, coursesText(), await coursesKb());
   if (text === '📚 Menyu') {
     if (RULES.some((r) => r.file)) {
       return send(chatId, '📚 <b>Qo\'llanmalar</b>\nKeraklisini tanlang 👇', {
@@ -827,12 +856,25 @@ bot.on('callback_query', track(async (q) => {
 
   if (data.startsWith('pok:') || data.startsWith('pno:')) {
     if (!isOwner(q.from.username)) return answer({ text: 'Faqat admin uchun', show_alert: true });
-    const [, uid, kw] = data.split(':');
+    const [, uid, kw, pf] = data.split(':');
     const rule = ruleByKeyword(kw);
     if (data.startsWith('pok:')) {
-      const ok = rule && (await sendPaid(Number(uid), rule));
+      const bonus = pf === '1' && !!rule?.promo;
+      const ok = rule && (await sendPaid(Number(uid), rule, bonus));
       await answer({ text: ok ? '✅ Paket yuborildi' : '❌ Fayl yuborilmadi', show_alert: !ok });
       if (ok) stats.sold = (stats.sold || 0) + 1;
+      if (ok && bonus) {
+        // Joyni kamaytirish: tasdiqlangan xarid bazaga yoziladi (bitta odam ikki marta sanalmaydi)
+        const wrote = await sb('instabot_event', { p_kind: PROMO_KIND, p_keyword: rule.keyword, p_id: Number(uid) });
+        resetPromoCache(rule.keyword);
+        const n = await sb('instabot_promo_count', { p_keyword: rule.keyword });
+        if (wrote === null || typeof n !== 'number') {
+          await send(chatId, `⚠ Chegirma hisoblagichi yangilanmadi (baza xatosi). Qolgan joyni qo'lda tekshiring.`);
+        } else {
+          const left = Math.max(0, rule.promo.limit - n);
+          await send(chatId, left > 0 ? `🔥 ${esc(rule.keyword)} chegirmasi: qolgan joy <b>${left} / ${rule.promo.limit}</b>` : `🏁 ${rule.promo.limit}/${rule.promo.limit} sotildi. ${esc(rule.keyword)} narxi endi ${esc(fmtPrice(rule.price || PRO_PRICE))} so'm.`);
+        }
+      }
       return bot.editMessageText(`${q.message.text}
 
 ${ok ? '✅ TASDIQLANDI, paket yuborildi' : '❌ Fayl yuborilmadi, logni tekshiring'}`, { chat_id: chatId, message_id: q.message.message_id }).catch(() => {});
@@ -853,7 +895,7 @@ ${ok ? '✅ TASDIQLANDI, paket yuborildi' : '❌ Fayl yuborilmadi, logni tekshir
   }
   if (data === 'courses') {
     await answer();
-    return send(chatId, coursesText(), coursesKb());
+    return send(chatId, coursesText(), await coursesKb());
   }
   if (data === 'guides') {
     await answer();
