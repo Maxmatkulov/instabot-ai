@@ -506,7 +506,8 @@ async function handleReceipt(msg) {
   const promo = await promoOf(rule);
   const priceTxt = promo ? `${esc(fmtPrice(promo.price))} so'm (chegirma, qolgan joy ${promo.left}/${promo.limit})` : `${esc(fmtPrice(rule.price || PRO_PRICE))} so'm`;
   // oxirgi belgi: 1 = chegirma narxida to'lagan (bonus beriladi va joy kamayadi)
-  await send(OWNER_CHAT_ID, `🧾 <b>Chek</b>: ${who} (id ${userId})\nPaket: ${esc(rule.title)} — ${priceTxt}`, {
+  const testTag = isOwner(msg.from.username) ? ' (TEST: hisoblagich o\'zgarmaydi)' : '';
+  await send(OWNER_CHAT_ID, `🧾 <b>Chek${testTag}</b>: ${who} (id ${userId})\nPaket: ${esc(rule.title)} — ${priceTxt}`, {
     reply_markup: { inline_keyboard: [[{ text: '✅ Tasdiqlash', callback_data: `pok:${userId}:${rule.keyword}:${promo ? 1 : 0}` }, { text: '❌ Rad etish', callback_data: `pno:${userId}:${rule.keyword}:${promo ? 1 : 0}` }]] },
   });
   return send(chatId, `🧾 Chek qabul qilindi! Admin tekshirib tasdiqlashi bilan paket shu yerga keladi ⏳`);
@@ -741,7 +742,8 @@ async function groupKeyword(msg) {
 }
 
 bot.on('message', track(async (msg) => {
-  if ((msg.photo || msg.document) && msg.chat.type === 'private' && !isOwner(msg.from.username)) return handleReceipt(msg);
+  // Egasi o'z rasmini chek deb yuborishi uchun izohga "test" yozadi (sinov: hisoblagich o'zgarmaydi)
+  if ((msg.photo || msg.document) && msg.chat.type === 'private' && (!isOwner(msg.from.username) || /\btest\b/i.test(msg.caption || ''))) return handleReceipt(msg);
   if (!msg.text || msg.text.startsWith('/start')) return;
   if (msg.chat.type === 'private') trackUser(msg.from, null);
   // Guruh (kanal muhokama guruhi): faqat kalit so'zga javob beramiz, boshqa gapga aralashmaymiz (AI chat, menyu yo'q)
@@ -860,10 +862,11 @@ bot.on('callback_query', track(async (q) => {
     const rule = ruleByKeyword(kw);
     if (data.startsWith('pok:')) {
       const bonus = pf === '1' && !!rule?.promo;
+      const selfTest = Number(uid) === q.from.id; // egasi o'z chegini tasdiqlayapti: fayllar keladi, hisoblagich o'zgarmaydi
       const ok = rule && (await sendPaid(Number(uid), rule, bonus));
-      await answer({ text: ok ? '✅ Paket yuborildi' : '❌ Fayl yuborilmadi', show_alert: !ok });
-      if (ok) stats.sold = (stats.sold || 0) + 1;
-      if (ok && bonus) {
+      await answer({ text: ok ? (selfTest ? '✅ TEST: fayllar yuborildi, joy kamaymadi' : '✅ Paket yuborildi') : '❌ Fayl yuborilmadi', show_alert: !ok });
+      if (ok && !selfTest) stats.sold = (stats.sold || 0) + 1;
+      if (ok && bonus && !selfTest) {
         // Joyni kamaytirish: tasdiqlangan xarid bazaga yoziladi (bitta odam ikki marta sanalmaydi)
         const wrote = await sb('instabot_event', { p_kind: PROMO_KIND, p_keyword: rule.keyword, p_id: Number(uid) });
         resetPromoCache(rule.keyword);
