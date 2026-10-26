@@ -1,5 +1,40 @@
-{"date":"2026-10-24","items":[
-{"title":"OpenAI baholash maqsadini pasaytirdi","body":"CNBC ma'lumotiga ko'ra, OpenAI yangi moliyalashtirish raundida kompaniya bahosini 1,4 trln dollardan 1,25 trln dollarga tushirdi. Raund hajmi 30 mlrd dollargacha. FT yozishicha, investorlar 30 oktyabrgacha qaror qilishi kerak.","source":"CNBC (BeInCrypto orqali)","viz":"stat","big":"$1,25 trln","cap":"OpenAI yangi baholash maqsadi"},
-{"title":"Google Cloud Vera Rubin'ga o'tmoqda","body":"Google Cloud Nvidia Vera Rubin NVL72 asosidagi A5X nusxalarini e'lon qildi. Kompaniya infratuzilmani ko'p maydonlarda 960 000 tagacha Rubin GPU'ga yetkazishni rejalashtirgan. Umumiy foydalanish noyabrga mo'ljallangan.","source":"NVIDIA blog","viz":"stat","big":"960 000","cap":"rejalashtirilgan Rubin GPU soni"},
-{"title":"O'zbekistonda davlat sektori uchun AI pilotlari","body":"Raqamli texnologiyalar vazirligi, IT Park va EPAM Toshkentda 19 oktyabrda uchrashdi. Davlat GPU klasteri asosida 2-3 ta amaliy AI loyiha ishlab chiqish taklif qilindi. EPAM'ning O'zbekistonda 600 dan ortiq mutaxassisi bor.","source":"Trend.Az","viz":"chat","lines":["Vazirlik + IT Park + EPAM","2-3 ta amaliy AI loyiha","Davlat GPU klasterida"]}
-]}
+{
+ "date": "2026-10-26",
+ "items": [
+  {
+   "title": "Anthropic noyabrda birjaga chiqishi mumkin",
+   "body": "Reuters'ga ko'ra, Anthropic 3-chorakda 16,8 mlrd dollar daromad qilgan, 2-chorakda 11,6 mlrd edi. Listing noyabr o'rtasida, taxminan 1,5 trln dollar bahoda bo'lishi mumkin. Rasmiy tasdiq yo'q.",
+   "source": "Reuters (FinanceFeeds orqali)",
+   "viz": "stat",
+   "big": "+45%",
+   "cap": "3-chorak daromadi, 16,8 mlrd $"
+  },
+  {
+   "title": "Elvis merosxo'rlari Anthropic'ni sudga berdi",
+   "body": "Elvis Presley qo'shiqlari egalari 41 mln dollardan ortiq talab qilmoqda: 274 ta qo'shiq, har biri uchun 150 000 dollar. Anthropic kelishmasligini va o'zini himoya qilishini bildirdi.",
+   "source": "The New York Times (roundup orqali)",
+   "viz": "stat",
+   "big": "274",
+   "cap": "da'vo qilingan qo'shiqlar soni"
+  },
+  {
+   "title": "Lam Research rekord daromad e'lon qildi",
+   "body": "Chip uskunalari ishlab chiqaruvchisi Lam Research chorak daromadi 8,2 mlrd dollarga yetdi, bu bir yil avvalgidan 54% ko'p. Tizimlar savdosi 62% oshib, 5,7 mlrd dollar bo'ldi.",
+   "source": "Lam Research (SemiEngineering orqali)",
+   "viz": "stat",
+   "big": "8,2 mlrd",
+   "cap": "Lam Research chorak daromadi, +54%"
+  },
+  {
+   "title": "Xitoy gigantlari Nvidia GPU'larini ommaviy buyurtma qildi",
+   "body": "Reuters yozishicha, ByteDance, Alibaba va Tencent Nvidia'ning RTX PRO 5500 GPU'lariga 35 mlrd dollardan ortiq buyurtma bergan. Xabar 20 oktabrga tegishli.",
+   "source": "Reuters (SemiEngineering orqali)",
+   "viz": "chat",
+   "lines": [
+    "ByteDance, Alibaba, Tencent",
+    "Nvidia RTX PRO 5500",
+    "35 mlrd dollardan ortiq"
+   ]
+  }
+ ]
+}
