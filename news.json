@@ -1,40 +1,6 @@
-{
- "date": "2026-10-26",
- "items": [
-  {
-   "title": "Anthropic noyabrda birjaga chiqishi mumkin",
-   "body": "Reuters'ga ko'ra, Anthropic 3-chorakda 16,8 mlrd dollar daromad qilgan, 2-chorakda 11,6 mlrd edi. Listing noyabr o'rtasida, taxminan 1,5 trln dollar bahoda bo'lishi mumkin. Rasmiy tasdiq yo'q.",
-   "source": "Reuters (FinanceFeeds orqali)",
-   "viz": "stat",
-   "big": "+45%",
-   "cap": "3-chorak daromadi, 16,8 mlrd $"
-  },
-  {
-   "title": "Elvis merosxo'rlari Anthropic'ni sudga berdi",
-   "body": "Elvis Presley qo'shiqlari egalari 41 mln dollardan ortiq talab qilmoqda: 274 ta qo'shiq, har biri uchun 150 000 dollar. Anthropic kelishmasligini va o'zini himoya qilishini bildirdi.",
-   "source": "The New York Times (roundup orqali)",
-   "viz": "stat",
-   "big": "274",
-   "cap": "da'vo qilingan qo'shiqlar soni"
-  },
-  {
-   "title": "Lam Research rekord daromad e'lon qildi",
-   "body": "Chip uskunalari ishlab chiqaruvchisi Lam Research chorak daromadi 8,2 mlrd dollarga yetdi, bu bir yil avvalgidan 54% ko'p. Tizimlar savdosi 62% oshib, 5,7 mlrd dollar bo'ldi.",
-   "source": "Lam Research (SemiEngineering orqali)",
-   "viz": "stat",
-   "big": "8,2 mlrd",
-   "cap": "Lam Research chorak daromadi, +54%"
-  },
-  {
-   "title": "Xitoy gigantlari Nvidia GPU'larini ommaviy buyurtma qildi",
-   "body": "Reuters yozishicha, ByteDance, Alibaba va Tencent Nvidia'ning RTX PRO 5500 GPU'lariga 35 mlrd dollardan ortiq buyurtma bergan. Xabar 20 oktabrga tegishli.",
-   "source": "Reuters (SemiEngineering orqali)",
-   "viz": "chat",
-   "lines": [
-    "ByteDance, Alibaba, Tencent",
-    "Nvidia RTX PRO 5500",
-    "35 mlrd dollardan ortiq"
-   ]
-  }
- ]
-}
+{"date":"2026-10-27","items":[
+{"title":"Anthropic SEC'ga prospektusni topshirdi","body":"Anthropic birjaga chiqish uchun S-1 hujjatini ochiq topshirdi. Hujjatga ko'ra, yilning birinchi yarmida daromad 16 mlrd dollardan oshgan. SpaceXAI bilan hisoblash quvvati kelishuvi 2029-yilgacha 120,5 mlrd dollargacha yetadi.","source":"Yahoo Finance","viz":"stat","big":"16+ mlrd","cap":"dollar, 2026-yil 1-yarmi daromadi"},
+{"title":"SpaceX GPU uchun 40 mlrd dollar oldi","body":"SpaceX Apollo bilan taxminan 40 mlrd dollarlik kelishuv tuzdi: sun'iy intellekt chiplari va data-markaz uskunalari ijaraga olinadi. Bu qarz, xarid yoki daromad emas. Ba'zi shartlar yakuniy kelishilmoqda.","source":"Reuters, Motley Fool","viz":"stat","big":"$40 mlrd","cap":"Apollo bilan ijara kelishuvi"},
+{"title":"Meta 95 mlrd dollarlik aksiya sotuvini rejalashtirmoqda","body":"Meta aksiyalar orqali 95 mlrd dollargacha mablag' yig'ishni e'lon qildi: 35 mlrd dollar ochiq taklif, 60 mlrd dollar bozor orqali. Bu hozircha reja, 2026-yil kapital xarajati 135-145 mlrd dollar.","source":"Financial Times, techstartups.com orqali","viz":"stat","big":"$95 mlrd","cap":"Meta aksiya sotuvi rejasi"},
+{"title":"Nvidia Qozog'istonga 45 000 ta GPU yetkazadi","body":"AQSh eksport litsenziyasi 45 000 ta Nvidia Grace Blackwell GPU uchun berildi. Birinchi bosqich Kazakhtelecom bilan quriladi, tijoriy ishga tushish 2027-yil 3-choragiga mo'ljallangan.","source":"Nvidia, techstartups.com orqali","viz":"stat","big":"45 000","cap":"Qozog'istonga GPU litsenziyasi"}
+]}
