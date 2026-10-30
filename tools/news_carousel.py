@@ -11,7 +11,7 @@ f = lambda p, s: ImageFont.truetype(p, s)
 W, H = 1080, 1350
 import re
 def uzc(t):  # ö ğ ç ş qoidasi (kanal va video matnlari); @handle va havolalar o'zgarmaydi
-    parts = re.split(r'(@\S+|https?://\S+|\S+\.(?:com|uz|org|io)\S*|\S*\+\S*|\b(?:Shift|Compress|Heading|References|Data|Sort|Zip|Windows|Word|Excel|Research|Reuters)\b)', t)
+    parts = re.split(r'(@\S+|https?://\S+|\S+\.(?:com|uz|org|io)\S*|\S*\+\S*|\b(?:Shift|Compress|Heading|References|Data|Sort|Zip|Windows|Word|Excel|Research|Reuters|TechCrunch)\b)', t)
     return ''.join(x if i % 2 else _uzc(x) for i, x in enumerate(parts))
 def _uzc(t):
     for a, b in (("o'", 'ö'), ('o‘', 'ö'), ('oʻ', 'ö'), ("O'", 'Ö'), ('O‘', 'Ö'), ("g'", 'ğ'), ('g‘', 'ğ'), ('gʻ', 'ğ'), ("G'", 'Ğ')):
