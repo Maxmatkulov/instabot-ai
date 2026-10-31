@@ -1,1 +1,40 @@
-{"date": "2026-10-30", "items": [{"title": "Alphabet choraklik daromadi 127,6 mlrd dollarga yetdi", "body": "Daromad bir yilda 25% oshdi. Qidiruv reklamasi o'sishi birinchi chorakdagi 19% dan uchinchi chorakda 12% gacha sekinlashdi. Google AI qidiruvdagi reklamani yana ko'p xalqaro bozorlarga kengaytirmoqda.", "source": "The Neuron orqali (TechCrunch)", "viz": "stat", "big": "127,6 mlrd", "cap": "Alphabet choraklik daromadi ($), +25%"}, {"title": "GitHub'da pull request'larning 40% dan ko'pini AI agentlar ochmoqda", "body": "GitHub Octoverse ma'lumotiga ko'ra, sentabrda agentlar pull request'larning 40% dan ortig'ini boshlagan. Martda bu ko'rsatkich 17% edi. GitHub shu kunlarda Copilot Fusion'ni ham ishga tushirdi.", "source": "The Neuron orqali (TheNextWeb)", "viz": "stat", "big": "17→40%", "cap": "agentlar ochgan PR ulushi, mart–sentabr"}, {"title": "Malayziya aeroportida 12 mln dollarlik AI chiplari musodara qilindi", "body": "Kuala-Lumpur aeroportida 30 ta server ichiga yashirilgan AI chiplari topildi. Ular tranzit orqali o'tkazib yuborilayotgani taxmin qilinmoqda.", "source": "The Neuron orqali (Tom's Hardware)", "viz": "chat", "lines": ["Aeroportda 30 ta server tekshirildi.", "Ichida 12 mln dollarlik AI chip chiqdi.", "Taxmin: tranzit orqali o'tkazish."]}, {"title": "Nvidia ochiq Nemotron 3.5 Transcribe modelini chiqardi", "body": "Ochiq vaznli nutq-matn modeli 40 tilgacha ishlaydi va 8 tagacha so'zlovchini ajratadi. Jonli transkripsiya uchun mo'ljallanmagan. Nvidia yana Granary v2 ma'lumotlar to'plamini ham e'lon qildi.", "source": "The Neuron orqali (TechCrunch)", "viz": "stat", "big": "40 til", "cap": "Nemotron 3.5 Transcribe qo'llaydigan tillar"}]}
+{
+ "date": "2026-10-31",
+ "items": [
+  {
+   "title": "Anthropic IPO uchun SEC'ga S-1 hujjatini topshirdi",
+   "body": "Kompaniya Nasdaq'da \"ANT\" belgisi ostida chiqishni rejalashtirmoqda. Hujjatga ko'ra, 2026 yil birinchi yarmida daromad 16,3 mlrd dollar bo'ldi, bir yil oldin 1,2 mlrd dollar edi. Narx va jalb qilinadigan summa hali e'lon qilinmagan.",
+   "source": "Trew Knowledge va boshqa nashrlar orqali",
+   "viz": "stat",
+   "big": "16,3 mlrd",
+   "cap": "Anthropic daromadi, 2026 yarmi ($)"
+  },
+  {
+   "title": "OpenAI GPT-6.1 Terra modelini yarim narxda chiqardi",
+   "body": "Model API'da million kirish tokeni uchun 1 dollar, chiqish uchun 5 dollar turadi. Bu GPT-5.6 Terra va GPT-6.1 Sol narxidan ikki baravar arzon. OpenAI kompyuterni boshqarish imkoniyatini ham aytib o'tdi.",
+   "source": "AI Weekly orqali (OpenAI)",
+   "viz": "stat",
+   "big": "$1 / $5",
+   "cap": "million kirish / chiqish tokeni narxi"
+  },
+  {
+   "title": "Intel aksiyasi hisobotdan keyin 25% tushdi",
+   "body": "Intel to'rtinchi chorak uchun 15-16 mlrd dollar daromad prognoz qildi, kutilgani 17 mlrd edi. Rahbariyat xotira tanqisligi sabab kompyuter bozori 2026 yilda 12% qisqarishini aytdi. Dell 13%, AMD 10% pasaydi.",
+   "source": "24/7 Wall St.",
+   "viz": "stat",
+   "big": "−25%",
+   "cap": "Intel aksiyasi birjadan oldingi savdoda"
+  },
+  {
+   "title": "To'rt AI kompaniya o'qitishdan voz kechish belgisini qo'llab-quvvatladi",
+   "body": "OpenAI, Google, Microsoft va Anthropic robots.txt'dagi yagona belgini hurmat qilishini aytdi. Anthropic joriy qila boshladi, Microsoft 2027 yil 1 fevralni maqsad qildi. Bu hali rasmiy standart emas.",
+   "source": "AI Weekly orqali (The Verge)",
+   "viz": "chat",
+   "lines": [
+    "Saytingiz robots.txt'ida belgi qo'yasiz.",
+    "To'rt yirik kompaniya o'qitishga olmaydi.",
+    "Mavjud ma'lumotlar o'chirilmaydi."
+   ]
+  }
+ ]
+}
