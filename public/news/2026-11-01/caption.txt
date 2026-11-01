@@ -1,12 +1,12 @@
 🗞 <b>Bugungi yangiliklar | 1 noyabr</b>
 
-<b>Kanada Cohere'ga sarmoya kiritadi.</b> Hukumat Toronto şahridagi kompaniyada uluş oliş uçun 1,6 mlrd kanada dollarigaça ajratadi. Cohere boş ofisini Kanadada saqlaşi va 2030 yilgaça hisoblaş infratuzilmasiga kamida 1,7 mlrd kanada dollari sarflaşi şart. <i>(Semafor, The Neuron orqali)</i>
+<b>Kanada Cohere'ga sarmoya kiritadi.</b> Hukumat kompaniyada uluş oliş uçun 1,6 mlrd kanada dollarigaça ajratadi. Cohere 2030 yilgaça Kanadada kamida 1,7 mlrd kanada dollari sarflaşi şart. <i>(Semafor, The Neuron orqali)</i>
 
-<b>NVIDIA Nemotron 3.5 Transcribe'ni oçiq çiqardi.</b> Model 40 tilda matnga ögiradi, bir soatgaça yozuvni qayta işlaydi. Bitta RTX PRO 6000 Blackwell kartasida 100 soatlik audio 3 daqiqadan kam vaqtda tayyor böladi. <i>(Hugging Face blogi, dev.to orqali)</i>
+<b>NVIDIA Nemotron 3.5 Transcribe'ni oçiq çiqardi.</b> Model 40 tilda matnga ögiradi. Bitta RTX PRO 6000 kartasida 100 soatlik audio 3 daqiqadan kam vaqtda tayyor böladi. <i>(Hugging Face blogi, dev.to orqali)</i>
 
-<b>Google Jules'ni yopadi.</b> Kod agenti 11 noyabrdan keyin yangi vazifa qabul qilmaydi, 31 dekabrda töliq öçadi va Antigravity'ga qöşiladi. Ma'lumotni foydalanuvçi özi eksport qilişi kerak. <i>(The Verge, dev.to orqali)</i>
+<b>Google Jules'ni yopadi.</b> Kod agenti 11 noyabrdan yangi vazifa olmaydi, 31 dekabrda öçadi va Antigravity'ga qöşiladi. <i>(The Verge, dev.to orqali)</i>
 
-<b>Beşta texnogigant AI uçun 3 trln dollardan oşiq majburiyat olgan.</b> Alphabet, Meta, Microsoft, Amazon va Oracle ijara, quriliş va jihozlar böyiça şunça tölov majburiyatini e'lon qilgan. Faqat Alphabet'da u 1 trln dollardan oşadi. <i>(Bloomberg, dev.to orqali)</i>
+<b>Beşta texnogigant AI uçun 3 trln dollardan oşiq majburiyat olgan.</b> Faqat Alphabet'da u 1 trln dollardan oşadi. <i>(Bloomberg, dev.to orqali)</i>
 
 👉 Yangiliklarni biz bilan kuzatib boring va obuna bo'lib qo'ying.
 
