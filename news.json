@@ -1,40 +1,6 @@
-{
- "date": "2026-10-31",
- "items": [
-  {
-   "title": "Anthropic IPO uchun SEC'ga S-1 hujjatini topshirdi",
-   "body": "Kompaniya Nasdaq'da \"ANT\" belgisi ostida chiqishni rejalashtirmoqda. Hujjatga ko'ra, 2026 yil birinchi yarmida daromad 16,3 mlrd dollar bo'ldi, bir yil oldin 1,2 mlrd dollar edi. Narx va jalb qilinadigan summa hali e'lon qilinmagan.",
-   "source": "Trew Knowledge va boshqa nashrlar orqali",
-   "viz": "stat",
-   "big": "16,3 mlrd",
-   "cap": "Anthropic daromadi, 2026 yarmi ($)"
-  },
-  {
-   "title": "OpenAI GPT-6.1 Terra modelini yarim narxda chiqardi",
-   "body": "Model API'da million kirish tokeni uchun 1 dollar, chiqish uchun 5 dollar turadi. Bu GPT-5.6 Terra va GPT-6.1 Sol narxidan ikki baravar arzon. OpenAI kompyuterni boshqarish imkoniyatini ham aytib o'tdi.",
-   "source": "AI Weekly orqali (OpenAI)",
-   "viz": "stat",
-   "big": "$1 / $5",
-   "cap": "million kirish / chiqish tokeni narxi"
-  },
-  {
-   "title": "Intel aksiyasi hisobotdan keyin 25% tushdi",
-   "body": "Intel to'rtinchi chorak uchun 15-16 mlrd dollar daromad prognoz qildi, kutilgani 17 mlrd edi. Rahbariyat xotira tanqisligi sabab kompyuter bozori 2026 yilda 12% qisqarishini aytdi. Dell 13%, AMD 10% pasaydi.",
-   "source": "24/7 Wall St.",
-   "viz": "stat",
-   "big": "−25%",
-   "cap": "Intel aksiyasi birjadan oldingi savdoda"
-  },
-  {
-   "title": "To'rt AI kompaniya o'qitishdan voz kechish belgisini qo'llab-quvvatladi",
-   "body": "OpenAI, Google, Microsoft va Anthropic robots.txt'dagi yagona belgini hurmat qilishini aytdi. Anthropic joriy qila boshladi, Microsoft 2027 yil 1 fevralni maqsad qildi. Bu hali rasmiy standart emas.",
-   "source": "AI Weekly orqali (The Verge)",
-   "viz": "chat",
-   "lines": [
-    "Saytingiz robots.txt'ida belgi qo'yasiz.",
-    "To'rt yirik kompaniya o'qitishga olmaydi.",
-    "Mavjud ma'lumotlar o'chirilmaydi."
-   ]
-  }
- ]
-}
+{"date":"2026-11-01","items":[
+{"title":"Kanada Cohere'ga 1,6 mlrd kanada dollari sarmoya kiritadi","body":"Hukumat Toronto shahridagi Cohere kompaniyasida ulush oladi. Cohere bosh ofisini Kanadada saqlashi va 2030 yilgacha hisoblash infratuzilmasiga kamida 1,7 mlrd kanada dollari sarflashi shart.","source":"Semafor, The Neuron orqali","viz":"stat","big":"1,6 mlrd","cap":"Kanada hukumati sarmoyasi, kanada dollari"},
+{"title":"NVIDIA ochiq vaznli Nemotron 3.5 Transcribe modelini chiqardi","body":"Model 40 tilda matnga o'giradi va bir soatgacha yozuvni qayta ishlaydi. Bitta RTX PRO 6000 Blackwell kartasida 100 soatlik audio 3 daqiqadan kamroq vaqtda tayyor bo'ladi.","source":"Hugging Face blogi, dev.to orqali","viz":"stat","big":"40 til","cap":"Matnga o'girish tillari soni"},
+{"title":"Google Jules'ni yopib, Antigravity'ga qo'shadi","body":"Jules kod agenti 11 noyabrdan keyin yangi vazifa qabul qilmaydi, 31 dekabrda to'liq o'chadi. Avtomatik ko'chirish yo'q: eksport qilish foydalanuvchining o'zida.","source":"The Verge, dev.to orqali","viz":"chat","lines":["Jules 11 noyabrdan yangi ish olmaydi","31 dekabrda xizmat butunlay o'chadi","Ma'lumotni qo'lda eksport qiling"]},
+{"title":"Beshta texnogigant AI uchun 3 trln dollardan oshiq majburiyat olgan","body":"Bloomberg hisobiga ko'ra, Alphabet, Meta, Microsoft, Amazon va Oracle ijara, qurilish va jihozlar bo'yicha shuncha to'lov majburiyatini e'lon qilgan. Faqat Alphabet'da bu 1 trln dollardan oshadi.","source":"Bloomberg, dev.to orqali","viz":"stat","big":"3 trln $","cap":"Beshta kompaniya majburiyati, jami"}
+]}
