@@ -484,6 +484,20 @@ const payText = (rule, promo) => {
   );
 };
 async function payOffer(chatId, userId, rule) {
+  // Bayram aksiyasi: rules.json da "free": true bo'lsa paket bepul (obuna sharti bilan). O'chirish: "free" ni olib tashlang.
+  if (rule.free) {
+    if (!(await checkSub(userId))) {
+      return send(chatId, `🎉 <b>12K bayrami!</b>\n\n<b>${esc(rule.title)}</b> hozir hamma uchun <b>bepul</b>. Olish uchun kanalga obuna bo'ling, keyin "✅ Obuna bo'ldim" ni bosing 👇`, subscribeKb(rule.keyword));
+    }
+    await send(chatId, `🎉 <b>12K bayrami!</b> Instagramda 12 000 kishi bo'ldik, shu munosabat bilan <b>${esc(rule.title)}</b> sizga <b>bepul</b>. Rahmat! 🙏`);
+    const ok = await sendPaid(userId, rule, !!rule.promo?.bonusFile, true);
+    if (!ok) await send(chatId, `⚠ Fayl yuborishda xato bo'ldi. @${esc(OWNER_USERNAME)} ga yozing, qo'lda yuboramiz.`);
+    if (OWNER_CHAT_ID) {
+      const u = await bot.getChat(userId).catch(() => ({}));
+      await send(OWNER_CHAT_ID, `🎁 12K bepul ${esc(rule.keyword)}: ${u.username ? '@' + esc(u.username) : esc(u.first_name || userId)} (id ${userId}) ${ok ? 'olindi ✅' : 'XATO ❌'}`);
+    }
+    return;
+  }
   payPick.set(userId, rule.keyword);
   const promo = await promoOf(rule);
   await send(chatId, payText(rule, promo));
@@ -512,11 +526,11 @@ async function handleReceipt(msg) {
   });
   return send(chatId, `🧾 Chek qabul qilindi! Admin tekshirib tasdiqlashi bilan paket shu yerga keladi ⏳`);
 }
-async function sendPaid(userId, rule, withBonus = false) {
+async function sendPaid(userId, rule, withBonus = false, free = false) {
   if (!rule.paidFile || !PUBLIC_URL) return false;
   try {
     await bot.sendDocument(userId, `${PUBLIC_URL}/${rule.paidFile}`, {
-      caption: `🎉 To'lov tasdiqlandi! Mana <b>${esc(rule.title)}</b>\n\n${rule.caption ? esc(rule.caption) : 'Ichidagi README.md da o\'rnatish tartibi bor.'}`,
+      caption: `🎉 ${free ? 'Mana' : "To'lov tasdiqlandi! Mana"} <b>${esc(rule.title)}</b>\n\n${rule.caption ? esc(rule.caption) : 'Ichidagi README.md da o\'rnatish tartibi bor.'}`,
       parse_mode: 'HTML',
     });
     for (const f of rule.paidExtra || []) {
@@ -525,7 +539,7 @@ async function sendPaid(userId, rule, withBonus = false) {
     // Chegirma bonusi (faqat birinchi N kishiga). Xato bo'lsa asosiy paket yuborilgani buzilmaydi.
     if (withBonus && rule.promo?.bonusFile) {
       await bot.sendDocument(userId, `${PUBLIC_URL}/${rule.promo.bonusFile}`, {
-        caption: `🎁 <b>Bonus:</b> ${esc(rule.promo.bonusText || '30 ta viral reels mavzu bazasi')}\n\nSiz birinchi ${rule.promo.limit} kishidan birisiz, shuning uchun PRO yangilanishlari sizga umrbod bepul ✅`,
+        caption: `🎁 <b>Bonus:</b> ${esc(rule.promo.bonusText || '30 ta viral reels mavzu bazasi')}\n\n${free ? 'Bayram sovg\'asi ✅' : `Siz birinchi ${rule.promo.limit} kishidan birisiz, shuning uchun PRO yangilanishlari sizga umrbod bepul ✅`}`,
         parse_mode: 'HTML',
       }).catch((e) => log('❌ bonus:', e.message));
     }
