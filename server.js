@@ -1320,7 +1320,7 @@ app.get('/api/cron/morning', async (req, res) => {
 const uzc = (t) => String(t).split(/(@\S+|https?:\/\/\S+|\S*\+\S*|\b(?:Shift|Compress|Heading|References|Data|Sort|Zip|Windows|Word|Excel)\b)/).map((x, i) => (i % 2 ? x : x
   .replace(/o['‘ʻ]/g, 'ö').replace(/O['‘ʻ]/g, 'Ö').replace(/g['‘ʻ]/g, 'ğ').replace(/G['‘ʻ]/g, 'Ğ')
   .replace(/sh/g, 'ş').replace(/Sh/g, 'Ş').replace(/ch/g, 'ç').replace(/Ch/g, 'Ç'))).join('');
-const CHAN_LINKS = '📢 Telegram: https://t.me/mashrabbekmaxmatkulov\n📸 Instagram: https://instagram.com/mashrab.axi';
+const CHAN_LINKS = '📢 Telegram: https://t.me/mashrabbekmaxmatkulov\n📸 Instagram: https://instagram.com/mashrabbek.maxmatkulov';
 const SLOT_PDFS = ['PROMPT', 'XAVF', 'EXCEL', 'CV', 'AHMOQONA', 'SKILL', 'CLAUDE', 'BOT', 'SAYT', 'REELS', 'HAQIQAT', 'PLAGIN', 'RUXSAT', 'XOTIRA'];
 const dayIndex = (d) => Math.floor((Date.parse(d + 'T00:00:00Z') - Date.parse('2026-10-24T00:00:00Z')) / 864e5);
 const pick = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
