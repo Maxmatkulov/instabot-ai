@@ -425,6 +425,22 @@
       "file": "guides/puls-jadvali.pdf",
       "remind": true,
       "caption": "Puls jadvali: pulsni 30 soniyada o'lchash, kattalar uchun taxminiy me'yor, haftalik jurnal va AI uchun 2 ta tayyor prompt (o'zbekcha va inglizcha).\n\nBu tibbiy maslahat emas. Puls doim juda tez yoki sekin bo'lsa, ayniqsa bosh aylansa yoki holsizlik bo'lsa, shifokorga ko'ring."
+    },
+    {
+      "keyword": "TARIX",
+      "aliases": [
+        "TARIXX",
+        "TARIX!",
+        "TARIH",
+        "ТАРИХ",
+        "TARIXI"
+      ],
+      "title": "Xaritada tarix: sanalar jadvali",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/xaritada-tarix-sanalar.pdf",
+      "remind": true,
+      "caption": "Xaritada tarix: sanalar jadvali (1–2-qism). Har bir sana, voqea va u hozirgi xaritada qayerga to'g'ri kelishi. Yangi qismlar chiqqach jadval to'ldirib boriladi."
     }
   ]
 }
