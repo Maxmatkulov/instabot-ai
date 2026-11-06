@@ -1,6 +1,43 @@
-{"date":"2026-11-05","items":[
-{"title":"Google Gemini 4 Carbon: Claude'dan 3 baravar arzon","body":"SemiAnalysis'ning yangi GDPx testida Gemini 4 Carbon 10,9% natija ko'rsatdi, Anthropic'ning Claude Opus 5.5 modeli esa 12%. Bir vazifa narxi Google'da 16,29 dollar, Anthropic'da 51,41 dollar. Google'ning joriy narxlari boshlang'ich, keyin o'zgarishi mumkin.","source":"Benzinga (Yahoo Finance orqali)","viz":"stat","big":"3×","cap":"arzonroq: $16,29 va $51,41"},
-{"title":"OpenAI: GPT-6 Astra bir haftada qurilma loyihaladi","body":"OpenAI xabariga ko'ra, ikki xodim GPT-6 Astra yordamida Codex uchun qurilmani bir haftadan kamroq vaqtda loyihalagan. Ishlab chiqaruvchi prototiplar yasadi, lekin bir necha marta tuzatish kerak bo'ldi.","source":"openai.com, The Decoder","viz":"stat","big":"<7 kun","cap":"g'oyadan prototipgacha"},
-{"title":"Anthropic: AI javobi qaysi modeldan ekanini isbotlash","body":"Anthropic FlashProve tadqiqoti va kodini e'lon qildi. Tizim javob aynan da'vo qilingan modeldan kelganini kriptografik isbotlaydi. Hozircha bu tajriba bosqichida, ishlab chiqarish rejalari e'lon qilinmagan.","source":"TechCrunch, anthropic.com","viz":"chat","lines":["Bu javob qaysi modeldan?","FlashProve isbotlaydi","Kriptografik tekshiruv"]},
-{"title":"Apple: AI agentlar kutilmagan harakat qilishi mumkin","body":"Apple yillik hisobotida avtonom AI agentlar ruxsatsiz tranzaksiya qilishi yoki xavfsizlikni aylanib o'tishi mumkinligi haqida ogohlantirdi. Shu haftada kompaniya Siri AI'ning ilovalararo amallarini kengaytirdi.","source":"CNBC","viz":"chat","lines":["AI agent ruxsatsiz to'lov qilsa?","Apple: bu xavf bor","Nazorat shart"]}
-]}
+{
+ "date": "2026-11-06",
+ "items": [
+  {
+   "title": "Nvidia aksiyasi bir kunda 9,3% tushdi",
+   "body": "5-noyabr kuni Nvidia aksiyasi 181,60 dollarda yopildi, bu aprel oyidan beri eng past daraja. Nasdaq 5,52% pasaydi. Investorlar Nvidia'ning 17-noyabrdagi choraklik hisobotini kutmoqda.",
+   "source": "The Motley Fool",
+   "viz": "stat",
+   "big": "−9,3%",
+   "cap": "Nvidia: $181,60 da yopildi"
+  },
+  {
+   "title": "AMD: data-markaz daromadi deyarli ikki baravar o'sdi",
+   "body": "AMD uchinchi chorakda data-markaz daromadi 97% oshib, rekord 8,5 milliard dollarga yetganini e'lon qildi. Umumiy tushum 13,4 milliard dollar. To'rtinchi chorak uchun prognoz 17 milliard dollar.",
+   "source": "The Daily Upside",
+   "viz": "stat",
+   "big": "+97%",
+   "cap": "data-markaz daromadi: $8,5 mlrd"
+  },
+  {
+   "title": "OpenAI Anthropic'dan Claude Code mahsulot rahbarini ishga oldi",
+   "body": "Cat Wu Anthropic'da Claude Code va Cowork mahsulotlari rahbari edi. Endi u OpenAI'ning asosiy mahsulotlar guruhida ishlaydi.",
+   "source": "WinBuzzer",
+   "viz": "chat",
+   "lines": [
+    "Cat Wu: Anthropic'dan ketdi",
+    "OpenAI'da mahsulotni boshqaradi",
+    "Claude Code rahbari edi"
+   ]
+  },
+  {
+   "title": "Claude'ga shaxsiy moliya funksiyasi qo'shildi",
+   "body": "Anthropic Claude ichida Plaid orqali shaxsiy moliya funksiyasini sinovga chiqardi. Hozircha u faqat AQShdagi Pro, Max va Ultra foydalanuvchilari uchun beta rejimida.",
+   "source": "ZDNet (AI Weekly orqali)",
+   "viz": "chat",
+   "lines": [
+    "Moliyam qanday ketyapti?",
+    "Plaid orqali hisoblar ulanadi",
+    "Hozircha AQShda beta"
+   ]
+  }
+ ]
+}
