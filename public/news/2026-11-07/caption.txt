@@ -1,0 +1,14 @@
+🗞 <b>Bugungi yangiliklar | 7 noyabr</b>
+
+<b>AI uçun sarflar ösişi keskin sekinlaşdi.</b> Ramp ma'lumotiga köra, token xarajati avgust-sentabrda atigi 1,5% oşdi, iyulda bu 42% edi. <i>(TechCrunch)</i>
+
+<b>Meta AI dasturlaş startapi Conductor'ni sotib oldi.</b> Ilova bir vaqtning özida bir neçta AI kod agentini işga tuşiradi, bitim şartlari oşkor qilinmagan. <i>(Axios, SiliconANGLE)</i>
+
+<b>GPT-6 Cyber: Linux yadrosida 948 ta exploit.</b> OpenAI modeli "Critical" toifaga qöyilgan, GPT-5.6 Sol esa 166 ta topgan edi. <i>(OpenAI ma'lumoti, DEV Community orqali)</i>
+
+<b>Anthropic Claude matnlariga suv belgisi qöşmoqda.</b> 3-noyabrdan yangi modellar, 16-noyabrdan eskilari ham belgilanadi, sabab EU AI Act. <i>(Anthropic, DEV Community orqali)</i>
+
+👉 Yangiliklarni biz bilan kuzatib boring va obuna bo'lib qo'ying.
+
+📢 Telegram: https://t.me/mashrabbekmaxmatkulov
+📸 Instagram: https://instagram.com/mashrabbek.maxmatkulov
