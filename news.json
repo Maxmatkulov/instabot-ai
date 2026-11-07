@@ -1,42 +1,42 @@
 {
- "date": "2026-11-06",
+ "date": "2026-11-07",
  "items": [
   {
-   "title": "Nvidia aksiyasi bir kunda 9,3% tushdi",
-   "body": "5-noyabr kuni Nvidia aksiyasi 181,60 dollarda yopildi, bu aprel oyidan beri eng past daraja. Nasdaq 5,52% pasaydi. Investorlar Nvidia'ning 17-noyabrdagi choraklik hisobotini kutmoqda.",
-   "source": "The Motley Fool",
+   "title": "AI uchun sarflar o'sishi keskin sekinlashdi",
+   "body": "Ramp ma'lumotiga ko'ra, kompaniyalarning AI token xarajati avgust-sentabrda atigi 1,5% oshdi. Iyulda bu ko'rsatkich oyiga 42% edi. AI xarajatining deyarli hammasi venchur kompaniyalar hissasiga to'g'ri keladi.",
+   "source": "TechCrunch",
    "viz": "stat",
-   "big": "−9,3%",
-   "cap": "Nvidia: $181,60 da yopildi"
+   "big": "1,5%",
+   "cap": "avgust-sentabr: token xarajati o'sishi"
   },
   {
-   "title": "AMD: data-markaz daromadi deyarli ikki baravar o'sdi",
-   "body": "AMD uchinchi chorakda data-markaz daromadi 97% oshib, rekord 8,5 milliard dollarga yetganini e'lon qildi. Umumiy tushum 13,4 milliard dollar. To'rtinchi chorak uchun prognoz 17 milliard dollar.",
-   "source": "The Daily Upside",
-   "viz": "stat",
-   "big": "+97%",
-   "cap": "data-markaz daromadi: $8,5 mlrd"
-  },
-  {
-   "title": "OpenAI Anthropic'dan Claude Code mahsulot rahbarini ishga oldi",
-   "body": "Cat Wu Anthropic'da Claude Code va Cowork mahsulotlari rahbari edi. Endi u OpenAI'ning asosiy mahsulotlar guruhida ishlaydi.",
-   "source": "WinBuzzer",
+   "title": "Meta AI dasturlash startapi Conductor'ni sotib oldi",
+   "body": "Conductor bir vaqtning o'zida bir nechta AI kod agentini ishga tushiradigan ilova yaratgan. Bitim shartlari oshkor qilinmagan.",
+   "source": "Axios, SiliconANGLE",
    "viz": "chat",
    "lines": [
-    "Cat Wu: Anthropic'dan ketdi",
-    "OpenAI'da mahsulotni boshqaradi",
-    "Claude Code rahbari edi"
+    "Meta Conductor'ni sotib oldi",
+    "Ilova bir nechta kod agentini yuritadi",
+    "Bitim narxi aytilmadi"
    ]
   },
   {
-   "title": "Claude'ga shaxsiy moliya funksiyasi qo'shildi",
-   "body": "Anthropic Claude ichida Plaid orqali shaxsiy moliya funksiyasini sinovga chiqardi. Hozircha u faqat AQShdagi Pro, Max va Ultra foydalanuvchilari uchun beta rejimida.",
-   "source": "ZDNet (AI Weekly orqali)",
+   "title": "GPT-6 Cyber: Linux yadrosida 948 ta exploit",
+   "body": "OpenAI'ning kiberxavfsizlik modeli GPT-6 Cyber \"Critical\" toifaga qo'yilgan. Linux yadrosi sinovida u 948 ta ishlaydigan exploit topgan, GPT-5.6 Sol esa 166 tasini.",
+   "source": "OpenAI ma'lumoti, DEV Community orqali",
+   "viz": "stat",
+   "big": "948",
+   "cap": "Linux yadrosi: ishlaydigan exploit (oldingi: 166)"
+  },
+  {
+   "title": "Anthropic Claude matnlariga suv belgisi qo'shmoqda",
+   "body": "3-noyabrdan Claude Mythos 5, Opus 4.7 va Sonnet 4.6 matnlari belgilanadi, 16-noyabrdan eski modellar ham. Belgi faqat sozlamalar standart bo'lsa ishlaydi. Bu EU AI Act 50(2)-moddasi bilan bog'liq.",
+   "source": "Anthropic, DEV Community orqali",
    "viz": "chat",
    "lines": [
-    "Moliyam qanday ketyapti?",
-    "Plaid orqali hisoblar ulanadi",
-    "Hozircha AQShda beta"
+    "3-noyabr: birinchi to'lqin",
+    "16-noyabr: eski modellar",
+    "Sabab: EU AI Act, 50(2)-modda"
    ]
   }
  ]
