@@ -1,43 +1,28 @@
 {
- "date": "2026-11-07",
+ "date": "2026-11-08",
  "items": [
   {
-   "title": "AI uchun sarflar o'sishi keskin sekinlashdi",
-   "body": "Ramp ma'lumotiga ko'ra, kompaniyalarning AI token xarajati avgust-sentabrda atigi 1,5% oshdi. Iyulda bu ko'rsatkich oyiga 42% edi. AI xarajatining deyarli hammasi venchur kompaniyalar hissasiga to'g'ri keladi.",
-   "source": "TechCrunch",
+   "title": "Google Vayomingda 17 mlrd dollarlik data markaz quradi",
+   "body": "Google shtatdagi birinchi data markazi uchun 17 mlrd dollar sarflaydi. Markaz 702 MVt quvvatli yoqilg'i xujayralari bilan ishlaydi, chiqindi uglerod yer ostida saqlanadi. Google elektr uchun 100% haq to'laydi.",
+   "source": "Google blogi",
    "viz": "stat",
-   "big": "1,5%",
-   "cap": "avgust-sentabr: token xarajati o'sishi"
+   "big": "702 MVt",
+   "cap": "data markaz uchun yoqilg'i xujayralari quvvati"
   },
   {
-   "title": "Meta AI dasturlash startapi Conductor'ni sotib oldi",
-   "body": "Conductor bir vaqtning o'zida bir nechta AI kod agentini ishga tushiradigan ilova yaratgan. Bitim shartlari oshkor qilinmagan.",
-   "source": "Axios, SiliconANGLE",
-   "viz": "chat",
-   "lines": [
-    "Meta Conductor'ni sotib oldi",
-    "Ilova bir nechta kod agentini yuritadi",
-    "Bitim narxi aytilmadi"
-   ]
-  },
-  {
-   "title": "GPT-6 Cyber: Linux yadrosida 948 ta exploit",
-   "body": "OpenAI'ning kiberxavfsizlik modeli GPT-6 Cyber \"Critical\" toifaga qo'yilgan. Linux yadrosi sinovida u 948 ta ishlaydigan exploit topgan, GPT-5.6 Sol esa 166 tasini.",
-   "source": "OpenAI ma'lumoti, DEV Community orqali",
+   "title": "Nasdaq 100 bir kunda 6,4% tushdi",
+   "body": "Industry.co.id yig'ma sharhiga ko'ra, 5-noyabrda Nasdaq 100 6,4% pasayib, 2,3 trln dollar bozor qiymatini yo'qotdi. Bu Bloomberg ma'lumotiga ko'ra rekord yo'qotish. Dow 1833 punktga tushdi.",
+   "source": "Bloomberg, Industry.co.id orqali",
    "viz": "stat",
-   "big": "948",
-   "cap": "Linux yadrosi: ishlaydigan exploit (oldingi: 166)"
+   "big": "-6,4%",
+   "cap": "Nasdaq 100, 5-noyabr"
   },
   {
-   "title": "Anthropic Claude matnlariga suv belgisi qo'shmoqda",
-   "body": "3-noyabrdan Claude Mythos 5, Opus 4.7 va Sonnet 4.6 matnlari belgilanadi, 16-noyabrdan eski modellar ham. Belgi faqat sozlamalar standart bo'lsa ishlaydi. Bu EU AI Act 50(2)-moddasi bilan bog'liq.",
-   "source": "Anthropic, DEV Community orqali",
+   "title": "AQSh Adliyasi Super Intelligence Task Force tuzdi",
+   "body": "5-noyabrda AQSh Adliya vazirligi Super Intelligence Task Force'ni ishga tushirdi. Uni Bosh prokuror Todd Blanche boshqaradi. Guruh yangi jinoyat turini yaratmaydi.",
+   "source": "Industry.co.id orqali",
    "viz": "chat",
-   "lines": [
-    "3-noyabr: birinchi to'lqin",
-    "16-noyabr: eski modellar",
-    "Sabab: EU AI Act, 50(2)-modda"
-   ]
+   "lines": ["AQSh Adliyasida yangi guruh", "Rahbar: Todd Blanche", "Yangi jinoyat turi joriy etilmaydi"]
   }
  ]
 }
