@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Slotni chaqirish
         env:
-          BOT_URL: ${{ vars.BOT_URL }}
+          BOT_URL: ${{ vars.BOT_URL || 'https://instabot-ai-ebon.vercel.app' }}
           CRON_SCHEDULE: ${{ github.event.schedule }}
           IN_SLOT: ${{ github.event.inputs.slot }}
         run: |

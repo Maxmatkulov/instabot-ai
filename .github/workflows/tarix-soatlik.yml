@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Qismni kanalga yuborish
         env:
-          BOT_URL: ${{ vars.BOT_URL }}
+          BOT_URL: ${{ vars.BOT_URL || 'https://instabot-ai-ebon.vercel.app' }}
           CRON_SCHEDULE: ${{ github.event.schedule }}
           IN_N: ${{ github.event.inputs.n }}
         run: |
