@@ -1,0 +1,33 @@
+name: tarix-soatlik
+# Xaritada tarix 1-8 qism: Toshkent 09:00 dan har soatda bittadan (UTC 04:00-11:00, 8-noyabr). GitHub cron 5-20 daqiqa kechikishi mumkin.
+on:
+  schedule:
+    - cron: '0 4 8 11 *'
+    - cron: '0 5 8 11 *'
+    - cron: '0 6 8 11 *'
+    - cron: '0 7 8 11 *'
+    - cron: '0 8 8 11 *'
+    - cron: '0 9 8 11 *'
+    - cron: '0 10 8 11 *'
+    - cron: '0 11 8 11 *'
+  workflow_dispatch:
+    inputs:
+      n:
+        description: 'Qism raqami (1-8)'
+        required: true
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Qismni kanalga yuborish
+        env:
+          BOT_URL: ${{ vars.BOT_URL }}
+          CRON_SCHEDULE: ${{ github.event.schedule }}
+          IN_N: ${{ github.event.inputs.n }}
+        run: |
+          if [ -z "$BOT_URL" ]; then echo "BOT_URL o'zgaruvchisi yo'q"; exit 1; fi
+          case "$CRON_SCHEDULE" in
+            "0 4 8 11 *") N=1;; "0 5 8 11 *") N=2;; "0 6 8 11 *") N=3;; "0 7 8 11 *") N=4;;
+            "0 8 8 11 *") N=5;; "0 9 8 11 *") N=6;; "0 10 8 11 *") N=7;; "0 11 8 11 *") N=8;; *) N="$IN_N";;
+          esac
+          curl -fsS -A "vercel-cron/1.0" --retry 2 --retry-delay 30 "${BOT_URL%/}/api/cron/tarix?n=$N"
