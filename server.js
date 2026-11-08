@@ -1104,6 +1104,7 @@ const CHAN_VIDEOS = {
   onoda: { video: 'reels/onoda.mp4', kw: 'HIKOYA', text: "🌴 <b>Urush tugadi. U esa bilmadi</b>\n\nYapon ofitseri Xiroo Onoda 1944-yilda Filippindagi Lubang oroliga yuborilgan. Buyruq oddiy edi: taslim bo‘lma.\n\n1945-yilda urush tugadi, lekin Onoda o‘rmonda qoldi. Hamrohlaridan biri taslim bo‘ldi, qolganlari o‘ldirildi. U yolg‘iz davom etdi.\n\n1974-yil fevral. Sayohatchi Norio Suzuki uni topdi, lekin Onoda baribir ishonmadi. Faqat sobiq komandiri Taniguchi orolga kelib, uni buyruqdan ozod qilgandan keyingina taslim bo‘ldi. Urushdan keyin yigirma sakkiz yil o‘tgan edi.\n\nSizningcha, u o‘jarmidi yoki sadoqatli? Izohda yozing.\n\n🔖 Saqlab qo‘ying, do‘stingizga yuboring.\n📸 Instagram: @mashrabbek.maxmatkulov" },
   yamaguchi: { video: 'reels/yamaguchi.mp4', kw: 'HIKOYA', text: "☢️ <b>Atom bombasidan ikki marta tirik qoldi</b>\n\nSutomu Yamaguchi «Mitsubishi» kompaniyasining kema chizmachisi edi. 1945-yil 6-avgust kuni xizmat safari bilan Xirosimada bo‘ldi. Portlash uni taxminan uch kilometr narida qamrab oldi: quloq pardasi yirtildi, vaqtincha ko‘r bo‘ldi, chap tomoni kuydi.\n\nU tirik qoldi va Nagasakiga qaytdi.\n\nBu hikoyaning oxirini videoda ko‘ring.\n\n🔖 Saqlab qo‘ying, do‘stingizga yuboring.\n📸 Instagram: @mashrabbek.maxmatkulov" },
   bolga: { video: 'reels/bolga.mp4', kw: 'HIKOYA', text: "🔨 <b>Bolg‘a lampochkaga ozgina qoldi</b>\n\nSiz yetti soniya bolg‘aga qarab turdingiz. Uni hech kim ushlamagan. Siz esa hamon shu yerdasiz va urilishni kutyapsiz.\n\nTasavvur qiling, odamlar videolaringizni xuddi shunday ko‘rsa. Men bu taranglikni har bir videoga joylayman.\n\nInstagramda izohga <code>HOOK</code> deb yozing, keyingi videongizga bepul hook yozib beraman.\n\n🔖 Saqlab qo‘ying, do‘stingizga yuboring.\n📸 Instagram: @mashrabbek.maxmatkulov" },
+  uslub: { video: 'reels/uslub.mp4', kw: 'USLUB', text: "🎬 <b>1 mavzu, 10 xil uslub</b>\n\nBitta mavzuni 10 xil uslubda ko‘rsatdim. Qaysi biri sizning kasbingizga mos?\n\n🔥 <b>Yangilik:</b> videoni qanday yasaganimni shu kanalda boshidan oxirigacha o‘rgataman. Qism-qism, mutlaqo bepul. Ssenariy qanday yoziladi, ovoz qanday qilinadi, hammasi darslikda bo‘ladi.\n\n🎁 Va uslublar katalogini sovg‘a qilaman.\n\n📸 Instagramda izohga MONTAJ deb yozing, havolani o‘zim yuboraman." },
 };
 app.get('/admin/channel-video', async (req, res) => {
   if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
@@ -1354,7 +1355,7 @@ app.get('/api/cron/slot', async (req, res) => {
       const lit = readJson('content/literacy.json', []);
       if (!lit.length) throw new Error('literacy.json bo\'sh');
       const li = ((i % lit.length) + lit.length) % lit.length;
-      const tonight = (sched[today] || []).length ? `\n\n🎬 Bugun soat <b>21:00</b> da yangi video va uning PDF qo'llanmasi chiqadi.` : '';
+      const tonight = (sched[today] || []).length ? `\n\n🎬 Bugun kechqurun yangi video chiqadi.` : '';
       const cap = uzc(`🖥 <b>Kompyuter savodxonligi</b>\n\n<b>${esc(lit[li][0])}</b>\n\n${esc(lit[li][1])}${tonight}\n\n👉 Yangi darslarni biz bilan kuzatib boring va obuna bo'lib qo'ying.`) + `\n\n${CHAN_LINKS}`;
       const img = path.join(__dirname, 'public', 'content', 'literacy', `${li}.png`);
       const m = fs.existsSync(img) && cap.length <= 1024
