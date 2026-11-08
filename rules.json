@@ -441,6 +441,22 @@
       "file": "guides/xaritada-tarix-sanalar.pdf",
       "remind": true,
       "caption": "Xaritada tarix: sanalar jadvali (1–2-qism). Har bir sana, voqea va u hozirgi xaritada qayerga to'g'ri kelishi. Yangi qismlar chiqqach jadval to'ldirib boriladi."
+    },
+    {
+      "keyword": "MONTAJ",
+      "aliases": [
+        "MONTAJJ",
+        "MONTAJ!",
+        "MONTAZH",
+        "МОНТАЖ",
+        "MONTAJNI"
+      ],
+      "title": "Uslublar katalogi: 1 mavzu, 10 uslub",
+      "postUrl": "",
+      "reels": [],
+      "file": "guides/uslublar-katalogi.pdf",
+      "remind": true,
+      "caption": "Uslublar katalogi: bitta mavzu 10 xil uslubda. Har uslub uchun kimga mos, qaysi videolar uchun va Claude'ga beriladigan tayyor so'rov.\n\nVideolarni qanday yasashni Telegram kanalda bepul o'rgatamiz: t.me/mashrabbekmaxmatkulov"
     }
   ]
 }
