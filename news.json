@@ -1,28 +1,32 @@
 {
- "date": "2026-11-08",
+ "date": "2026-11-09",
  "items": [
   {
-   "title": "Google Vayomingda 17 mlrd dollarlik data markaz quradi",
-   "body": "Google shtatdagi birinchi data markazi uchun 17 mlrd dollar sarflaydi. Markaz 702 MVt quvvatli yoqilg'i xujayralari bilan ishlaydi, chiqindi uglerod yer ostida saqlanadi. Google elektr uchun 100% haq to'laydi.",
-   "source": "Google blogi",
+   "title": "Nvidia boardi Jensen Huang bo'yicha tekshiruv boshladi",
+   "body": "Nvidia direktorlar kengashi mustaqil tekshiruv ochdi. Huang hamkorlik qilishini aytdi, kengash esa milliy xavfsizlik yoki sirlar buzilganiga asos yo'q, dedi. NYT yozishicha, Megaspeed ikki yilda 4,8 mlrd dollarlik Nvidia chiplari sotib olgan.",
+   "source": "BBC, MyJoyOnline orqali",
    "viz": "stat",
-   "big": "702 MVt",
-   "cap": "data markaz uchun yoqilg'i xujayralari quvvati"
+   "big": "4,8 mlrd",
+   "cap": "Megaspeed olgan Nvidia chiplari (NYT)"
   },
   {
-   "title": "Nasdaq 100 bir kunda 6,4% tushdi",
-   "body": "Industry.co.id yig'ma sharhiga ko'ra, 5-noyabrda Nasdaq 100 6,4% pasayib, 2,3 trln dollar bozor qiymatini yo'qotdi. Bu Bloomberg ma'lumotiga ko'ra rekord yo'qotish. Dow 1833 punktga tushdi.",
-   "source": "Bloomberg, Industry.co.id orqali",
-   "viz": "stat",
-   "big": "-6,4%",
-   "cap": "Nasdaq 100, 5-noyabr"
-  },
-  {
-   "title": "AQSh Adliyasi Super Intelligence Task Force tuzdi",
-   "body": "5-noyabrda AQSh Adliya vazirligi Super Intelligence Task Force'ni ishga tushirdi. Uni Bosh prokuror Todd Blanche boshqaradi. Guruh yangi jinoyat turini yaratmaydi.",
-   "source": "Industry.co.id orqali",
+   "title": "Anthropic Claude Max bo'yicha jamoaviy da'voga duch keladi",
+   "body": "Sudya Anthropic'ga qarshi jamoaviy da'voni davom ettirishga ruxsat berdi. Da'vogarlar Claude Max 5x va 20x tariflari va'da qilingandan ancha kam foydalanish beradi, deydi.",
+   "source": "The Next Web, AI Weekly orqali",
    "viz": "chat",
-   "lines": ["AQSh Adliyasida yangi guruh", "Rahbar: Todd Blanche", "Yangi jinoyat turi joriy etilmaydi"]
+   "lines": [
+    "Claude Max 5x va 20x tariflari",
+    "Da'vo: limit va'dadan ancha kam",
+    "Sudya jamoaviy da'voga yo'l ochdi"
+   ]
+  },
+  {
+   "title": "Yarimo'tkazgich savdosi uchinchi chorakda 518 mlrd dollarga yetdi",
+   "body": "Global yarimo'tkazgich savdosi uchinchi chorakda 518 mlrd dollarga yetdi. Bu ikkinchi chorakka nisbatan 24% ko'p.",
+   "source": "SIA/WSTS, Semiconductor Engineering",
+   "viz": "stat",
+   "big": "+24%",
+   "cap": "2-chorakka nisbatan, 518 mlrd $"
   }
  ]
 }
