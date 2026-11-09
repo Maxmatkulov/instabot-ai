@@ -1,0 +1,29 @@
+name: tarix-soatlik2
+# Xaritada tarix 9-12 qism + Temur bonus: 9-noyabr, Toshkent 16:00 dan har soatda bittadan (UTC 11:00-15:00). GitHub cron 5-20 daqiqa kechikishi mumkin.
+on:
+  schedule:
+    - cron: '0 11 9 11 *'
+    - cron: '0 12 9 11 *'
+    - cron: '0 13 9 11 *'
+    - cron: '0 14 9 11 *'
+    - cron: '0 15 9 11 *'
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Video nomi (tarix9, tarix10, tarix11, tarix12, temurbonus)'
+        required: true
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Videoni kanalga yuborish
+        env:
+          BOT_URL: ${{ vars.BOT_URL || 'https://instabot-ai-ebon.vercel.app' }}
+          CRON_SCHEDULE: ${{ github.event.schedule }}
+          IN_NAME: ${{ github.event.inputs.name }}
+        run: |
+          case "$CRON_SCHEDULE" in
+            "0 11 9 11 *") NAME=tarix9;; "0 12 9 11 *") NAME=tarix10;; "0 13 9 11 *") NAME=tarix11;;
+            "0 14 9 11 *") NAME=tarix12;; "0 15 9 11 *") NAME=temurbonus;; *) NAME="$IN_NAME";;
+          esac
+          curl -fsS -A "vercel-cron/1.0" --retry 2 --retry-delay 30 "${BOT_URL%/}/api/cron/tarix?name=$NAME"
