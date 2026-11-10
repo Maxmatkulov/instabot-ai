@@ -1,32 +1,6 @@
-{
- "date": "2026-11-09",
- "items": [
-  {
-   "title": "Nvidia boardi Jensen Huang bo'yicha tekshiruv boshladi",
-   "body": "Nvidia direktorlar kengashi mustaqil tekshiruv ochdi. Huang hamkorlik qilishini aytdi, kengash esa milliy xavfsizlik yoki sirlar buzilganiga asos yo'q, dedi. NYT yozishicha, Megaspeed ikki yilda 4,8 mlrd dollarlik Nvidia chiplari sotib olgan.",
-   "source": "BBC, MyJoyOnline orqali",
-   "viz": "stat",
-   "big": "4,8 mlrd",
-   "cap": "Megaspeed olgan Nvidia chiplari (NYT)"
-  },
-  {
-   "title": "Anthropic Claude Max bo'yicha jamoaviy da'voga duch keladi",
-   "body": "Sudya Anthropic'ga qarshi jamoaviy da'voni davom ettirishga ruxsat berdi. Da'vogarlar Claude Max 5x va 20x tariflari va'da qilingandan ancha kam foydalanish beradi, deydi.",
-   "source": "The Next Web, AI Weekly orqali",
-   "viz": "chat",
-   "lines": [
-    "Claude Max 5x va 20x tariflari",
-    "Da'vo: limit va'dadan ancha kam",
-    "Sudya jamoaviy da'voga yo'l ochdi"
-   ]
-  },
-  {
-   "title": "Yarimo'tkazgich savdosi uchinchi chorakda 518 mlrd dollarga yetdi",
-   "body": "Global yarimo'tkazgich savdosi uchinchi chorakda 518 mlrd dollarga yetdi. Bu ikkinchi chorakka nisbatan 24% ko'p.",
-   "source": "SIA/WSTS, Semiconductor Engineering",
-   "viz": "stat",
-   "big": "+24%",
-   "cap": "2-chorakka nisbatan, 518 mlrd $"
-  }
- ]
-}
+{"date":"2026-11-10","items":[
+{"title":"Anthropic Fable 5.2 va Mythos 5.2 modellarini chiqardi","body":"Ikkala model narxi 1 mln token uchun 8 dollar (kirish) va 40 dollar (chiqish). Kompaniyaga ko'ra, 1000 ga yaqin Fable 5.2 agenti Ferma teoremasi isbotini kompyuter tekshiradigan shaklga 30 soatda o'tkazgan.","source":"Anthropic, Gizmodo orqali","viz":"stat","big":"30 soat","cap":"oldingi versiyada 11 kun ketgan"},
+{"title":"Nvidia direktorlar kengashi Jensen Huang bo'yicha tekshiruv boshladi","body":"Tekshiruv yakshanba kuni e'lon qilindi. Dushanba kuni Nvidia aksiyalari taxminan 4,4% tushib, bozor qiymatidan 200 milliard dollardan ortiq yo'qolgan.","source":"AP, TechStartups orqali","viz":"stat","big":"-4,4%","cap":"Nvidia aksiyasi, 9-noyabr"},
+{"title":"TSMC Nvidia so'rovi bilan 3D DRAM xotira ishlab chiqarishni o'ylamoqda","body":"The Information xabariga ko'ra, TSMC rejalarni tuza boshlagan va xotira zavodini sotib olishni ham ko'rib chiqmoqda. TSMC asosiy biznesiga e'tibor qaratishini bildirdi.","source":"Bloomberg, Taipei Times","viz":"chat","lines":["Nvidia: 3D DRAM kerak","TSMC: rejani tuzyapmiz","Zavod sotib olish ham ko'rilmoqda"]},
+{"title":"Anthropic IPO ga tayyorlanmoqda","body":"WSJ xabariga ko'ra, kompaniya Nasdaq'da ANT belgisi ostida 16-noyabr haftasidayoq chiqishi mumkin. Goldman Sachs va Morgan Stanley bilan ishlanmoqda, yakuniy narx hali e'lon qilinmagan.","source":"WSJ, TechStartups orqali","viz":"chat","lines":["Birja: Nasdaq, belgi: ANT","Muddat: 16-noyabr haftasi","Banklar: Goldman, Morgan Stanley"]}
+]}
