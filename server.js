@@ -1088,8 +1088,10 @@ app.get('/admin/unanswered', async (req, res) => {
       if (last.from?.username && last.from.username.toLowerCase() === IG_USERNAME) continue;
       const text = String(last.message || '');
       const botText = msgs.filter((m) => String(m.from?.id) === String(IG_USER_ID)).map((m) => m.message || '').join('\n');
-      const rule = RULES.find((r) => r.title && botText.includes(r.title));
-      const row = { user: last.from.username || fromId, id: fromId, text: text.slice(0, 80), at: last.created_time, keyword: rule?.keyword || null };
+      const nrm = (x) => String(x || '').toLowerCase().replace(/[\u2018\u2019\u02bb\u02bc`´]/g, "'").replace(/\s+/g, ' ');
+      const nb = nrm(botText);
+      const rule = RULES.find((r) => r.title && nb.includes(nrm(r.title).slice(0, 30))) || (req.query.kw ? ruleByKeyword(req.query.kw) : null);
+      const row = { user: last.from.username || fromId, id: fromId, text: text.slice(0, 80), at: last.created_time, keyword: rule?.keyword || null, bot: botText.slice(0, 100) };
       if (send && rule && /obuna|подпис|tayyor|bo'ldim|boldim/i.test(text)) {
         const ok = await checkAndDeliver(fromId, rule);
         row.sent = !!ok;
