@@ -1061,6 +1061,48 @@ app.get('/admin/backfill', async (req, res) => {
   res.json(out);
 });
 
+// Javobsiz qolgan DM'lar: oxirgi 24 soatdagi suhbatlarni o'qiydi; oxirgi xabar odamniki bo'lsa (biz javob bermagan) ko'rsatadi.
+// "obuna" deb yozgan/tugma bosganlarga havola yuboradi.
+// Ishlatish: /admin/unanswered?key=KEY (ko'rish) ... &send=1 (yuboradi)
+app.get('/admin/unanswered', async (req, res) => {
+  if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
+  const send = req.query.send === '1';
+  const hours = Math.min(Number(req.query.hours) || 24, 24);
+  const out = { send, found: [], sent: 0, failed: 0, skipped: 0 };
+  const get = async (p) => {
+    const r = await fetch(`${IG_API}/${p}`, { headers: { Authorization: `Bearer ${IG_ACCESS_TOKEN}` } });
+    const d = await r.json().catch(() => ({}));
+    if (d.error) throw new Error(JSON.stringify(d.error).slice(0, 300));
+    return d;
+  };
+  try {
+    const since = Date.now() - hours * 3600e3;
+    const convs = (await get(`${IG_USER_ID || 'me'}/conversations?platform=instagram&fields=id,updated_time&limit=50`)).data || [];
+    for (const c of convs) {
+      if (new Date(c.updated_time).getTime() < since) continue;
+      const msgs = ((await get(`${c.id}?fields=messages.limit(10){id,created_time,from,message}`)).messages || {}).data || [];
+      if (!msgs.length) continue;
+      const last = msgs[0]; // eng yangisi birinchi
+      const fromId = last.from?.id;
+      if (!fromId || String(fromId) === String(IG_USER_ID)) continue; // oxirgi xabar bizniki — javob berilgan
+      if (last.from?.username && last.from.username.toLowerCase() === IG_USERNAME) continue;
+      const text = String(last.message || '');
+      const botText = msgs.filter((m) => String(m.from?.id) === String(IG_USER_ID)).map((m) => m.message || '').join('\n');
+      const rule = RULES.find((r) => r.title && botText.includes(r.title));
+      const row = { user: last.from.username || fromId, id: fromId, text: text.slice(0, 80), at: last.created_time, keyword: rule?.keyword || null };
+      if (send && rule && /obuna|подпис|tayyor|bo'ldim|boldim/i.test(text)) {
+        const ok = await checkAndDeliver(fromId, rule);
+        row.sent = !!ok;
+        ok ? out.sent++ : out.failed++;
+      } else if (send) { row.sent = false; out.skipped++; }
+      out.found.push(row);
+    }
+  } catch (e) {
+    out.error = e.message;
+  }
+  res.json(out);
+});
+
 // Kanalga qo'llanma PDF + chiroyli izoh. /admin/channel?key=KEY&kw=XOTIRA,SKILL  (ko'rish) ... &send=1 (yuboradi)
 app.get('/admin/channel', async (req, res) => {
   if (req.query.key !== (env('BACKFILL_KEY') || VERIFY_TOKEN)) return res.status(403).json({ error: 'key noto\'g\'ri' });
