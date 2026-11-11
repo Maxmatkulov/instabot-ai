@@ -1,6 +1,32 @@
-{"date":"2026-11-10","items":[
-{"title":"Anthropic Fable 5.2 va Mythos 5.2 modellarini chiqardi","body":"Ikkala model narxi 1 mln token uchun 8 dollar (kirish) va 40 dollar (chiqish). Kompaniyaga ko'ra, 1000 ga yaqin Fable 5.2 agenti Ferma teoremasi isbotini kompyuter tekshiradigan shaklga 30 soatda o'tkazgan.","source":"Anthropic, Gizmodo orqali","viz":"stat","big":"30 soat","cap":"oldingi versiyada 11 kun ketgan"},
-{"title":"Nvidia direktorlar kengashi Jensen Huang bo'yicha tekshiruv boshladi","body":"Tekshiruv yakshanba kuni e'lon qilindi. Dushanba kuni Nvidia aksiyalari taxminan 4,4% tushib, bozor qiymatidan 200 milliard dollardan ortiq yo'qolgan.","source":"AP, TechStartups orqali","viz":"stat","big":"-4,4%","cap":"Nvidia aksiyasi, 9-noyabr"},
-{"title":"TSMC Nvidia so'rovi bilan 3D DRAM xotira ishlab chiqarishni o'ylamoqda","body":"The Information xabariga ko'ra, TSMC rejalarni tuza boshlagan va xotira zavodini sotib olishni ham ko'rib chiqmoqda. TSMC asosiy biznesiga e'tibor qaratishini bildirdi.","source":"Bloomberg, Taipei Times","viz":"chat","lines":["Nvidia: 3D DRAM kerak","TSMC: rejani tuzyapmiz","Zavod sotib olish ham ko'rilmoqda"]},
-{"title":"Anthropic IPO ga tayyorlanmoqda","body":"WSJ xabariga ko'ra, kompaniya Nasdaq'da ANT belgisi ostida 16-noyabr haftasidayoq chiqishi mumkin. Goldman Sachs va Morgan Stanley bilan ishlanmoqda, yakuniy narx hali e'lon qilinmagan.","source":"WSJ, TechStartups orqali","viz":"chat","lines":["Birja: Nasdaq, belgi: ANT","Muddat: 16-noyabr haftasi","Banklar: Goldman, Morgan Stanley"]}
-]}
+{
+ "date": "2026-11-11",
+ "items": [
+  {
+   "title": "Anthropic IPO narx oralig'ini e'lon qildi",
+   "body": "CNBC manbalarga tayanib yozishicha, aksiya narxi 70-78 dollar oralig'ida belgilangan. Savdo 19-noyabrdan boshlanishi mumkin.",
+   "source": "CNBC",
+   "viz": "stat",
+   "big": "$70-78",
+   "cap": "Anthropic aksiyasi narx oralig'i"
+  },
+  {
+   "title": "OpenAI uchinchi chorak daromadi 10 milliard dollarga yaqinlashdi",
+   "body": "Bloomberg xabariga ko'ra, OpenAI uchinchi chorakdagi daromadi deyarli 50% o'sib, 10 milliard dollarga yetgan.",
+   "source": "Bloomberg",
+   "viz": "stat",
+   "big": "$10 mlrd",
+   "cap": "OpenAI uchinchi chorak daromadi, +50%"
+  },
+  {
+   "title": "Yetti gigant Anthropic IPO ga 26 mlrd dollar qo'yishi mumkin",
+   "body": "Xabarga ko'ra, Alphabet, Nvidia, Microsoft va boshqalar IPO narxida aksiya oladi. Anthropic raqamni tasdiqlamagan.",
+   "source": "24/7 Wall St",
+   "viz": "chat",
+   "lines": [
+    "7 kompaniya: 26 mlrd dollar",
+    "Anthropic hali tasdiqlamagan",
+    "SEC'da faqat Google opsioni: 10 mlrd"
+   ]
+  }
+ ]
+}
