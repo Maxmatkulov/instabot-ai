@@ -25,6 +25,7 @@ const PUBLIC_URL = (
   env('PUBLIC_URL') ||
   hostUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
   hostUrl(process.env.RAILWAY_PUBLIC_DOMAIN) ||
+  env('RENDER_EXTERNAL_URL') ||
   env('MINI_APP_URL')
 ).replace(/\/$/, '');
 const MINI_APP_URL = env('MINI_APP_URL') || PUBLIC_URL;

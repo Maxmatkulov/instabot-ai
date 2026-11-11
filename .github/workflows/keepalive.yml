@@ -1,0 +1,16 @@
+name: keepalive
+# Render bepul serveri 15 daqiqa jim tursa uxlaydi. Har 10 daqiqada /health'ni chaqirib uyg'otib turamiz.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health ping
+        env:
+          BOT_URL: ${{ vars.BOT_URL }}
+        run: |
+          if [ -z "$BOT_URL" ]; then echo "BOT_URL o'zgaruvchisi yo'q"; exit 1; fi
+          curl -fsS --max-time 90 --retry 2 --retry-delay 15 "${BOT_URL%/}/health" >/dev/null
