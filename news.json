@@ -1,31 +1,39 @@
 {
- "date": "2026-11-11",
+ "date": "2026-11-12",
  "items": [
   {
-   "title": "Anthropic IPO narx oralig'ini e'lon qildi",
-   "body": "CNBC manbalarga tayanib yozishicha, aksiya narxi 70-78 dollar oralig'ida belgilangan. Savdo 19-noyabrdan boshlanishi mumkin.",
-   "source": "CNBC",
+   "title": "Anthropic IPO: buyurtmalar aksiyalardan bir necha baravar ko'p",
+   "body": "Bloomberg manbalarga tayanib yozishicha, 825 million aksiyaga buyurtmalar taklifdan bir necha baravar oshgan. Narx oralig'i 70-78 dollar bo'lsa, kompaniya bahosi 1,26-1,41 trillion dollar bo'ladi.",
+   "source": "Gizmodo orqali Bloomberg",
    "viz": "stat",
-   "big": "$70-78",
-   "cap": "Anthropic aksiyasi narx oralig'i"
+   "big": "$1,3 trln",
+   "cap": "Anthropic taxminiy bahosi IPO narxida"
   },
   {
-   "title": "OpenAI uchinchi chorak daromadi 10 milliard dollarga yaqinlashdi",
-   "body": "Bloomberg xabariga ko'ra, OpenAI uchinchi chorakdagi daromadi deyarli 50% o'sib, 10 milliard dollarga yetgan.",
-   "source": "Bloomberg",
+   "title": "CoreWeave daromadi 168% oshdi",
+   "body": "AI bulut kompaniyasi CoreWeave uchinchi chorakda 3,7 milliard dollar daromad qildi. Sof zarar 709 million dollarga yetdi, ammo aksiyasi 20% atrofida o'sdi.",
+   "source": "TheStreet",
    "viz": "stat",
-   "big": "$10 mlrd",
-   "cap": "OpenAI uchinchi chorak daromadi, +50%"
+   "big": "+168%",
+   "cap": "CoreWeave uchinchi chorak daromadi"
   },
   {
-   "title": "Yetti gigant Anthropic IPO ga 26 mlrd dollar qo'yishi mumkin",
-   "body": "Xabarga ko'ra, Alphabet, Nvidia, Microsoft va boshqalar IPO narxida aksiya oladi. Anthropic raqamni tasdiqlamagan.",
-   "source": "24/7 Wall St",
+   "title": "Nvidia direktorlar kengashi tergov boshladi",
+   "body": "Nvidia mustaqil direktorlari Jensen Huang atrofidagi xabarlarni tekshirish uchun Wachtell Lipton huquq firmasini yolladi. Ikki kunlik pasayishda kompaniya 430 milliard dollardan ortiq bozor qiymatini yo'qotdi.",
+   "source": "Nvidia bayonoti, TheStreet",
+   "viz": "stat",
+   "big": "430 mlrd",
+   "cap": "dollar: Nvidia ikki kunlik yo'qotish"
+  },
+  {
+   "title": "DeepMind Signal shifrlashini 4 haftada isbotladi",
+   "body": "Google DeepMind'ning AlphaProof Code vositasi Signal shifrlash dasturining muhim xavfsizlik xususiyatlarini matematik jihatdan tasdiqladi. Bu Signal'ning hamma qismi yoki har qanday hujumga qarshi kafolat emas.",
+   "source": "The Neuron orqali Wired",
    "viz": "chat",
    "lines": [
-    "7 kompaniya: 26 mlrd dollar",
-    "Anthropic hali tasdiqlamagan",
-    "SEC'da faqat Google opsioni: 10 mlrd"
+    "AI 6 mln+ qator isbot yozdi",
+    "Tekshiruv 4 hafta davom etdi",
+    "Faqat belgilangan xususiyatlar"
    ]
   }
  ]
