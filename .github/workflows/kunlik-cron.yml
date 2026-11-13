@@ -1,8 +1,8 @@
 name: kunlik-cron
-# vercel.json'dagi cron'lar o'rniga. Toshkent 08:00 (UTC 03:00) — morning, 18:00 (UTC 13:00) — evening.
+# vercel.json'dagi cron'lar o'rniga. Toshkent 07:30 (UTC 02:30) — morning, 18:00 (UTC 13:00) — evening.
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '30 2 * * *'
     - cron: '0 13 * * *'
   workflow_dispatch:
     inputs:
@@ -21,6 +21,6 @@ jobs:
         run: |
           if [ -z "$BOT_URL" ]; then echo "BOT_URL o'zgaruvchisi yo'q"; exit 1; fi
           case "$CRON_SCHEDULE" in
-            "0 3 * * *") JOB=morning;; "0 13 * * *") JOB=evening;; *) JOB="$IN_JOB";;
+            "30 2 * * *") JOB=morning;; "0 13 * * *") JOB=evening;; *) JOB="$IN_JOB";;
           esac
           curl -fsS -A "vercel-cron/1.0" --max-time 300 --retry 3 --retry-delay 20 "${BOT_URL%/}/api/cron/$JOB"

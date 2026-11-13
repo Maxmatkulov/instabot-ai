@@ -1322,7 +1322,7 @@ app.get('/api/cron/channel-video', async (req, res) => {
 
 // ───────── Kanal avto-joylash (Vercel Cron, Toshkent vaqti) ─────────
 // Kechqurun 21:00: public/schedule.json → {"2026-10-23": ["band","firib"]} — shu kunning video(lar)i + PDF.
-// Ertalab 08:00: public/news/YYYY-MM-DD/{caption.txt, 1.png..10.png} bor bo'lsa — salom + yangilik karuseli. Fayl yo'q bo'lsa hech narsa uydirilmaydi.
+// Ertalab 07:30 (07:00-08:00 oralig'i): public/news/YYYY-MM-DD/{caption.txt, 1.png..10.png} bor bo'lsa — salom + yangilik karuseli. Fayl yo'q bo'lsa hech narsa uydirilmaydi.
 const tashkentToday = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
 const cronAuth = (req) => String(req.headers['user-agent'] || '').includes('vercel-cron') || req.query.key === (env('BACKFILL_KEY') || VERIFY_TOKEN);
 const cronDone = new Set();
