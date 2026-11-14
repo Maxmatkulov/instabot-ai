@@ -1,40 +1,46 @@
 {
- "date": "2026-11-13",
+ "date": "2026-11-14",
  "items": [
   {
-   "title": "AQShda 5 ta AI gigantiga sud da'vosi",
-   "body": "12 noyabrda to'rt notijorat tashkilot San-Fransisko sudida beshta AI kompaniyasiga da'vo qildi. Ular yangi modellarni ishlab chiqish va joriy etishni to'xtatishni so'ramoqda.",
-   "source": "AP, BNN Bloomberg orqali",
-   "viz": "stat",
-   "big": "5 ta",
-   "cap": "Anthropic, Google, Meta, OpenAI, SpaceX"
-  },
-  {
-   "title": "TSMC Anthropic va OpenAI'ga 1 milliard dollar tikadi",
-   "body": "TSMC kengashi jami 1 milliard dollargacha sarmoyani ma'qulladi: 500 million dollar OpenAI'ga, 500 million dollar Anthropic'ga. Tahlilchilar aylanma moliyalashtirish haqiqiy talabni baholashni qiyinlashtirishidan ogohlantirmoqda.",
-   "source": "Reuters, AI Weekly orqali",
-   "viz": "stat",
-   "big": "$1 mlrd",
-   "cap": "500 mln OpenAI, 500 mln Anthropic"
-  },
-  {
-   "title": "Anthropic: umumiy agent shaxsiy agentlardan yaxshiroq",
-   "body": "Anthropic Anthropic, OpenAI va Alibaba modellarini to'rtta muhitda sinadi. Har bir foydalanuvchi o'z agentiga topshirganda natija, hammaga bitta umumiy agent xizmat qilgandan yomonroq chiqdi.",
-   "source": "Anthropic, AI Weekly orqali",
+   "title": "Jensen Huang Nvidia rahbarligini tark etdi",
+   "body": "Nvidia bosh direktori Jensen Huang shu hafta kompaniyadan ketdi. TechCrunch yozishicha, u Nvidia chiplarini Xitoyga yashirincha olib o'tishda gumon qilinayotgan Megaspeed rahbarlaridan biri bilan aloqasini tan olgan. Vaqtinchalik rahbar Colette Kress.",
+   "source": "TechCrunch, MIT Technology Review",
    "viz": "chat",
    "lines": [
-    "4 ta ko'p agentli muhit sinaldi",
-    "Har kimga o'z agenti: natija yomonroq",
-    "Hammaga bitta agent: natija yaxshiroq"
+    "Huang shu hafta ketdi",
+    "Vaqtincha rahbar: Colette Kress",
+    "Megaspeed rahbari bilan aloqa tan olindi"
    ]
   },
   {
-   "title": "ByteDance Muse'ga o'xshash AI agent chiqaradi",
-   "body": "Bloomberg'ga ko'ra, ByteDance bir necha hafta ichida Meta Muse'ga o'xshash yordamchini chiqarmoqchi. Asoschi Chjan Iming xodimlarga OpenAI va Anthropic'ga 2029-2030 yilgacha yetib bo'lmasligini aytgan.",
-   "source": "Bloomberg, AI Weekly orqali",
+   "title": "Taqiqlangan Nvidia chiplari Xitoy modellari ortida?",
+   "body": "Sobiq OpenAI tadqiqotchisi Will DePue DeepSeek V4 va Kimi K3 modellarida Blackwell chiplarida o'qitilganiga ishora qiluvchi izlar topdi. Epoch AI hisobicha, 2024-2025 yillarda Xitoyga yashirin yo'llar bilan taxminan 2 million ilg'or chip kirgan.",
+   "source": "TechCrunch",
    "viz": "stat",
-   "big": "2029",
-   "cap": "Frontierga yetish muddati: 2029-2030"
+   "big": "2 mln",
+   "cap": "Xitoyga yashirin kirgan chiplar (Epoch AI bahosi)"
+  },
+  {
+   "title": "Microsoft xizmatlarida katta uzilish",
+   "body": "Outlook, Teams va Copilot ishlamay qoldi. Bloomberg'ga ko'ra, treyderlar telefon va faksga qaytdi. Microsoft bu kiberhujum emasligini bildirdi.",
+   "source": "Reuters, Bloomberg, BBC, MIT Technology Review orqali",
+   "viz": "chat",
+   "lines": [
+    "Outlook, Teams va Copilot o'chdi",
+    "Treyderlar telefon va faksga qaytdi",
+    "Microsoft: bu kiberhujum emas"
+   ]
+  },
+  {
+   "title": "Nvidia chiplarini kuzatish mumkin, deydi kongressmen",
+   "body": "Kongressmen Bill Foster MIT Technology Review'ga aytishicha, Nvidia vakillari Chip Security Act'dagi geokuzatuv choralarini amalga oshirish mumkinligini tasdiqlagan. Sanoat guruhi ularni ilgari «amalga oshmaydigan» degan edi.",
+   "source": "MIT Technology Review",
+   "viz": "chat",
+   "lines": [
+    "Qonun chiplarga geokuzatuv qo'shadi",
+    "Maqsad: Xitoyga kontrabandani to'xtatish",
+    "Nvidia: texnik jihatdan mumkin"
+   ]
   }
  ]
 }
