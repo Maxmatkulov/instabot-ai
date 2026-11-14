@@ -1538,5 +1538,34 @@ if (require.main === module) {
   app.listen(PORT, '0.0.0.0', async () => {
     log(`✅ Server port ${PORT}`);
     log(await setTelegramWebhook());
+    startScheduler();
   });
+}
+
+// Ichki rejalashtirgich: GitHub Actions cron soatlab kechikadi, shuning uchun server o'zi Toshkent vaqti bilan
+// aniq ishga tushiradi. Server uyg'oq turishi shart (tashqi pinger /health ni har 5 daqiqada chaqirsin).
+// Kun ichida bir marta; qayta ishga tushganda dublikat bo'lmasligi uchun faqat belgilangan vaqtdan 5 daqiqa ichida yuboradi.
+function startScheduler() {
+  const JOBS = [
+    ['07:30', '/api/cron/morning'],
+    ['12:00', '/api/cron/slot?slot=12'],
+    ['15:00', '/api/cron/slot?slot=15'],
+    ['18:00', '/api/cron/slot?slot=18'],
+    ['18:00', '/api/cron/evening'],
+  ];
+  const fired = new Set();
+  const tick = async () => {
+    const t = new Date(Date.now() + 5 * 3600e3), day = t.toISOString().slice(0, 10), mins = t.getUTCHours() * 60 + t.getUTCMinutes();
+    for (const [hm, url] of JOBS) {
+      const [h, m] = hm.split(':').map(Number), k = `${day}|${hm}|${url}`;
+      if (fired.has(k) || mins < h * 60 + m || mins >= h * 60 + m + 5) continue;
+      fired.add(k);
+      try {
+        const r = await fetch(`http://127.0.0.1:${PORT}${url}`, { headers: { 'user-agent': 'vercel-cron/internal' } });
+        log('⏱ ichki cron', hm, url, r.status);
+      } catch (e) { fired.delete(k); log('❌ ichki cron', hm, url, e.message); }
+    }
+  };
+  setInterval(tick, 20000);
+  tick();
 }
