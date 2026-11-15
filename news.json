@@ -1,46 +1,5 @@
-{
- "date": "2026-11-14",
- "items": [
-  {
-   "title": "Jensen Huang Nvidia rahbarligini tark etdi",
-   "body": "Nvidia bosh direktori Jensen Huang shu hafta kompaniyadan ketdi. TechCrunch yozishicha, u Nvidia chiplarini Xitoyga yashirincha olib o'tishda gumon qilinayotgan Megaspeed rahbarlaridan biri bilan aloqasini tan olgan. Vaqtinchalik rahbar Colette Kress.",
-   "source": "TechCrunch, MIT Technology Review",
-   "viz": "chat",
-   "lines": [
-    "Huang shu hafta ketdi",
-    "Vaqtincha rahbar: Colette Kress",
-    "Megaspeed rahbari bilan aloqa tan olindi"
-   ]
-  },
-  {
-   "title": "Taqiqlangan Nvidia chiplari Xitoy modellari ortida?",
-   "body": "Sobiq OpenAI tadqiqotchisi Will DePue DeepSeek V4 va Kimi K3 modellarida Blackwell chiplarida o'qitilganiga ishora qiluvchi izlar topdi. Epoch AI hisobicha, 2024-2025 yillarda Xitoyga yashirin yo'llar bilan taxminan 2 million ilg'or chip kirgan.",
-   "source": "TechCrunch",
-   "viz": "stat",
-   "big": "2 mln",
-   "cap": "Xitoyga yashirin kirgan chiplar (Epoch AI bahosi)"
-  },
-  {
-   "title": "Microsoft xizmatlarida katta uzilish",
-   "body": "Outlook, Teams va Copilot ishlamay qoldi. Bloomberg'ga ko'ra, treyderlar telefon va faksga qaytdi. Microsoft bu kiberhujum emasligini bildirdi.",
-   "source": "Reuters, Bloomberg, BBC, MIT Technology Review orqali",
-   "viz": "chat",
-   "lines": [
-    "Outlook, Teams va Copilot o'chdi",
-    "Treyderlar telefon va faksga qaytdi",
-    "Microsoft: bu kiberhujum emas"
-   ]
-  },
-  {
-   "title": "Nvidia chiplarini kuzatish mumkin, deydi kongressmen",
-   "body": "Kongressmen Bill Foster MIT Technology Review'ga aytishicha, Nvidia vakillari Chip Security Act'dagi geokuzatuv choralarini amalga oshirish mumkinligini tasdiqlagan. Sanoat guruhi ularni ilgari «amalga oshmaydigan» degan edi.",
-   "source": "MIT Technology Review",
-   "viz": "chat",
-   "lines": [
-    "Qonun chiplarga geokuzatuv qo'shadi",
-    "Maqsad: Xitoyga kontrabandani to'xtatish",
-    "Nvidia: texnik jihatdan mumkin"
-   ]
-  }
- ]
-}
+{"date":"2026-11-15","items":[
+{"title":"Anthropic IPO narxini e'lon qildi","body":"Anthropic aksiyalarini Nasdaq'da ANT belgisi ostida taklif qilmoqda: narx oralig'i 70-78 dollar, 825 million aksiya, eng yuqori narxda 64,4 milliard dollargacha. Savdo 19 noyabrda boshlanishi kutilmoqda.","source":"Fortune, CNBC","viz":"stat","big":"1,4 trln $","cap":"Anthropic'ning eng yuqori baholanishi"},
+{"title":"OpenAI ChatGPT Wallet'ni ishga tushirdi","body":"Endi OpenAI'ning dot agentlari foydalanuvchi nomidan xarid qila oladi. Xizmat AQShdagi Pro obunachilar uchun ochildi, karta raqami agentga ko'rsatilmaydi.","source":"CNBC, OpenAI","viz":"chat","lines":["Agent siz uchun xarid qiladi","Karta raqami yashirin qoladi","Hozircha faqat AQSh Pro"]},
+{"title":"Nvidia chiplari: Savdo vazirligi nazorat ostida","body":"NPR xabariga ko'ra, AQSh Savdo vazirligi Xitoy kompaniyalariga Nvidia chiplari bilan ishlashga ruxsat bergani uchun tanqid ostida. Vazirlar va razvedka idoralari xavfsizlikdan xavotir bildirgan.","source":"NPR","viz":"chat","lines":["Xitoy kompaniyalariga ruxsat berildi","Razvedka idoralari xavotirda","Savdo vazirligiga bosim kuchaymoqda"]}
+]}
