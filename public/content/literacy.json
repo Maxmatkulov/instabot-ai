@@ -421,17 +421,17 @@
 ],
 [
 "Fayl hajmi: MB va GB",
-"1 GB taxminan 1000 MB. Bir rasm odatda bir necha MB, bir soatlik video bir necha yuz MB. Xotira rejasini shunga qarab tanlang.",
+"1 GB = 1024 MB. Bir rasm odatda bir necha MB, bir soatlik video bir necha yuz MB. Xotira rejasini shunga qarab tanlang.",
 {
-"q": "Taxminan 1 GB necha MB?",
+"q": "1 GB necha MB?",
 "o": [
 "10 000 MB",
 "100 MB",
 "10 MB",
-"Taxminan 1000 MB"
+"1024 MB"
 ],
 "c": 3,
-"e": "1 GB taxminan 1000 MB."
+"e": "1 GB = 1024 MB."
 }
 ],
 [
