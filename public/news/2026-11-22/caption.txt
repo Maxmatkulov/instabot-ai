@@ -1,0 +1,16 @@
+🗞 <b>Bugungi yangiliklar | 22 noyabr</b>
+
+<b>ChatGPT 75% xatolik bilan işdan çiqdi.</b> Primary API'dagi ikkala replika öçdi; yangi replikalar bilan iş tiklandi. <i>(OpenAI Status, dev.to orqali)</i>
+
+<b>Google Broadcom TPU buyurtmasini qisqartirmoqda.</b> 2027-yil uçun ~1 million dona kamayadi; Broadcom aksiyasi 11,4% tuşdi. <i>(Ming-Chi Kuo, stockanalysis.com orqali)</i>
+
+<b>Google Genie 4 Gemini API'da.</b> 720p, 24 kadr/s; ovozli video taxminan 0,10 dollar/soniya. <i>(Google Blog, dev.to orqali)</i>
+
+<b>Thinking Machines Inkling 2 Mini'ni çiqardi.</b> Jami 26,4 mlrd, faol 3,4 mlrd parametr; 32 GB li MacBook Pro noutbukida işlaydi (kompaniya da'vosi). <i>(Thinking Machines, AI Weekly orqali)</i>
+
+<b>OpenAI va Foxconn AQŞ'da data-markaz jihozlarini yasaydi.</b> Sotib oliş majburiyati yöq. <i>(Analytics India Magazine)</i>
+
+👉 Yangiliklarni biz bilan kuzatib boring va obuna bo'lib qo'ying.
+
+📢 Telegram: https://t.me/mashrabbekmaxmatkulov
+📸 Instagram: https://instagram.com/mashrabbek.maxmatkulov
