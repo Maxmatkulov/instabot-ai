@@ -1,48 +1,6 @@
-{
- "date": "2026-11-23",
- "items": [
-  {
-   "title": "Nasdaq 2026-yilgi o'sishini yo'qotdi",
-   "body": "Juma kuni AI aksiyalari sotuvi Nasdaq Composite'ni 5,28% tushirdi va yil boshidan beri o'sishni butunlay o'chirdi. Nvidia taxminan 14%, Anthropic taxminan 9% arzonlashdi; S&P 500 ketma-ket yettinchi kun pasaydi.",
-   "source": "Fox News, AP",
-   "viz": "stat",
-   "big": "-14%",
-   "cap": "Nvidia aksiyasi bir kunda"
-  },
-  {
-   "title": "Anthropic IPO orqali 81,3 mlrd dollar yig'di",
-   "body": "Kompaniya 980 million aksiyani sotib 81,3 mlrd dollar jalb qildi. Yana 26 mlrd dollar xususiy moliyalashtirish bilan jami 107,3 mlrd dollar bo'ldi. Aksiya narxi 83 dollar.",
-   "source": "Semafor, The Neuron orqali",
-   "viz": "stat",
-   "big": "$81B",
-   "cap": "IPO orqali jalb qilingan mablag'"
-  },
-  {
-   "title": "BMT: o'ldiruvchi robotlar bo'yicha kelishuv 2028-gacha",
-   "body": "Jenevadagi muzokaralarda 128 davlat avtonom qurollar bo'yicha kelishuvni 2028-yilgacha ishlab chiqishga rozi bo'ldi. Majburiy taqiq yo'q; kampaniyachilar matnni 'yumshatilgan' dedi.",
-   "source": "CNBC, Al Jazeera, AI Daily Digest orqali",
-   "viz": "stat",
-   "big": "128",
-   "cap": "davlat muzokaralarni qo'llab-quvvatladi"
-  },
-  {
-   "title": "Nvidia rahbariyati Kongressga chaqirilmoqda",
-   "body": "Palata razvedka qo'mitasi raisi Rik Krouford aytishicha, Nvidia rahbarlari 1-dekabr kuni yopiq suhbatga chaqirilishi kutilmoqda. Mavzu: ilg'or AI chiplarining Xitoyga o'tishi.",
-   "source": "Fox News",
-   "viz": "chat",
-   "lines": [
-    "Chiplar Xitoyga o'tdimi?",
-    "1-dekabr: yopiq suhbat",
-    "3 ta palata qo'mitasi"
-   ]
-  },
-  {
-   "title": "Amazon Decart'ni sotib olmoqchi",
-   "body": "Financial Times yozishicha, Amazon AI startap Decart'ni taxminan 7,5 mlrd dollarga olish bo'yicha ilg'or muzokaralarda. Bitim hali imzolangani yo'q.",
-   "source": "Financial Times, AI Daily Digest orqali",
-   "viz": "stat",
-   "big": "$7,5B",
-   "cap": "taxminiy bitim qiymati (tasdiqlanmagan)"
-  }
- ]
-}
+{"date":"2026-11-24","items":[
+{"title":"Nvidia Jensen Huang'ni CEO lavozimiga qaytardi","body":"Nvidia Jensen Huang'ni bosh direktor lavozimiga qayta tikladi. Yangilik ta'sirida kompaniya aksiyasi 23-noyabrda 31,48% oshib, 165,05 dollarda yopildi.","source":"Motley Fool","viz":"stat","big":"+31,48%","cap":"Nvidia aksiyasi, 23-noyabr"},
+{"title":"Nasdaq bir kunda 6,51% ko'tarildi","body":"Chip va AI aksiyalari qaytadan o'sdi. Nasdaq Composite 24 090 punktda, S&P 500 esa 7 237 punktda yopildi (+4,73%). Intel aksiyasi ham 16,34% qimmatlashdi.","source":"Motley Fool","viz":"stat","big":"+6,51%","cap":"Nasdaq Composite, 23-noyabr"},
+{"title":"AMD aksiyasi 6,85% o'sdi","body":"AMD 453,46 dollarda yopildi. Juma kuni qisqa pozitsiya egasi hisoboti aksiyani tushirgan edi: unda server mikrodasturining bir qismi Xitoyning qora ro'yxatdagi kompaniyasiga tushgani da'vo qilingan. Dushanba kuni bu mavzu unutilgandek bo'ldi.","source":"Motley Fool","viz":"chat","lines":["Juma: qisqa hisobot, aksiya tushdi","Dushanba: +6,85%, 453,46 dollar","Hajm o'rtachadan ~93% yuqori"]},
+{"title":"Anthropic aksiyasi birjada savdoda","body":"Anthropic IPO narxi bir aksiya uchun 83 dollar edi (Nasdaq, belgisi ANT). Motley Fool ma'lumotiga ko'ra, 23-noyabrda ANT 87,64 dollarda turibdi, kun davomida 1,4% pasaygan.","source":"Newegg va Motley Fool","viz":"stat","big":"$83","cap":"IPO narxi, bir aksiya uchun"}
+]}
