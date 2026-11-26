@@ -6,7 +6,7 @@
 
 <b>GPT-6 oqsil loyihaladi.</b> OpenAI'ga köra, laboratoriyada 322 tadan 35 tasi nişonga boğlandi. <i>(OpenAI, AI Weekly orqali)</i>
 
-<b>Samsung va SK Hynix litsenziya oldi.</b> Nikkei yozişiça, bu Xitoyning YMTC kompaniyasi xotira çipi texnologiyasi. <i>(Nikkei Asia, AI Weekly orqali)</i>
+<b>Samsung va SK Hynix litsenziya oldi.</b> Nikkei yozişiça, ular Xitoyning YMTC kompaniyasidan xotira çipi texnologiyasi uçun litsenziya olgan. <i>(Nikkei Asia, AI Weekly orqali)</i>
 
 <b>Tidal AI musiqani öçiradi.</b> 9-dekabrdan töliq AI yaratgan millionlab treklar öçirila boşlaydi. <i>(TechCrunch, AI Weekly orqali)</i>
 
