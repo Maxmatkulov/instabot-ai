@@ -1,7 +1,40 @@
-{"date":"2026-11-26","items":[
-{"title":"Nvidia aksiyasi yana 3,91% arzonlashdi","body":"25-noyabrda aksiya 149,30 dollarda yopildi, kun davomida pasayish 8% gacha yetgan edi. Nasdaq indeksi 0,62% tushdi. Shu kuni AQSh ma'muriyati yangi 20% lik bojlarni e'lon qildi, ular eng erta yanvarda kuchga kiradi.","source":"Yahoo Finance","viz":"stat","big":"−3,91%","cap":"Nvidia, 25-noyabr yopilishi"},
-{"title":"Dell daromadi bir yilda 103% o'sdi","body":"Kompaniyaning choraklik daromadi 54,94 mlrd dollarga yetdi. AI serverlariga bajarilmagan buyurtmalar hajmi 132,3 mlrd dollarni tashkil qildi.","source":"CNBC, AI Weekly orqali","viz":"stat","big":"+103%","cap":"yillik daromad o'sishi"},
-{"title":"OpenAI: GPT-6 ishlab chiqqan oqsillar sinovdan o'tdi","body":"Kompaniya ma'lumotiga ko'ra, laboratoriyada 322 ta kichik bog'lovchi oqsildan 35 tasi nishonga bog'landi. Bu laboratoriya natijasi, tayyor dori emas.","source":"OpenAI, AI Weekly orqali","viz":"stat","big":"10,9%","cap":"322 tadan 35 tasi bog'landi"},
-{"title":"Samsung va SK Hynix Xitoy texnologiyasidan foydalanadi","body":"Nikkei xabariga ko'ra, ikki Koreya kompaniyasi xotira chiplari uchun Xitoyning YMTC kompaniyasi Xtacking texnologiyasiga litsenziya olgan.","source":"Nikkei Asia, AI Weekly orqali","viz":"chat","lines":["Kim: Samsung, SK Hynix","Kimdan: Xitoyning YMTC","Nima: Xtacking litsenziyasi"]},
-{"title":"Tidal to'liq AI yaratgan musiqani o'chiradi","body":"Striming xizmati 9-dekabrdan to'liq sun'iy intellekt yaratgan millionlab treklarni o'chira boshlaydi. Bunday yangi treklar ham qabul qilinmaydi.","source":"TechCrunch, AI Weekly orqali","viz":"chat","lines":["To'liq AI trek?","Platformada taqiqlanadi","Boshlanish: 9-dekabr"]}
-]}
+{
+"date": "2026-11-28",
+"items": [
+{
+"title": "Angliya banki AI qarzlaridan ogohlantirdi",
+"body": "26-noyabr hisobotiga ko'ra, yirik bulut kompaniyalari 2026-yilda 305 mlrd dollardan ko'p obligatsiya chiqarishi mumkin. Balansdan tashqari majburiyatlar bilan ehtimoliy yuklamasi 4 trln dollardan sal oshiq.",
+"source": "Bank of England, StockAnalysis",
+"viz": "stat",
+"big": "$4 trln",
+"cap": "yirik bulut kompaniyalari yuklamasi (baho)"
+},
+{
+"title": "Shveytsariyada AI agentlar bilan kiberhujumlar tasdiqlandi",
+"body": "Kiberxavfsizlik idorasi rahbari SRF intervyusida 5 ta holatni, shundan 4 tasi muvaffaqiyatli bo'lganini aytdi. 3 tasi muhim infratuzilmaga qaratilgan, yirik uzilish qayd etilmagan. Boshqa nashrda muvaffaqiyatli hujumlar soni 2 ta deb berilgan.",
+"source": "SRF, techtimes.com orqali",
+"viz": "stat",
+"big": "5",
+"cap": "AI agentlar ishlatilgan holat"
+},
+{
+"title": "Nvidia 4 davlatga AI server yetkazishni to'xtatayotgani aytilmoqda",
+"body": "FT'ga ko'ra, kompaniya hamkorlariga Singapur, Malayziya, Tailand va Indoneziyaga yetkazishni to'xtatishni aytgan. Sabab AQShning Xitoy firmalari AI quvvatini ijaraga olishiga oid yangi cheklovi.",
+"source": "Financial Times, Tom's Hardware orqali",
+"viz": "chat",
+"lines": [
+"Qayerga: 4 ta davlat",
+"Nima: AI serverlar",
+"Holat: FT xabari"
+]
+},
+{
+"title": "Tayvan o'sish prognozini 13,28% ga ko'tardi",
+"body": "Tayvan statistika idorasi 2026-yil YaIM prognozini 11,05% dan 13,28% ga oshirdi. SBS'ga ko'ra, bu 1978-yildan beri eng yuqori sur'at bo'ladi; asosiy turtki AI talabi va TSMC boshchiligidagi chip sanoati.",
+"source": "SBS News",
+"viz": "stat",
+"big": "13,28%",
+"cap": "2026-yil YaIM o'sishi prognozi"
+}
+]
+}
